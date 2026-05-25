@@ -5,484 +5,582 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>請求書 INV-20260525-001</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700;900&family=Inter:wght@300;400;500;600;700&display=swap');
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
-      background: #f0f2f5;
+      background: #0d0d1a;
       min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: flex-start;
-      padding: 40px 20px;
-      color: #1a1a2e;
+      padding: 48px 20px;
     }
 
     .page {
       background: #ffffff;
-      width: 794px;
-      min-height: 1123px;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+      width: 800px;
+      min-height: 1100px;
+      border-radius: 20px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
       overflow: hidden;
       position: relative;
     }
 
-    /* ── ヘッダーバー ── */
-    .header-bar {
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-      padding: 36px 48px 32px;
+    /* ══════════════════════════
+       HEADER
+    ══════════════════════════ */
+    .header {
+      background: linear-gradient(145deg, #0a0818 0%, #1a1245 55%, #0f0c2e 100%);
+      padding: 0;
       position: relative;
       overflow: hidden;
     }
-    .header-bar::before {
+
+    /* 背景装飾 */
+    .header::before {
       content: '';
       position: absolute;
-      top: -60px; right: -60px;
+      top: -100px; right: -80px;
+      width: 340px; height: 340px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(102,126,234,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .header::after {
+      content: '';
+      position: absolute;
+      bottom: -60px; left: -40px;
       width: 220px; height: 220px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.04);
+      background: radial-gradient(circle, rgba(118,75,162,0.14) 0%, transparent 70%);
+      pointer-events: none;
     }
-    .header-bar::after {
-      content: '';
+
+    /* ドットパターン */
+    .header-dots {
       position: absolute;
-      bottom: -80px; left: 30px;
-      width: 160px; height: 160px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.03);
+      inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+      background-size: 24px 24px;
+      pointer-events: none;
     }
 
     .header-inner {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
       position: relative;
-      z-index: 1;
-    }
-
-    .doc-label {
-      font-size: 32px;
-      font-weight: 700;
-      color: #ffffff;
-      letter-spacing: 0.18em;
-    }
-    .doc-label span {
-      display: block;
-      font-size: 11px;
-      font-weight: 300;
-      letter-spacing: 0.25em;
-      color: rgba(255,255,255,0.55);
-      margin-bottom: 4px;
-      text-transform: uppercase;
-    }
-
-    .header-meta {
-      text-align: right;
-    }
-    .inv-number {
-      font-size: 13px;
-      font-weight: 500;
-      color: rgba(255,255,255,0.9);
-      letter-spacing: 0.08em;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 6px;
-      padding: 6px 14px;
-      display: inline-block;
-      margin-bottom: 10px;
-    }
-    .inv-date {
-      font-size: 12px;
-      color: rgba(255,255,255,0.5);
-      letter-spacing: 0.05em;
-    }
-    .inv-date strong {
-      color: rgba(255,255,255,0.8);
-      font-weight: 500;
-    }
-
-    /* ── アクセントライン ── */
-    .accent-line {
-      height: 4px;
-      background: linear-gradient(90deg, #667eea 0%, #764ba2 40%, #f093fb 100%);
-    }
-
-    /* ── ボディ ── */
-    .body {
-      padding: 40px 48px 48px;
-    }
-
-    /* ── 宛先 ／ 発行者 ── */
-    .parties {
+      z-index: 2;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 40px;
+      align-items: stretch;
+      padding: 40px 48px 36px;
+      gap: 32px;
     }
 
-    .bill-to {
-      flex: 1;
+    /* 左：タイトル＋番号・日付 */
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-    .section-label {
+
+    .doc-en {
+      font-family: 'Inter', sans-serif;
       font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
+      font-weight: 600;
+      letter-spacing: 0.35em;
+      color: rgba(102,126,234,0.8);
       text-transform: uppercase;
-      color: #764ba2;
-      margin-bottom: 8px;
-    }
-    .company-name {
-      font-size: 22px;
-      font-weight: 700;
-      color: #1a1a2e;
-      letter-spacing: 0.04em;
-      margin-bottom: 4px;
-    }
-    .honorific {
-      font-size: 13px;
-      color: #555;
-    }
-
-    .issuer {
-      text-align: right;
-      background: #f8f7ff;
-      border-radius: 12px;
-      padding: 20px 24px;
-      border: 1px solid #e8e4f3;
-      min-width: 260px;
-    }
-    .issuer-name {
-      font-size: 18px;
-      font-weight: 700;
-      color: #302b63;
       margin-bottom: 6px;
     }
-    .issuer-detail {
-      font-size: 11.5px;
-      color: #666;
-      line-height: 1.8;
-    }
-    .tax-badge {
-      display: inline-block;
-      font-size: 10px;
-      color: #888;
-      background: #eee;
-      border-radius: 4px;
-      padding: 2px 8px;
-      margin-top: 6px;
-      letter-spacing: 0.05em;
+    .doc-ja {
+      font-size: 34px;
+      font-weight: 900;
+      color: #ffffff;
+      letter-spacing: 0.22em;
+      line-height: 1;
+      margin-bottom: 20px;
     }
 
-    /* ── 請求金額ハイライト ── */
-    .amount-highlight {
-      background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
+    .inv-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .inv-meta-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .inv-meta-key {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      width: 72px;
+    }
+    .inv-meta-val {
+      font-size: 12px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.05em;
+    }
+    .inv-meta-val.highlight {
+      background: rgba(102,126,234,0.2);
+      border: 1px solid rgba(102,126,234,0.4);
+      border-radius: 5px;
+      padding: 3px 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      color: #a5b4fc;
+    }
+
+    /* 右：発行者カード */
+    .issuer-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
       border-radius: 14px;
-      padding: 28px 36px;
+      padding: 22px 26px;
+      text-align: right;
+      min-width: 270px;
+      backdrop-filter: blur(10px);
+      position: relative;
+    }
+    .issuer-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 14px 14px 0 0;
+      background: linear-gradient(90deg, transparent, rgba(102,126,234,0.6), transparent);
+    }
+
+    .issuer-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 0.25em;
+      color: rgba(102,126,234,0.7);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .issuer-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.08em;
+      margin-bottom: 10px;
+    }
+    .issuer-info {
+      font-size: 10.5px;
+      color: rgba(255,255,255,0.5);
+      line-height: 1.9;
+      letter-spacing: 0.03em;
+    }
+    .issuer-info strong {
+      color: rgba(255,255,255,0.7);
+      font-weight: 500;
+    }
+    .tax-chip {
+      display: inline-block;
+      margin-top: 10px;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.4);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 20px;
+      padding: 3px 10px;
+    }
+
+    /* ── グラデーションライン ── */
+    .accent-bar {
+      height: 3px;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+    }
+
+    /* ══════════════════════════
+       BODY
+    ══════════════════════════ */
+    .body {
+      padding: 44px 48px 52px;
+    }
+
+    /* ── 宛先 ── */
+    .bill-to-section {
+      margin-bottom: 36px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid #f0edf8;
+    }
+    .section-eyebrow {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #9b77d1;
+      margin-bottom: 10px;
+    }
+    .bill-to-name {
+      font-size: 26px;
+      font-weight: 700;
+      color: #0f0c2e;
+      letter-spacing: 0.04em;
+    }
+    .bill-to-honorific {
+      font-size: 14px;
+      color: #888;
+      margin-top: 2px;
+    }
+
+    /* ── 請求金額 ── */
+    .amount-block {
+      background: linear-gradient(135deg, #0a0818 0%, #1e1654 100%);
+      border-radius: 16px;
+      padding: 30px 36px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 36px;
+      margin-bottom: 40px;
+      position: relative;
+      overflow: hidden;
     }
-    .amount-highlight .label {
-      font-size: 13px;
+    .amount-block::before {
+      content: '';
+      position: absolute;
+      right: -30px; top: -30px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(102,126,234,0.15) 0%, transparent 70%);
+    }
+    .amount-block .a-label {
+      font-size: 11px;
       font-weight: 500;
-      color: rgba(255,255,255,0.6);
-      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.14em;
+      margin-bottom: 4px;
     }
-    .amount-highlight .value {
-      font-size: 38px;
+    .amount-block .a-sub {
+      font-family: 'Inter', sans-serif;
+      font-size: 9.5px;
+      color: rgba(255,255,255,0.25);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .amount-block .a-value {
+      font-family: 'Inter', sans-serif;
+      font-size: 42px;
       font-weight: 700;
       color: #ffffff;
-      letter-spacing: 0.04em;
+      letter-spacing: -0.01em;
+      position: relative;
+      z-index: 1;
     }
-    .amount-highlight .value sup {
-      font-size: 20px;
-      font-weight: 400;
-      vertical-align: super;
-      margin-right: 4px;
-      color: rgba(255,255,255,0.7);
+    .amount-block .a-value .yen {
+      font-size: 22px;
+      font-weight: 300;
+      color: rgba(255,255,255,0.6);
+      margin-right: 3px;
+      vertical-align: 6px;
     }
-    .amount-highlight .sub {
-      font-size: 11px;
-      color: rgba(255,255,255,0.4);
+    .amount-block .a-note {
+      font-size: 9px;
+      color: rgba(255,255,255,0.25);
       letter-spacing: 0.08em;
       margin-top: 4px;
+      text-align: right;
     }
 
     /* ── 明細テーブル ── */
-    .section-title {
-      font-size: 10px;
-      font-weight: 700;
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      color: #764ba2;
-      margin-bottom: 12px;
+    .table-wrap {
+      margin-bottom: 8px;
     }
-
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-bottom: 36px;
       font-size: 13px;
     }
     thead tr {
-      background: #f3f0fb;
+      background: #f5f2fc;
     }
     thead th {
-      padding: 12px 16px;
-      text-align: left;
-      font-weight: 600;
-      font-size: 11px;
-      letter-spacing: 0.08em;
-      color: #302b63;
-      border-bottom: 2px solid #e0d9f5;
+      padding: 11px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #6b4fa0;
+      border-bottom: 2px solid #e2d9f3;
     }
     thead th:last-child { text-align: right; }
+    thead th.center { text-align: center; }
 
-    tbody tr {
-      border-bottom: 1px solid #f0eef8;
-      transition: background 0.15s;
-    }
-    tbody tr:hover { background: #faf9ff; }
+    tbody tr { border-bottom: 1px solid #f3f0fa; }
+    tbody tr:last-child { border-bottom: none; }
     tbody td {
-      padding: 16px 16px;
-      color: #333;
-      vertical-align: top;
-      line-height: 1.6;
+      padding: 18px 14px;
+      color: #2d2d4e;
+      vertical-align: middle;
+      line-height: 1.55;
     }
-    tbody td:last-child { text-align: right; font-weight: 500; }
+    tbody td.center { text-align: center; }
+    tbody td.right  { text-align: right; font-weight: 600; color: #1a1245; }
+    tbody td.muted  { color: #aaa; font-size: 12px; }
 
-    .badge-tax {
+    .tag {
       display: inline-block;
-      font-size: 10px;
-      padding: 2px 8px;
+      font-size: 9.5px;
+      font-weight: 700;
+      padding: 3px 10px;
       border-radius: 20px;
       background: #ede9fb;
       color: #764ba2;
-      font-weight: 600;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.05em;
     }
 
-    /* ── 合計行 ── */
-    .total-block {
+    /* ── 合計 ── */
+    .totals {
       display: flex;
       justify-content: flex-end;
       margin-bottom: 40px;
     }
-    .total-table {
-      width: 300px;
+    .totals-inner {
+      width: 280px;
     }
-    .total-table tr td {
-      padding: 8px 12px;
-      font-size: 13px;
-      color: #555;
+    .totals-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 12.5px;
+      color: #777;
+      border-bottom: 1px dashed #ece8f5;
     }
-    .total-table tr td:last-child { text-align: right; }
-    .total-table tr.grand td {
-      border-top: 2px solid #302b63;
+    .totals-row:last-child {
+      border-bottom: none;
+      border-top: 2px solid #1a1245;
       padding-top: 12px;
-      font-size: 16px;
+      margin-top: 4px;
+      font-size: 17px;
       font-weight: 700;
-      color: #302b63;
+      color: #1a1245;
     }
 
     /* ── 振込先 ── */
-    .bank-section {
-      background: #f8f7ff;
-      border: 1px solid #e0d9f5;
-      border-radius: 12px;
+    .bank-wrap {
+      background: linear-gradient(135deg, #faf8ff 0%, #f3f0fc 100%);
+      border: 1px solid #e4dcf5;
+      border-radius: 14px;
       padding: 24px 28px;
-      margin-bottom: 36px;
+      margin-bottom: 40px;
     }
     .bank-grid {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-top: 12px;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      margin-top: 14px;
     }
-    .bank-item .key {
-      font-size: 10px;
+    .bank-item {
+      padding: 0 16px 0 0;
+    }
+    .bank-item + .bank-item {
+      border-left: 1px solid #e4dcf5;
+      padding-left: 16px;
+    }
+    .bank-key {
+      font-family: 'Inter', sans-serif;
+      font-size: 8.5px;
       font-weight: 700;
-      letter-spacing: 0.12em;
-      color: #999;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
-      margin-bottom: 4px;
+      color: #b09fd0;
+      margin-bottom: 5px;
     }
-    .bank-item .val {
-      font-size: 14px;
+    .bank-val {
+      font-size: 13px;
       font-weight: 600;
-      color: #302b63;
+      color: #1a1245;
     }
 
     /* ── フッター ── */
     .footer {
-      border-top: 1px solid #f0eef8;
-      padding-top: 20px;
+      border-top: 1px solid #f0ecf8;
+      padding-top: 18px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-end;
     }
     .footer-note {
-      font-size: 11px;
-      color: #bbb;
-      line-height: 1.7;
+      font-size: 10.5px;
+      color: #ccc;
+      line-height: 1.75;
     }
-    .footer-stamp {
-      width: 64px;
-      height: 64px;
+    .footer-seal {
+      width: 58px; height: 58px;
       border-radius: 50%;
-      border: 2px solid #302b63;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 10px;
+      border: 1.5px solid #c5b8e8;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 2px;
+      opacity: 0.4;
+    }
+    .footer-seal span {
+      font-size: 8px;
       font-weight: 700;
       color: #302b63;
-      letter-spacing: 0.08em;
-      opacity: 0.35;
+      letter-spacing: 0.1em;
     }
 
     @media print {
       body { background: white; padding: 0; }
-      .page { box-shadow: none; border-radius: 0; }
+      .page { box-shadow: none; border-radius: 0; width: 100%; }
     }
   </style>
 </head>
 <body>
-  <div class="page">
+<div class="page">
 
-    <!-- ヘッダー -->
-    <div class="header-bar">
-      <div class="header-inner">
-        <div class="doc-label">
-          <span>Invoice</span>
-          請 求 書
-        </div>
-        <div class="header-meta">
-          <div class="inv-number">INV-20260525-001</div>
-          <div class="inv-date">発行日：<strong>2026年5月25日</strong></div>
-        </div>
-      </div>
-    </div>
-    <div class="accent-line"></div>
+  <!-- ══ HEADER ══ -->
+  <div class="header">
+    <div class="header-dots"></div>
+    <div class="header-inner">
 
-    <div class="body">
-
-      <!-- 宛先 / 発行者 -->
-      <div class="parties">
-        <div class="bill-to">
-          <div class="section-label">Bill To / 請求先</div>
-          <div class="company-name">合同会社 Frigus</div>
-          <div class="honorific">御中</div>
-        </div>
-        <div class="issuer">
-          <div class="section-label" style="text-align:right;">Issued By / 発行者</div>
-          <div class="issuer-name">可知 優也</div>
-          <div class="issuer-detail">
-            愛知県名古屋市昭和区壇溪通1丁目7番地<br>
-            アンシェリーナ106<br>
-            TEL：080-6925-9411
-          </div>
-          <div class="tax-badge">免税事業者 ／ 登録番号なし</div>
-        </div>
-      </div>
-
-      <!-- 請求金額 -->
-      <div class="amount-highlight">
+      <!-- 左：タイトル＋請求書番号・日付 -->
+      <div class="header-left">
         <div>
-          <div class="label">ご請求金額（税込）</div>
-          <div class="sub">Total Amount Due</div>
+          <div class="doc-en">Invoice</div>
+          <div class="doc-ja">請 求 書</div>
         </div>
-        <div style="text-align:right;">
-          <div class="value"><sup>¥</sup>202,306</div>
-          <div class="sub">消費税対象外</div>
-        </div>
-      </div>
-
-      <!-- 明細 -->
-      <div class="section-title">Invoice Details / 請求明細</div>
-      <table>
-        <thead>
-          <tr>
-            <th style="width:120px;">日付</th>
-            <th>内容</th>
-            <th style="width:70px; text-align:center;">数量</th>
-            <th style="width:80px; text-align:center;">単位</th>
-            <th style="width:80px; text-align:center;">税区分</th>
-            <th style="width:100px;">金額</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td style="color:#888; font-size:12px;">2026年5月25日</td>
-            <td>
-              Goo Property Singapore Pte. Ltd.社からの保全費（2026年2月預かり金より）
-            </td>
-            <td style="text-align:center;">1</td>
-            <td style="text-align:center;">式</td>
-            <td style="text-align:center;"><span class="badge-tax">対象外</span></td>
-            <td>¥202,306</td>
-          </tr>
-        </tbody>
-      </table>
-
-      <!-- 合計 -->
-      <div class="total-block">
-        <table class="total-table">
-          <tr>
-            <td>小計</td>
-            <td>¥202,306</td>
-          </tr>
-          <tr>
-            <td>消費税</td>
-            <td>¥0（対象外）</td>
-          </tr>
-          <tr class="grand">
-            <td>合　計</td>
-            <td>¥202,306</td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- 振込先 -->
-      <div class="bank-section">
-        <div class="section-title">Bank Transfer / お振込先</div>
-        <div class="bank-grid">
-          <div class="bank-item">
-            <div class="key">銀行名</div>
-            <div class="val">楽天銀行</div>
+        <div class="inv-meta">
+          <div class="inv-meta-row">
+            <span class="inv-meta-key">No.</span>
+            <span class="inv-meta-val highlight">INV-20260525-001</span>
           </div>
-          <div class="bank-item">
-            <div class="key">支店名</div>
-            <div class="val">ボレロ支店</div>
-          </div>
-          <div class="bank-item">
-            <div class="key">口座種別</div>
-            <div class="val">普通預金</div>
-          </div>
-          <div class="bank-item">
-            <div class="key">口座番号</div>
-            <div class="val">4541728</div>
-          </div>
-          <div class="bank-item">
-            <div class="key">口座名義</div>
-            <div class="val">カチユウヤ</div>
+          <div class="inv-meta-row">
+            <span class="inv-meta-key">発行日</span>
+            <span class="inv-meta-val">2026年5月25日</span>
           </div>
         </div>
       </div>
 
-      <!-- フッター -->
-      <div class="footer">
-        <div class="footer-note">
-          ご不明な点がございましたら、お気軽にご連絡ください。<br>
-          TEL: 080-6925-9411
+      <!-- 右：発行者カード -->
+      <div class="issuer-card">
+        <div class="issuer-label">Issued by</div>
+        <div class="issuer-name">可知 優也</div>
+        <div class="issuer-info">
+          愛知県名古屋市昭和区壇溪通1丁目7番地<br>
+          アンシェリーナ106<br>
+          <strong>TEL</strong> 080-6925-9411
         </div>
-        <div class="footer-stamp">確認済</div>
+        <div class="tax-chip">免税事業者 · 登録番号なし</div>
       </div>
 
     </div>
   </div>
+  <div class="accent-bar"></div>
+
+  <!-- ══ BODY ══ -->
+  <div class="body">
+
+    <!-- 宛先 -->
+    <div class="bill-to-section">
+      <div class="section-eyebrow">Bill To / 請求先</div>
+      <div class="bill-to-name">合同会社 Frigus</div>
+      <div class="bill-to-honorific">御中</div>
+    </div>
+
+    <!-- 請求金額 -->
+    <div class="amount-block">
+      <div>
+        <div class="a-label">ご請求金額（税込）</div>
+        <div class="a-sub">Total Amount Due</div>
+      </div>
+      <div>
+        <div class="a-value"><span class="yen">¥</span>202,306</div>
+        <div class="a-note">消費税対象外</div>
+      </div>
+    </div>
+
+    <!-- 明細 -->
+    <div class="section-eyebrow" style="margin-bottom:10px;">Invoice Details / 請求明細</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:110px;">日付</th>
+            <th>内容</th>
+            <th class="center" style="width:60px;">数量</th>
+            <th class="center" style="width:60px;">単位</th>
+            <th class="center" style="width:80px;">税区分</th>
+            <th style="width:110px; text-align:right;">金額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="muted">2026年5月25日</td>
+            <td>Goo Property Singapore Pte. Ltd.社からの保全費（2026年2月預かり金より）</td>
+            <td class="center">1</td>
+            <td class="center">式</td>
+            <td class="center"><span class="tag">対象外</span></td>
+            <td class="right">¥202,306</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 合計 -->
+    <div class="totals">
+      <div class="totals-inner">
+        <div class="totals-row"><span>小計</span><span>¥202,306</span></div>
+        <div class="totals-row"><span>消費税</span><span>¥0（対象外）</span></div>
+        <div class="totals-row"><span>合　計</span><span>¥202,306</span></div>
+      </div>
+    </div>
+
+    <!-- 振込先 -->
+    <div class="bank-wrap">
+      <div class="section-eyebrow">Bank Transfer / お振込先</div>
+      <div class="bank-grid">
+        <div class="bank-item">
+          <div class="bank-key">銀行名</div>
+          <div class="bank-val">楽天銀行</div>
+        </div>
+        <div class="bank-item">
+          <div class="bank-key">支店名</div>
+          <div class="bank-val">ボレロ支店</div>
+        </div>
+        <div class="bank-item">
+          <div class="bank-key">口座種別</div>
+          <div class="bank-val">普通預金</div>
+        </div>
+        <div class="bank-item">
+          <div class="bank-key">口座番号</div>
+          <div class="bank-val">4541728</div>
+        </div>
+        <div class="bank-item">
+          <div class="bank-key">口座名義</div>
+          <div class="bank-val">カチユウヤ</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- フッター -->
+    <div class="footer">
+      <div class="footer-note">
+        ご不明な点がございましたら、お気軽にご連絡ください。<br>
+        TEL: 080-6925-9411
+      </div>
+      <div class="footer-seal">
+        <span>確認</span>
+        <span>済</span>
+      </div>
+    </div>
+
+  </div>
+</div>
 </body>
 </html>

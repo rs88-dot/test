@@ -1,261 +1,235 @@
 from openpyxl import Workbook
-from openpyxl.styles import (
-    Font, PatternFill, Alignment, Border, Side, GradientFill
-)
-from openpyxl.utils import get_column_letter
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.worksheet.page import PageMargins
 
 wb = Workbook()
 ws = wb.active
 ws.title = "請求書"
 
-# ── 列幅 ──
-col_widths = {
-    "A": 3, "B": 18, "C": 38, "D": 8, "E": 8, "F": 10, "G": 16, "H": 3
-}
-for col, w in col_widths.items():
+# ── 列幅 (A margin | B date | C content | D qty | E unit | F tax | G amount | H margin)
+for col, w in {"A":2,"B":14,"C":34,"D":7,"E":7,"F":11,"G":15,"H":2}.items():
     ws.column_dimensions[col].width = w
 
-# ── 行高 ──
-row_heights = {
-    1: 8, 2: 36, 3: 14, 4: 22, 5: 22, 6: 10, 7: 22, 8: 22, 9: 22, 10: 10,
-    11: 28, 12: 10, 13: 22, 14: 22, 15: 14, 16: 22, 17: 22, 18: 22, 19: 14,
-    20: 22, 21: 22, 22: 14, 23: 22, 24: 14, 25: 22, 26: 14, 27: 22, 28: 14,
+# ── 行高
+heights = {
+    1:6,   2:18,  3:32,  4:20,  5:18,  6:18,  7:8,   8:6,
+    9:16,  10:20, 11:14, 12:16, 13:6,  14:30, 15:6,  16:20,
+    17:6,  18:20, 19:20, 20:20, 21:6,  22:16, 23:20, 24:20,
+    25:20, 26:20, 27:20, 28:6,  29:16, 30:6,
 }
-for r, h in row_heights.items():
+for r, h in heights.items():
     ws.row_dimensions[r].height = h
 
-# ── ヘルパー ──
-DARK   = "1A1A3E"
-PURPLE = "764BA2"
-ACCENT = "667EEA"
-LIGHT  = "F3F0FB"
-WHITE  = "FFFFFF"
-GRAY   = "888888"
-TEXT   = "1A1A2E"
-BORDER_COLOR = "D0C8F0"
+# ── カラー定数
+DARK    = "0A0818"
+DARK2   = "1A1245"
+PURPLE  = "764BA2"
+ACCENT  = "667EEA"
+ACCENT2 = "A5B4FC"
+LIGHT   = "F5F2FC"
+LIGHT2  = "FAF8FF"
+WHITE   = "FFFFFF"
+GRAY    = "999999"
+GRAY2   = "CCCCCC"
+TEXT    = "1A1A2E"
+BORDER  = "E2D9F3"
 
-def dark_fill():  return PatternFill("solid", fgColor=DARK)
-def purple_fill(): return PatternFill("solid", fgColor=PURPLE)
-def light_fill():  return PatternFill("solid", fgColor=LIGHT)
-def white_fill():  return PatternFill("solid", fgColor=WHITE)
-def accent_fill(): return PatternFill("solid", fgColor="EDE9FB")
+def fill(c): return PatternFill("solid", fgColor=c)
+def side(style="thin", color=BORDER): return Side(style=style, color=color)
+def no_side(): return Side(style=None)
 
-def thin_border(top=False, bottom=False, left=False, right=False):
-    s = Side(style="thin", color=BORDER_COLOR)
-    n = Side(style=None)
-    return Border(
-        top=s if top else n,
-        bottom=s if bottom else n,
-        left=s if left else n,
-        right=s if right else n,
-    )
+def border(t=False, b=False, l=False, r=False, color=BORDER, style="thin"):
+    s = side(style, color)
+    n = no_side()
+    return Border(top=s if t else n, bottom=s if b else n,
+                  left=s if l else n, right=s if r else n)
 
-def thick_bottom():
-    return Border(bottom=Side(style="medium", color=PURPLE))
-
-def set_cell(ws, row, col, value, bold=False, size=11, color=TEXT,
-             fill=None, align_h="left", align_v="center",
-             wrap=False, border=None, number_format=None, italic=False):
-    c = ws.cell(row=row, column=col, value=value)
-    c.font = Font(name="游ゴシック", bold=bold, size=size, color=color, italic=italic)
-    c.alignment = Alignment(horizontal=align_h, vertical=align_v,
-                            wrap_text=wrap)
-    if fill:   c.fill = fill
-    if border: c.border = border
-    if number_format: c.number_format = number_format
+def cell(row, col, val="", bold=False, sz=10, color=TEXT,
+         bg=None, ha="left", va="center", wrap=False,
+         brd=None, fmt=None, italic=False):
+    c = ws.cell(row=row, column=col, value=val)
+    c.font = Font(name="游ゴシック", bold=bold, size=sz, color=color, italic=italic)
+    c.alignment = Alignment(horizontal=ha, vertical=va, wrap_text=wrap)
+    if bg:  c.fill = fill(bg)
+    if brd: c.border = brd
+    if fmt: c.number_format = fmt
     return c
 
-def merge(ws, r1, c1, r2, c2):
+def mg(r1,c1,r2,c2):
     ws.merge_cells(start_row=r1, start_column=c1, end_row=r2, end_column=c2)
 
-# ════════════════════════════════════════════
-# ROW 2  ヘッダー背景
-# ════════════════════════════════════════════
-for col in range(1, 9):
-    ws.cell(row=2, column=col).fill = dark_fill()
+# col index helpers
+A,B,C,D,E,F,G,H = 1,2,3,4,5,6,7,8
 
-merge(ws, 2, 2, 2, 4)
-set_cell(ws, 2, 2, "請 求 書", bold=True, size=20, color=WHITE,
-         fill=dark_fill(), align_v="center")
+# ════════════════════════════════════════
+# ヘッダー背景 (rows 1-7)
+# ════════════════════════════════════════
+for r in range(1, 8):
+    for c in range(1, 9):
+        ws.cell(row=r, column=c).fill = fill(DARK)
 
-merge(ws, 2, 5, 2, 7)
-set_cell(ws, 2, 5, "Invoice", bold=False, size=11, color="AAAACC",
-         fill=dark_fill(), align_h="right", align_v="center", italic=True)
+# ── 左：タイトル・番号・日付 ──────────────
+# "Invoice" サブラベル
+mg(2,B, 2,D)
+cell(2,B, "INVOICE", sz=8, color=ACCENT2, bg=DARK, ha="left", va="center",
+     italic=False, bold=True)
 
-# ROW 3  アクセントライン
-for col in range(1, 9):
-    c = ws.cell(row=3, column=col)
-    c.fill = purple_fill()
-    c.row_dimensions if False else None
-ws.row_dimensions[3].height = 5
+# "請 求 書" 大見出し
+mg(3,B, 3,D)
+cell(3,B, "請 求 書", bold=True, sz=22, color=WHITE, bg=DARK, va="center")
 
-# ════════════════════════════════════════════
-# ROW 4-5  請求書番号 / 発行日
-# ════════════════════════════════════════════
-merge(ws, 4, 2, 4, 4)
-set_cell(ws, 4, 2, "請求書番号", bold=True, size=9, color=GRAY)
-merge(ws, 4, 5, 4, 7)
-set_cell(ws, 4, 5, "INV-20260525-001", bold=True, size=11, color=PURPLE,
-         align_h="right")
+# 請求書番号
+mg(5,B, 5,B)
+cell(5,B, "No.", sz=8, color=ACCENT2, bg=DARK, va="center", bold=True)
+mg(5,C, 5,D)
+cell(5,C, "INV-20260525-001", sz=10, color=WHITE, bg=DARK, va="center", bold=True)
 
-merge(ws, 5, 2, 5, 4)
-set_cell(ws, 5, 2, "発行日", bold=True, size=9, color=GRAY)
-merge(ws, 5, 5, 5, 7)
-set_cell(ws, 5, 5, "2026年5月25日", bold=False, size=11, color=TEXT,
-         align_h="right")
+# 発行日
+mg(6,B, 6,B)
+cell(6,B, "DATE", sz=8, color=ACCENT2, bg=DARK, va="center", bold=True)
+mg(6,C, 6,D)
+cell(6,C, "2026年5月25日", sz=10, color=WHITE, bg=DARK, va="center")
 
-# ════════════════════════════════════════════
-# ROW 7-9  宛先
-# ════════════════════════════════════════════
-merge(ws, 7, 2, 7, 7)
-set_cell(ws, 7, 2, "■ 請求先", bold=True, size=9, color=PURPLE)
+# ── 右：発行者カード ──────────────────────
+mg(2,F, 2,G)
+cell(2,F, "ISSUED BY", sz=7, color=ACCENT2, bg=DARK, ha="right", va="center", bold=True)
 
-merge(ws, 8, 2, 8, 5)
-set_cell(ws, 8, 2, "合同会社 Frigus　御中", bold=True, size=16, color=TEXT,
-         border=thick_bottom())
+mg(3,F, 3,G)
+cell(3,F, "可知 優也", bold=True, sz=16, color=WHITE, bg=DARK, ha="right", va="center")
 
-merge(ws, 9, 2, 9, 5)
-set_cell(ws, 9, 2, "", size=9)
+mg(4,F, 4,G)
+cell(4,F, "愛知県名古屋市昭和区壇溪通1丁目7番地", sz=8, color=GRAY2, bg=DARK, ha="right", va="center")
 
-# ════════════════════════════════════════════
-# ROW 11  請求金額ハイライト
-# ════════════════════════════════════════════
-ws.row_dimensions[11].height = 38
-for col in range(2, 8):
-    ws.cell(row=11, column=col).fill = dark_fill()
+mg(5,F, 5,G)
+cell(5,F, "アンシェリーナ106", sz=8, color=GRAY2, bg=DARK, ha="right", va="center")
 
-merge(ws, 11, 2, 11, 4)
-set_cell(ws, 11, 2, "ご請求金額（税込）", bold=False, size=10,
-         color="AAAACC", fill=dark_fill(), align_v="center")
+mg(6,F, 6,G)
+cell(6,F, "TEL: 080-6925-9411", sz=8, color=GRAY2, bg=DARK, ha="right", va="center")
 
-merge(ws, 11, 5, 11, 7)
-set_cell(ws, 11, 5, 202306, bold=True, size=22, color=WHITE,
-         fill=dark_fill(), align_h="right", align_v="center",
-         number_format='¥#,##0')
+mg(7,F, 7,G)
+cell(7,F, "免税事業者 · 登録番号なし", sz=7, color=ACCENT2, bg=DARK, ha="right", va="center")
 
-# ════════════════════════════════════════════
-# ROW 13  明細ヘッダー
-# ════════════════════════════════════════════
-headers = ["日付", "内容", "", "数量", "単位", "税区分", "金額"]
-cols    = [2,       3,     4,   5,      6,      7,         None]
-# 内容は B-D をマージ
-merge(ws, 13, 3, 13, 4)
+# ── アクセントライン (row 7 bottom) ──
+ws.row_dimensions[7].height = 4
+for c in range(1, 9):
+    ws.cell(row=7, column=c).fill = fill(PURPLE)
 
-hdr_data = [
-    (2, "日付"),
-    (3, "内容"),
-    (5, "数量"),
-    (6, "単位"),
-    (7, "税区分"),
-]
-for col, label in [(2,"日付"),(5,"数量"),(6,"単位"),(7,"税区分")]:
-    set_cell(ws, 13, col, label, bold=True, size=9, color=PURPLE,
-             fill=light_fill(), align_h="center",
-             border=thin_border(top=True, bottom=True, left=True, right=True))
+# ════════════════════════════════════════
+# 宛先 (rows 9-11)
+# ════════════════════════════════════════
+mg(9,B, 9,G)
+cell(9,B, "BILL TO  /  請求先", sz=7, color=PURPLE, ha="left", va="center",
+     bold=True, bg=WHITE)
 
-# 内容マージ
-merge(ws, 13, 3, 13, 4)
-set_cell(ws, 13, 3, "内容", bold=True, size=9, color=PURPLE,
-         fill=light_fill(),
-         border=thin_border(top=True, bottom=True, left=True, right=True))
+mg(10,B, 10,E)
+c = cell(10,B, "合同会社 Frigus　御中", bold=True, sz=17, color=TEXT, bg=WHITE, va="bottom")
+c.border = Border(bottom=Side(style="medium", color=DARK2))
 
-# G列（金額）は右揃え
-set_cell(ws, 13, 7, "金額", bold=True, size=9, color=PURPLE,
-         fill=light_fill(), align_h="right",
-         border=thin_border(top=True, bottom=True, left=True, right=True))
+mg(11,B, 11,G)
+cell(11,B, "", bg=WHITE)
 
-# ════════════════════════════════════════════
-# ROW 14  明細データ
-# ════════════════════════════════════════════
-ws.row_dimensions[14].height = 28
-set_cell(ws, 14, 2, "2026年5月25日", size=10, color=GRAY, align_h="center",
-         border=thin_border(top=True, bottom=True, left=True, right=True))
+# ════════════════════════════════════════
+# 請求金額 (row 12)
+# ════════════════════════════════════════
+ws.row_dimensions[12].height = 36
+for c in range(1, 9):
+    ws.cell(row=12, column=c).fill = fill(DARK2)
 
-merge(ws, 14, 3, 14, 4)
-set_cell(ws, 14, 3, "Goo Property Singapore Pte. Ltd.社からの保全費（2026年2月預かり金より）",
-         size=10, color=TEXT, wrap=True,
-         border=thin_border(top=True, bottom=True, left=True, right=True))
+mg(12,B, 12,D)
+cell(12,B, "ご請求金額（税込）", sz=9, color="8899CC", bg=DARK2, va="center")
 
-set_cell(ws, 14, 5, 1, size=10, color=TEXT, align_h="center",
-         border=thin_border(top=True, bottom=True, left=True, right=True))
-set_cell(ws, 14, 6, "式", size=10, color=TEXT, align_h="center",
-         border=thin_border(top=True, bottom=True, left=True, right=True))
-set_cell(ws, 14, 7, "対象外", size=10, color=PURPLE, align_h="center",
-         fill=accent_fill(),
-         border=thin_border(top=True, bottom=True, left=True, right=True))
+mg(12,E, 12,G)
+cell(12,E, 202306, bold=True, sz=20, color=WHITE, bg=DARK2, ha="right", va="center",
+     fmt='¥#,##0')
 
-# ════════════════════════════════════════════
-# ROW 16-18  合計
-# ════════════════════════════════════════════
-for row, label, val, is_total in [
-    (16, "小計",   202306, False),
-    (17, "消費税", 0,      False),
-    (18, "合計",   202306, True),
+# ════════════════════════════════════════
+# 明細ヘッダー (row 14)
+# ════════════════════════════════════════
+hdr_brd = border(t=True, b=True, l=True, r=True, color=BORDER)
+
+cell(14,B, "日付", bold=True, sz=8, color=PURPLE, bg=LIGHT, ha="center", brd=hdr_brd)
+
+mg(14,C, 14,C)
+cell(14,C, "内容", bold=True, sz=8, color=PURPLE, bg=LIGHT, brd=hdr_brd)
+
+cell(14,D, "数量", bold=True, sz=8, color=PURPLE, bg=LIGHT, ha="center", brd=hdr_brd)
+cell(14,E, "単位", bold=True, sz=8, color=PURPLE, bg=LIGHT, ha="center", brd=hdr_brd)
+cell(14,F, "税区分", bold=True, sz=8, color=PURPLE, bg=LIGHT, ha="center", brd=hdr_brd)
+cell(14,G, "金額", bold=True, sz=8, color=PURPLE, bg=LIGHT, ha="right", brd=hdr_brd)
+
+# ════════════════════════════════════════
+# 明細データ (row 16)
+# ════════════════════════════════════════
+dat_brd = border(t=True, b=True, l=True, r=True)
+ws.row_dimensions[16].height = 26
+
+cell(16,B, "2026年5月25日", sz=9, color=GRAY, ha="center", brd=dat_brd)
+cell(16,C, "Goo Property Singapore Pte. Ltd.社からの保全費（2026年2月預かり金より）",
+     sz=9, color=TEXT, wrap=True, brd=dat_brd)
+cell(16,D, 1, sz=9, color=TEXT, ha="center", brd=dat_brd)
+cell(16,E, "式", sz=9, color=TEXT, ha="center", brd=dat_brd)
+cell(16,F, "対象外", sz=9, color=PURPLE, ha="center",
+     bg="EDE9FB", brd=dat_brd)
+cell(16,G, 202306, sz=9, color=TEXT, ha="right", brd=dat_brd, fmt='¥#,##0')
+
+# ════════════════════════════════════════
+# 合計 (rows 18-20)
+# ════════════════════════════════════════
+for row, label, val, total in [
+    (18, "小計",   "¥202,306", False),
+    (19, "消費税", "¥0（対象外）", False),
+    (20, "合　計", 202306,    True),
 ]:
-    merge(ws, row, 5, row, 6)
-    set_cell(ws, row, 5, label,
-             bold=is_total, size=10 if not is_total else 12,
-             color=DARK if is_total else TEXT,
-             align_h="right",
-             fill=dark_fill() if is_total else white_fill(),
-             border=thin_border(top=True, bottom=True, left=True, right=True))
-    c = ws.cell(row=row, column=7, value=val)
-    c.font = Font(name="游ゴシック", bold=is_total,
-                  size=10 if not is_total else 14,
-                  color=WHITE if is_total else TEXT)
+    mg(row, E, row, F)
+    cell(row, E, label,
+         bold=total, sz=9 if not total else 11,
+         color=WHITE if total else GRAY,
+         bg=DARK2 if total else WHITE, ha="right",
+         brd=border(t=True, b=True, l=True, r=True,
+                    color=BORDER if not total else DARK2))
+    c = ws.cell(row=row, column=G,
+                value=val if not total else 202306)
+    c.font = Font(name="游ゴシック", bold=total,
+                  size=11 if total else 9,
+                  color=WHITE if total else GRAY)
     c.alignment = Alignment(horizontal="right", vertical="center")
-    c.number_format = '¥#,##0'
-    c.fill = dark_fill() if is_total else white_fill()
-    c.border = thin_border(top=True, bottom=True, left=True, right=True)
-    if row == 17:
-        ws.cell(row=row, column=7).value = 0
-        ws.cell(row=row, column=7).number_format = '¥#,##0'
+    c.fill = fill(DARK2) if total else fill(WHITE)
+    if total: c.number_format = '¥#,##0'
+    c.border = border(t=True, b=True, l=True, r=True,
+                      color=BORDER if not total else DARK2)
 
-# 消費税の補足
-set_cell(ws, 17, 7, "¥0（対象外）", size=10, color=GRAY,
-         align_h="right",
-         border=thin_border(top=True, bottom=True, left=True, right=True))
+# ════════════════════════════════════════
+# 振込先 (rows 22-27)
+# ════════════════════════════════════════
+mg(22,B, 22,G)
+cell(22,B, "BANK TRANSFER  /  お振込先", sz=7, color=PURPLE, bold=True)
 
-# ════════════════════════════════════════════
-# ROW 20-25  振込先
-# ════════════════════════════════════════════
-merge(ws, 20, 2, 20, 7)
-set_cell(ws, 20, 2, "■ お振込先", bold=True, size=9, color=PURPLE)
-
-bank_info = [
-    (21, "銀行名",   "楽天銀行"),
-    (22, "支店名",   "ボレロ支店"),
-    (23, "口座種別", "普通預金"),
-    (24, "口座番号", "4541728"),
-    (25, "口座名義", "カチユウヤ"),
+bank = [
+    (23, "銀行名",   "楽天銀行"),
+    (24, "支店名",   "ボレロ支店"),
+    (25, "口座種別", "普通預金"),
+    (26, "口座番号", "4541728"),
+    (27, "口座名義", "カチユウヤ"),
 ]
-for row, key, val in bank_info:
-    set_cell(ws, row, 2, key, bold=True, size=9, color=GRAY,
-             fill=light_fill(),
-             border=thin_border(top=True, bottom=True, left=True, right=True))
-    merge(ws, row, 3, row, 7)
-    set_cell(ws, row, 3, val, size=11, color=DARK,
-             fill=light_fill(),
-             border=thin_border(top=True, bottom=True, left=True, right=True))
+bk_brd = border(t=True, b=True, l=True, r=True)
+for row, key, val in bank:
+    cell(row, B, key, bold=True, sz=8, color=GRAY, bg=LIGHT, brd=bk_brd)
+    mg(row, C, row, G)
+    cell(row, C, val, sz=10, color=DARK2, bg=LIGHT2, brd=bk_brd)
 
-# ════════════════════════════════════════════
-# ROW 27  発行者
-# ════════════════════════════════════════════
-merge(ws, 27, 2, 27, 7)
-set_cell(ws, 27, 2, "■ 発行者", bold=True, size=9, color=PURPLE)
+# ════════════════════════════════════════
+# フッター注記 (row 29)
+# ════════════════════════════════════════
+mg(29,B, 29,G)
+cell(29,B, "ご不明な点はお気軽にご連絡ください。  TEL: 080-6925-9411",
+     sz=8, color=GRAY2, italic=True)
 
-merge(ws, 28, 2, 28, 7)
-set_cell(ws, 28, 2,
-         "可知 優也　|　愛知県名古屋市昭和区壇溪通1丁目7番地 アンシェリーナ106　|　TEL: 080-6925-9411　|　免税事業者",
-         size=9, color=GRAY)
-
-# ════════════════════════════════════════════
+# ════════════════════════════════════════
 # 印刷設定
-# ════════════════════════════════════════════
-from openpyxl.worksheet.page import PageMargins
+# ════════════════════════════════════════
 ws.page_setup.orientation = "portrait"
-ws.page_setup.paperSize   = 9   # A4
-ws.page_margins = PageMargins(left=0.5, right=0.5, top=0.75, bottom=0.75)
+ws.page_setup.paperSize   = 9
+ws.page_margins = PageMargins(left=0.5, right=0.5, top=0.6, bottom=0.6)
 ws.print_area = "A1:H30"
 
 wb.save("/home/user/test/請求書_INV-20260525-001.xlsx")

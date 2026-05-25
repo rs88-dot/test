@@ -6,149 +6,264 @@
   <title>重要事項同意書 | Wawasan Global Support Limited</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0f4f8; color: #1a1a2e; min-height: 100vh; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', 'Yu Gothic', sans-serif; background: #eef2f7; color: #1a1a2e; min-height: 100vh; font-size: 15px; line-height: 1.7; }
 
     /* ===== HEADER ===== */
-    header { background: #1e3a8a; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
-    header .logo { font-size: 16px; font-weight: bold; }
-    header .tagline { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+    header {
+      background: linear-gradient(135deg, #1e3a8a, #1d4ed8);
+      color: #fff; padding: 18px 28px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    }
+    .header-left .logo { font-size: 17px; font-weight: bold; letter-spacing: 0.5px; }
+    .header-left .tagline { font-size: 12px; opacity: 0.75; margin-top: 3px; }
+
+    /* 言語切替 */
+    .lang-toggle {
+      display: flex; background: rgba(255,255,255,0.15); border-radius: 999px; padding: 3px; gap: 2px;
+    }
+    .lang-btn {
+      padding: 6px 18px; border-radius: 999px; border: none; font-size: 13px; font-weight: bold;
+      cursor: pointer; transition: all 0.2s; color: rgba(255,255,255,0.7); background: transparent;
+    }
+    .lang-btn.active { background: #fff; color: #1e3a8a; }
 
     /* ===== PROGRESS ===== */
-    .progress-bar { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 14px 24px; }
-    .steps { display: flex; align-items: center; gap: 0; max-width: 600px; margin: 0 auto; }
-    .step { display: flex; align-items: center; gap: 6px; flex: 1; }
-    .step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; }
+    .progress-bar { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 16px 24px; }
+    .steps { display: flex; align-items: center; max-width: 640px; margin: 0 auto; }
+    .step { display: flex; align-items: center; gap: 8px; flex: 1; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-size: 13px; font-weight: bold; flex-shrink: 0;
+    }
     .step-num.done { background: #16a34a; color: #fff; }
-    .step-num.active { background: #1e3a8a; color: #fff; }
+    .step-num.active { background: #1e3a8a; color: #fff; box-shadow: 0 0 0 4px #bfdbfe; }
     .step-num.pending { background: #e5e7eb; color: #9ca3af; }
-    .step-label { font-size: 11px; color: #6b7280; }
+    .step-label { font-size: 12px; color: #6b7280; font-weight: 500; }
     .step-label.active { color: #1e3a8a; font-weight: bold; }
-    .step-line { flex: 1; height: 2px; background: #e5e7eb; margin: 0 6px; }
+    .step-line { flex: 1; height: 2px; background: #e5e7eb; margin: 0 4px; }
     .step-line.done { background: #16a34a; }
 
     /* ===== MAIN ===== */
-    main { max-width: 720px; margin: 30px auto; padding: 0 16px 60px; }
+    main { max-width: 760px; margin: 28px auto; padding: 0 16px 80px; }
+    .card { background: #fff; border-radius: 18px; box-shadow: 0 4px 24px rgba(0,0,0,0.09); overflow: hidden; }
 
-    .card { background: #fff; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); overflow: hidden; }
+    /* SECTION HEADERS */
+    .step-header { padding: 30px 36px 22px; border-bottom: 1px solid #f0f2f5; }
+    .step-header h2 { font-size: 22px; color: #1e3a8a; margin-bottom: 8px; font-weight: 700; }
+    .step-header p { font-size: 14px; color: #6b7280; line-height: 1.8; }
 
     /* ===== STEP 1: 商品選択 ===== */
-    .step-header { padding: 28px 32px 20px; border-bottom: 1px solid #f3f4f6; }
-    .step-header h2 { font-size: 20px; color: #1e3a8a; margin-bottom: 6px; }
-    .step-header p { font-size: 13px; color: #6b7280; line-height: 1.6; }
-
-    .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 24px 32px 32px; }
-    .product-option { border: 2px solid #e5e7eb; border-radius: 12px; padding: 18px; cursor: pointer; transition: all 0.2s; position: relative; }
-    .product-option:hover { border-color: #93c5fd; background: #f0f9ff; }
-    .product-option.selected { border-color: #1e3a8a; background: #eff6ff; }
+    .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 26px 36px 36px; }
+    .product-option {
+      border: 2px solid #e5e7eb; border-radius: 14px; padding: 20px; cursor: pointer;
+      transition: all 0.2s; position: relative;
+    }
+    .product-option:hover { border-color: #93c5fd; background: #f0f9ff; transform: translateY(-1px); }
+    .product-option.selected { border-color: #1e3a8a; background: #eff6ff; box-shadow: 0 0 0 3px #bfdbfe; }
     .product-option input[type=radio] { position: absolute; opacity: 0; }
-    .product-tag { font-size: 10px; font-weight: bold; border-radius: 4px; padding: 2px 8px; display: inline-block; margin-bottom: 8px; }
+    .product-tag {
+      font-size: 11px; font-weight: bold; border-radius: 5px;
+      padding: 3px 10px; display: inline-block; margin-bottom: 10px;
+    }
     .tag-evolution { background: #fef3c7; color: #92400e; }
     .tag-sp500 { background: #dbeafe; color: #1e40af; }
     .tag-fip { background: #dcfce7; color: #166534; }
     .tag-platinum { background: #f3e8ff; color: #6b21a8; }
-    .product-name { font-size: 15px; font-weight: bold; margin-bottom: 4px; }
-    .product-desc { font-size: 11px; color: #6b7280; line-height: 1.5; }
-    .check-icon { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background: #1e3a8a; color: #fff; display: none; align-items: center; justify-content: center; font-size: 12px; }
+    .product-name { font-size: 16px; font-weight: bold; margin-bottom: 6px; }
+    .product-desc { font-size: 12px; color: #6b7280; line-height: 1.6; }
+    .check-icon {
+      position: absolute; top: 14px; right: 14px; width: 24px; height: 24px;
+      border-radius: 50%; background: #1e3a8a; color: #fff;
+      display: none; align-items: center; justify-content: center; font-size: 13px;
+    }
     .product-option.selected .check-icon { display: flex; }
 
-    /* ===== STEP 2: 同意書 ===== */
-    .consent-header { padding: 24px 32px 16px; border-bottom: 1px solid #f3f4f6; }
-    .consent-header .product-badge { display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 6px 12px; font-size: 12px; color: #1e40af; font-weight: bold; margin-bottom: 12px; }
-    .consent-header h2 { font-size: 17px; color: #1e3a8a; margin-bottom: 8px; line-height: 1.5; }
-    .consent-header p { font-size: 12px; color: #6b7280; line-height: 1.7; }
+    /* ===== CONSENT HEADER ===== */
+    .consent-header { padding: 26px 36px 18px; border-bottom: 1px solid #f0f2f5; }
+    .product-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
+      padding: 7px 14px; font-size: 13px; color: #1e40af; font-weight: bold; margin-bottom: 14px;
+    }
+    .consent-header h2 { font-size: 18px; color: #1e3a8a; margin-bottom: 10px; line-height: 1.5; font-weight: 700; }
+    .consent-header .preamble {
+      font-size: 13px; color: #4b5563; line-height: 1.9;
+      background: #f8fafc; border-left: 4px solid #3b82f6; padding: 14px 18px; border-radius: 0 8px 8px 0;
+    }
 
-    .notice-box { margin: 0 32px 0; background: #fff7ed; border: 1.5px solid #fb923c; border-radius: 8px; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start; }
-    .notice-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
-    .notice-box p { font-size: 12px; color: #9a3412; line-height: 1.6; }
+    /* NOTICE BOX */
+    .notice-box {
+      margin: 18px 36px; background: #fff7ed; border: 2px solid #fb923c;
+      border-radius: 10px; padding: 14px 18px; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .notice-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+    .notice-box p { font-size: 13px; color: #9a3412; line-height: 1.8; font-weight: 500; }
 
-    .articles { padding: 20px 32px 0; }
-    .article { border: 1.5px solid #e5e7eb; border-radius: 10px; margin-bottom: 14px; overflow: hidden; }
-    .article-title { background: #f8fafc; padding: 12px 16px; font-size: 13px; font-weight: bold; color: #1e3a8a; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
-    .article-body { padding: 14px 16px; font-size: 12px; color: #374151; line-height: 1.8; }
-    .article-body ul { padding-left: 18px; margin-top: 6px; }
-    .article-body li { margin-bottom: 4px; }
-    .initial-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #e5e7eb; }
-    .initial-label { font-size: 11px; color: #6b7280; white-space: nowrap; }
-    .initial-input { border: 1.5px solid #d1d5db; border-radius: 6px; padding: 6px 10px; font-size: 13px; width: 100px; text-align: center; letter-spacing: 2px; }
-    .initial-input:focus { outline: none; border-color: #1e3a8a; }
-    .initial-hint { font-size: 10px; color: #9ca3af; }
-    .initial-check { width: 22px; height: 22px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #9ca3af; flex-shrink: 0; transition: all 0.2s; }
+    /* ===== ARTICLES ===== */
+    .articles { padding: 6px 36px 8px; }
+    .article { border: 1.5px solid #e5e7eb; border-radius: 12px; margin-bottom: 18px; overflow: hidden; }
+    .article-title {
+      background: #f1f5f9; padding: 14px 18px;
+      font-size: 14px; font-weight: 700; color: #1e3a8a;
+      border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center;
+    }
+    .article-body { padding: 16px 18px; font-size: 14px; color: #374151; line-height: 1.9; }
+    .article-body p { margin-bottom: 8px; }
+    .article-body p:last-of-type { margin-bottom: 0; }
+
+    /* リスク強調 */
+    .risk { color: #dc2626; font-weight: 700; }
+    .risk-box {
+      background: #fff1f2; border: 1.5px solid #fca5a5; border-radius: 8px;
+      padding: 10px 14px; margin: 10px 0; font-size: 13px; color: #991b1b; line-height: 1.8;
+    }
+    .risk-box .risk-title {
+      font-weight: 700; font-size: 12px; color: #dc2626; margin-bottom: 6px;
+      display: flex; align-items: center; gap: 5px;
+    }
+
+    /* イニシャル入力 */
+    .initial-row {
+      display: flex; align-items: center; gap: 10px; margin-top: 14px;
+      padding-top: 12px; border-top: 1.5px dashed #d1d5db; flex-wrap: wrap;
+    }
+    .initial-label { font-size: 13px; color: #374151; font-weight: 600; white-space: nowrap; }
+    .initial-input {
+      border: 2px solid #d1d5db; border-radius: 8px; padding: 8px 12px;
+      font-size: 15px; width: 110px; text-align: center; letter-spacing: 3px;
+      font-weight: bold; transition: border-color 0.2s;
+    }
+    .initial-input:focus { outline: none; border-color: #1e3a8a; box-shadow: 0 0 0 3px #bfdbfe; }
+    .initial-hint {
+      font-size: 12px; color: #6b7280;
+      background: #f3f4f6; padding: 4px 10px; border-radius: 6px;
+    }
+    .initial-check {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #e5e7eb; display: flex; align-items: center; justify-content: center;
+      font-size: 13px; color: #9ca3af; flex-shrink: 0; transition: all 0.2s;
+    }
     .initial-check.filled { background: #16a34a; color: #fff; }
 
-    /* 署名エリア */
-    .signature-section { padding: 20px 32px 28px; }
-    .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
-    .field-group label { display: block; font-size: 12px; font-weight: bold; color: #374151; margin-bottom: 6px; }
-    .field-group input { width: 100%; border: 1.5px solid #d1d5db; border-radius: 8px; padding: 10px 12px; font-size: 14px; }
-    .field-group input:focus { outline: none; border-color: #1e3a8a; }
+    /* ===== SIGNATURE ===== */
+    .signature-section { padding: 22px 36px 32px; }
+    .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 20px; }
+    .field-group label { display: block; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 7px; }
+    .field-group input {
+      width: 100%; border: 2px solid #d1d5db; border-radius: 10px;
+      padding: 11px 14px; font-size: 15px; transition: border-color 0.2s;
+    }
+    .field-group input:focus { outline: none; border-color: #1e3a8a; box-shadow: 0 0 0 3px #bfdbfe; }
     .field-full { grid-column: 1 / -1; }
 
-    .agree-check { display: flex; align-items: flex-start; gap: 10px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; cursor: pointer; }
-    .agree-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; accent-color: #16a34a; cursor: pointer; }
-    .agree-check-text { font-size: 13px; color: #166534; line-height: 1.6; }
+    .confirm-box {
+      background: #f8fafc; border: 1.5px solid #e5e7eb; border-radius: 12px;
+      padding: 18px 20px; margin-bottom: 20px; font-size: 13px; color: #6b7280;
+    }
+    .confirm-box strong { color: #374151; display: block; margin-bottom: 10px; font-size: 14px; }
+    .confirm-row { display: flex; align-items: baseline; gap: 8px; margin-bottom: 5px; }
+    .confirm-key { font-size: 12px; color: #9ca3af; min-width: 80px; }
+    .confirm-val { font-weight: bold; color: #1e3a8a; }
 
-    /* ===== STEP 3: 完了 ===== */
-    .complete-section { text-align: center; padding: 60px 32px; }
-    .complete-icon { width: 72px; height: 72px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 20px; }
-    .complete-section h2 { font-size: 22px; color: #16a34a; margin-bottom: 10px; }
-    .complete-section p { font-size: 14px; color: #6b7280; line-height: 1.7; margin-bottom: 6px; }
-    .complete-ref { display: inline-block; background: #f3f4f6; border-radius: 8px; padding: 10px 20px; font-size: 13px; color: #374151; font-family: monospace; margin: 16px 0; letter-spacing: 1px; }
+    .agree-check {
+      display: flex; align-items: flex-start; gap: 12px;
+      background: #f0fdf4; border: 2px solid #86efac; border-radius: 12px;
+      padding: 16px 18px; margin-bottom: 24px; cursor: pointer;
+    }
+    .agree-check input[type=checkbox] { width: 20px; height: 20px; flex-shrink: 0; margin-top: 3px; accent-color: #16a34a; cursor: pointer; }
+    .agree-check-text { font-size: 13px; color: #166534; line-height: 1.8; font-weight: 500; }
+
+    /* ===== COMPLETE ===== */
+    .complete-section { text-align: center; padding: 60px 36px; }
+    .complete-icon {
+      width: 80px; height: 80px; background: #dcfce7; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; margin: 0 auto 22px;
+    }
+    .complete-section h2 { font-size: 24px; color: #16a34a; margin-bottom: 12px; font-weight: 700; }
+    .complete-section p { font-size: 15px; color: #6b7280; line-height: 1.8; margin-bottom: 6px; }
+    .complete-ref {
+      display: inline-block; background: #f3f4f6; border-radius: 10px;
+      padding: 12px 24px; font-size: 16px; color: #374151;
+      font-family: monospace; margin: 18px 0; letter-spacing: 2px; font-weight: bold;
+    }
+    .done-box {
+      margin-top: 30px; padding: 20px 24px; background: #f8fafc;
+      border-radius: 12px; text-align: left; font-size: 13px; color: #6b7280; border: 1px solid #e5e7eb;
+    }
+    .done-box strong { color: #374151; display: block; margin-bottom: 12px; font-size: 14px; }
+    .done-row { display: flex; gap: 10px; margin-bottom: 6px; }
+    .done-key { color: #9ca3af; min-width: 80px; font-size: 12px; }
 
     /* ===== BUTTONS ===== */
-    .btn-row { display: flex; gap: 12px; padding: 20px 32px; border-top: 1px solid #f3f4f6; }
-    .btn { padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-row {
+      display: flex; gap: 12px; padding: 20px 36px;
+      border-top: 1px solid #f0f2f5;
+    }
+    .btn {
+      padding: 14px 28px; border-radius: 10px; font-size: 15px;
+      font-weight: bold; cursor: pointer; border: none; transition: all 0.2s;
+    }
     .btn-primary { background: #1e3a8a; color: #fff; flex: 1; }
-    .btn-primary:hover { background: #1e40af; }
+    .btn-primary:hover:not(:disabled) { background: #1d4ed8; transform: translateY(-1px); }
     .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
     .btn-secondary { background: #f3f4f6; color: #374151; }
     .btn-secondary:hover { background: #e5e7eb; }
     .btn-success { background: #16a34a; color: #fff; flex: 1; }
-    .btn-success:hover { background: #15803d; }
+    .btn-success:hover:not(:disabled) { background: #15803d; transform: translateY(-1px); }
     .btn-success:disabled { background: #86efac; cursor: not-allowed; }
 
     /* ===== SCREENS ===== */
     .screen { display: none; }
     .screen.active { display: block; }
 
-    @media (max-width: 600px) {
+    @media (max-width: 620px) {
       .product-grid { grid-template-columns: 1fr; }
       .sig-grid { grid-template-columns: 1fr; }
-      main { padding: 0 8px 60px; }
+      main { padding: 0 8px 80px; }
       .step-header, .consent-header, .articles, .signature-section, .btn-row { padding-left: 20px; padding-right: 20px; }
-      .notice-box { margin: 0 20px 0; }
+      .notice-box { margin: 16px 20px; }
+      header { flex-direction: column; align-items: flex-start; }
     }
   </style>
 </head>
 <body>
 
+<!-- ===== HEADER ===== -->
 <header>
-  <div>
+  <div class="header-left">
     <div class="logo">Wawasan Global Support Limited</div>
-    <div class="tagline">重要事項同意書 — オンライン承認システム</div>
+    <div class="tagline" data-ja="重要事項同意書 — オンライン承認システム" data-en="Important Matters Consent Form — Online Approval System">
+      重要事項同意書 — オンライン承認システム
+    </div>
+  </div>
+  <div class="lang-toggle">
+    <button class="lang-btn active" id="btnJA" onclick="setLang('ja')">日本語</button>
+    <button class="lang-btn" id="btnEN" onclick="setLang('en')">English</button>
   </div>
 </header>
 
-<!-- プログレスバー -->
+<!-- ===== PROGRESS ===== -->
 <div class="progress-bar">
-  <div class="steps" id="progressSteps">
+  <div class="steps">
     <div class="step">
       <div class="step-num active" id="pnum1">1</div>
-      <div class="step-label active" id="plabel1">商品選択</div>
+      <div class="step-label active" id="plabel1" data-ja="商品選択" data-en="Select Product">商品選択</div>
     </div>
     <div class="step-line" id="pline1"></div>
     <div class="step">
       <div class="step-num pending" id="pnum2">2</div>
-      <div class="step-label" id="plabel2">重要事項確認</div>
+      <div class="step-label" id="plabel2" data-ja="重要事項確認" data-en="Review">重要事項確認</div>
     </div>
     <div class="step-line" id="pline2"></div>
     <div class="step">
       <div class="step-num pending" id="pnum3">3</div>
-      <div class="step-label" id="plabel3">署名・承認</div>
+      <div class="step-label" id="plabel3" data-ja="署名・承認" data-en="Sign & Approve">署名・承認</div>
     </div>
     <div class="step-line" id="pline3"></div>
     <div class="step">
       <div class="step-num pending" id="pnum4">4</div>
-      <div class="step-label" id="plabel4">完了</div>
+      <div class="step-label" id="plabel4" data-ja="完了" data-en="Done">完了</div>
     </div>
   </div>
 </div>
@@ -158,47 +273,47 @@
   <!-- ===== SCREEN 1: 商品選択 ===== -->
   <div class="card screen active" id="screen1">
     <div class="step-header">
-      <h2>お申し込み商品を選択してください</h2>
-      <p>ご希望の商品を1つお選びください。選択後、その商品に関する重要確認事項をご確認いただきます。</p>
+      <h2 data-ja="お申し込み商品を選択してください" data-en="Please select your product">お申し込み商品を選択してください</h2>
+      <p data-ja="ご希望の商品を1つお選びください。選択後、その商品の重要確認事項をご確認いただきます。" data-en="Please select one product. After selection, you will review the important matters for that product.">ご希望の商品を1つお選びください。選択後、その商品の重要確認事項をご確認いただきます。</p>
     </div>
 
     <div class="product-grid">
       <label class="product-option" id="opt-evolution" onclick="selectProduct('evolution')">
         <input type="radio" name="product" value="evolution">
         <div class="check-icon">✓</div>
-        <div class="product-tag tag-evolution">積立型</div>
+        <div class="product-tag tag-evolution" data-ja="積立型" data-en="Savings Type">積立型</div>
         <div class="product-name">Evolution</div>
-        <div class="product-desc">長期積立による資産形成プラン。ロイヤルティボーナス付き。</div>
+        <div class="product-desc" data-ja="長期積立による資産形成プラン。ロイヤルティボーナス付き。" data-en="Long-term savings asset-building plan with Loyalty Bonus.">長期積立による資産形成プラン。ロイヤルティボーナス付き。</div>
       </label>
 
       <label class="product-option" id="opt-sp500" onclick="selectProduct('sp500')">
         <input type="radio" name="product" value="sp500">
         <div class="check-icon">✓</div>
-        <div class="product-tag tag-sp500">インデックス型</div>
-        <div class="product-name">S&P500インデックス</div>
-        <div class="product-desc">S&P500連動型の海外積立投資プログラム。元本確保機能付き。</div>
+        <div class="product-tag tag-sp500" data-ja="インデックス型" data-en="Index Type">インデックス型</div>
+        <div class="product-name">S&amp;P500 Index</div>
+        <div class="product-desc" data-ja="S&amp;P500連動型の海外積立投資プログラム。元本確保機能付き。" data-en="Overseas savings investment program linked to S&amp;P500. With principal protection feature.">S&amp;P500連動型の海外積立投資プログラム。元本確保機能付き。</div>
       </label>
 
       <label class="product-option" id="opt-fip" onclick="selectProduct('fip')">
         <input type="radio" name="product" value="fip">
         <div class="check-icon">✓</div>
-        <div class="product-tag tag-fip">固定金利型</div>
-        <div class="product-name">FIP（確定利回りポートフォリオ）</div>
-        <div class="product-desc">固定金利で安定運用。3・5・7・10年の契約期間から選択可能。</div>
+        <div class="product-tag tag-fip" data-ja="固定金利型" data-en="Fixed Rate Type">固定金利型</div>
+        <div class="product-name">FIP</div>
+        <div class="product-desc" data-ja="確定利回りポートフォリオ。3・5・7・10年の契約期間から選択可能。" data-en="Fixed Yield Portfolio. Choose from 3, 5, 7, or 10-year contract terms.">確定利回りポートフォリオ。3・5・7・10年の契約期間から選択可能。</div>
       </label>
 
       <label class="product-option" id="opt-platinum" onclick="selectProduct('platinum')">
         <input type="radio" name="product" value="platinum">
         <div class="check-icon">✓</div>
-        <div class="product-tag tag-platinum">プレミアム型</div>
-        <div class="product-name">プラチナプラス</div>
-        <div class="product-desc">外部委託アドバイザリーサービス対応の上位プラン。</div>
+        <div class="product-tag tag-platinum" data-ja="プレミアム型" data-en="Premium Type">プレミアム型</div>
+        <div class="product-name">Platinum Plus</div>
+        <div class="product-desc" data-ja="外部委託アドバイザリーサービス対応の上位プラン。" data-en="Premium plan with external advisory service delegation support.">外部委託アドバイザリーサービス対応の上位プラン。</div>
       </label>
     </div>
 
     <div class="btn-row">
       <button class="btn btn-primary" id="btn1Next" disabled onclick="goToStep(2)">
-        次へ：重要事項を確認する →
+        <span data-ja="次へ：重要事項を確認する →" data-en="Next: Review Important Matters →">次へ：重要事項を確認する →</span>
       </button>
     </div>
   </div>
@@ -206,25 +321,24 @@
   <!-- ===== SCREEN 2: 重要事項 ===== -->
   <div class="card screen" id="screen2">
     <div class="consent-header">
-      <div class="product-badge" id="consentBadge">📄 商品名</div>
-      <h2 id="consentTitle">重要事項同意書</h2>
-      <p>以下の各条項を十分にお読みいただき、各条項の右欄にローマ字でご自身のイニシャル（例：山田太郎様の場合は <strong>T.Y</strong>）をご記入ください。すべての条項へのご記入が必要です。</p>
+      <div class="product-badge" id="consentBadge">📄</div>
+      <h2 id="consentTitle"></h2>
+      <div class="preamble" id="consentPreamble"></div>
     </div>
 
-    <div style="height:16px;"></div>
     <div class="notice-box">
-      <div class="notice-icon">⚠</div>
-      <p>本同意書は法的効力を持つ重要な書類です。内容を十分にご理解いただいた上でイニシャルをご記入ください。不明な点は担当者にお問い合わせください。</p>
+      <div class="notice-icon">⚠️</div>
+      <p id="noticeText">各条項をよくお読みいただき、ご理解・ご同意いただけた場合に、各条項の入力欄にローマ字でイニシャルをご記入ください。<strong>すべての条項へのご記入が必要です。</strong></p>
     </div>
 
-    <div class="articles" id="articlesContainer">
-      <!-- JSで動的に生成 -->
-    </div>
+    <div class="articles" id="articlesContainer"></div>
 
     <div class="btn-row">
-      <button class="btn btn-secondary" onclick="goToStep(1)">← 戻る</button>
+      <button class="btn btn-secondary" onclick="goToStep(1)">
+        <span data-ja="← 戻る" data-en="← Back">← 戻る</span>
+      </button>
       <button class="btn btn-primary" id="btn2Next" disabled onclick="goToStep(3)">
-        次へ：署名・承認へ →
+        <span data-ja="次へ：署名・承認へ →" data-en="Next: Sign & Approve →">次へ：署名・承認へ →</span>
       </button>
     </div>
   </div>
@@ -232,44 +346,52 @@
   <!-- ===== SCREEN 3: 署名・承認 ===== -->
   <div class="card screen" id="screen3">
     <div class="step-header">
-      <h2>署名・最終承認</h2>
-      <p>以下の情報をご入力いただき、重要事項同意書への最終承認をお願いします。</p>
+      <h2 data-ja="署名・最終承認" data-en="Signature & Final Approval">署名・最終承認</h2>
+      <p data-ja="以下の情報をご入力いただき、重要事項同意書への最終承認をお願いします。" data-en="Please fill in the information below to complete your final approval of the consent form.">以下の情報をご入力いただき、重要事項同意書への最終承認をお願いします。</p>
     </div>
 
     <div class="signature-section">
       <div class="sig-grid">
         <div class="field-group">
-          <label>お名前（フルネーム）<span style="color:red;">*</span></label>
-          <input type="text" id="sigName" placeholder="山田 太郎" oninput="checkStep3()">
+          <label data-ja="お名前（フルネーム）" data-en="Full Name">お名前（フルネーム）<span style="color:red;"> *</span></label>
+          <input type="text" id="sigName" placeholder="山田 太郎 / Taro Yamada" oninput="checkStep3()">
         </div>
         <div class="field-group">
-          <label>署名日<span style="color:red;">*</span></label>
+          <label data-ja="署名日" data-en="Date of Signature">署名日<span style="color:red;"> *</span></label>
           <input type="date" id="sigDate" oninput="checkStep3()">
         </div>
         <div class="field-group field-full">
-          <label>メールアドレス（確認用）<span style="color:red;">*</span></label>
+          <label data-ja="メールアドレス（確認用）" data-en="Email Address (for confirmation)">メールアドレス（確認用）<span style="color:red;"> *</span></label>
           <input type="email" id="sigEmail" placeholder="example@email.com" oninput="checkStep3()">
         </div>
       </div>
 
-      <div style="margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 10px; font-size: 12px; color: #6b7280; border: 1px solid #e5e7eb;">
-        <strong style="color: #374151; display:block; margin-bottom:8px;">承認内容の確認</strong>
-        商品：<span id="confirmProduct" style="color:#1e3a8a; font-weight:bold;"></span><br>
-        記入イニシャル：<span id="confirmInitials" style="font-family:monospace; color:#374151;"></span>
+      <div class="confirm-box">
+        <strong data-ja="承認内容の確認" data-en="Confirmation of Approval Details">承認内容の確認</strong>
+        <div class="confirm-row">
+          <span class="confirm-key" data-ja="商品" data-en="Product">商品</span>
+          <span class="confirm-val" id="confirmProduct"></span>
+        </div>
+        <div class="confirm-row">
+          <span class="confirm-key" data-ja="記入条項数" data-en="Articles Initialed">記入条項数</span>
+          <span class="confirm-val" id="confirmCount"></span>
+        </div>
       </div>
 
       <label class="agree-check">
         <input type="checkbox" id="finalAgree" onchange="checkStep3()">
-        <div class="agree-check-text">
+        <div class="agree-check-text" id="agreeText">
           上記の重要事項をすべて確認・理解し、自己の自由な意思に基づき本プランの申し込みを行うことに同意します。また、投資に伴うリスクを十分に理解した上で申し込みを行うことを確認します。
         </div>
       </label>
     </div>
 
     <div class="btn-row">
-      <button class="btn btn-secondary" onclick="goToStep(2)">← 戻る</button>
+      <button class="btn btn-secondary" onclick="goToStep(2)">
+        <span data-ja="← 戻る" data-en="← Back">← 戻る</span>
+      </button>
       <button class="btn btn-success" id="btn3Submit" disabled onclick="submitForm()">
-        ✓ 同意して承認する
+        <span data-ja="✓ 同意して承認する" data-en="✓ Agree & Approve">✓ 同意して承認する</span>
       </button>
     </div>
   </div>
@@ -278,16 +400,25 @@
   <div class="card screen" id="screen4">
     <div class="complete-section">
       <div class="complete-icon">✓</div>
-      <h2>承認が完了しました</h2>
-      <p>重要事項同意書へのご同意ありがとうございます。</p>
-      <p>以下の受付番号をお控えください。担当者より改めてご連絡いたします。</p>
+      <h2 data-ja="承認が完了しました" data-en="Approval Complete">承認が完了しました</h2>
+      <p data-ja="重要事項同意書へのご同意ありがとうございます。" data-en="Thank you for completing the Important Matters Consent Form.">重要事項同意書へのご同意ありがとうございます。</p>
+      <p data-ja="以下の受付番号をお控えください。担当者より改めてご連絡いたします。" data-en="Please save the reference number below. Your representative will contact you shortly.">以下の受付番号をお控えください。担当者より改めてご連絡いたします。</p>
       <div class="complete-ref" id="refNumber"></div>
-      <p style="margin-top: 8px; font-size: 13px;">登録メールアドレスへ確認メールをお送りしました。</p>
-      <div style="margin-top: 32px; padding: 20px; background: #f8fafc; border-radius: 10px; text-align: left; font-size: 12px; color: #6b7280;">
-        <strong style="color: #374151; display:block; margin-bottom:8px;">承認済み内容</strong>
-        商品名：<span id="doneProduct" style="color:#1e3a8a; font-weight:bold;"></span><br>
-        お名前：<span id="doneName" style="color:#374151;"></span><br>
-        署名日：<span id="doneDate" style="color:#374151;"></span>
+      <p style="font-size:13px;" data-ja="登録メールアドレスへ確認メールをお送りしました。" data-en="A confirmation email has been sent to your registered email address.">登録メールアドレスへ確認メールをお送りしました。</p>
+      <div class="done-box">
+        <strong data-ja="承認済み内容" data-en="Approved Details">承認済み内容</strong>
+        <div class="done-row">
+          <span class="done-key" data-ja="商品名" data-en="Product">商品名</span>
+          <span id="doneProduct" style="font-weight:bold;color:#1e3a8a;"></span>
+        </div>
+        <div class="done-row">
+          <span class="done-key" data-ja="お名前" data-en="Name">お名前</span>
+          <span id="doneName"></span>
+        </div>
+        <div class="done-row">
+          <span class="done-key" data-ja="署名日" data-en="Date">署名日</span>
+          <span id="doneDate"></span>
+        </div>
       </div>
     </div>
   </div>
@@ -295,195 +426,528 @@
 </main>
 
 <script>
-  const products = {
-    evolution: {
-      name: 'Evolution',
-      label: '積立型 — Evolution',
-      title: 'Evolutionに関する重要事項同意書',
-      preamble: 'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、お客様そして社会全体が共に豊かになる持続可能なライフプランニングの実現を重視しております。本同意書は、その理念に基づき、お客様が自らの意思と判断によってITA International Holdingsが提供する商品「Evolution」へのお申し込みを希望されるにあたり、投資に伴う諸リスクおよび当社のサポート範囲を事前にお伝えし、お客様の利益を保護するためのものです。',
-      articles: [
-        { num: '第1条', title: 'サポートの範囲および自己責任の原則', body: '当社（ラブアン法人 Wawasan Global Support Limited）が提供する本サービスは、お客様のご要望に基づく海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されるものであり、最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。' },
-        { num: '第2条', title: '投資リスクおよび各種手数料の存在', body: '本プランは元本が保証された金融商品ではありません。市場環境や為替レートの変動により運用成績が上下し、場合によっては元本割れが生じるリスク、およびカントリーリスクがあることを承諾します。本プランを維持するため、毎月のプラン手数料および資産管理費用、ならびに年間管理手数料といった費用構造が設定されていることを了承します。' },
-        { num: '第3条', title: '初期積立期間における厳格な制限と途中解約のリスク', body: '【初期期間の制限】当該期間中は、積立金額の減額、一部解約、および積立の一時停止を一切行うことができません。この期間中にプランを解約・失効させた場合、解約手数料の影響により解約返戻金が完全にゼロとなることを了承します。\n【満期前の早期解約リスク】初期期間経過後であれば減額や一部引き出し等が可能となりますが、満期を待たずに解約した場合、返戻金が著しく減少またはゼロとなる危険性があります。' },
-        { num: '第4条', title: '一部解約に関する規定', body: '初期ユニット期間に積み立てた金額からの一部解約は不可能です。一部解約を行う場合、プラン内に最低1,200 USDの純現金価値（解約返戻金）を維持できる金額であれば申請が可能となります。手続きに伴う送金手数料（現時点において50 USD）や為替手数料等はお客様負担となることに同意します。' },
-        { num: '第5条', title: 'ロイヤルティーボーナスの適用要件', body: '本プランに付帯する「ロイヤルティーボーナス」を有効に維持するためには、以下の条件を満たす必要があります。①拠出金の支払いが90日以内の猶予期間内に滞りなく支払われていること。②プランの拠出金の減額がないこと。③一部解約がないこと。' },
-        { num: '第6条', title: '継続の推奨', body: '契約期間中は、減額や一部引出し、一時停止などをせずに、契約時に決めた積立金額で積立期間満了まで積立を継続することが最善であると理解しております。' },
-        { num: '第7条', title: '死亡給付金に関する規定', body: '拠出金を猶予期間（90日）以内に支払っていない場合、死亡給付金の保証は消失し、その権利が復活することはないことを理解しております。プラン発行後2年以内の既往症・障害に起因する死亡および自殺に対しては死亡給付金が支払われないことを理解しております。受益者の設定が必須であることを理解しております。' },
-        { num: '第8条', title: '米国居住者へのステータス変更に関する留意点', body: '将来的にアメリカ居住者（ビザ取得等を含む）となった場合、証券の発行籍地に応じた対応が求められます。【プエルトリコ証券】親族等への譲渡または解約が必要。【ラブアン証券】転居前に所定の手続きを完了することで継続可能な場合があります。契約成立後にプエルトリコ籍とラブアン籍の間での変更はできません。' },
-        { num: '第9条', title: '個人情報の取扱方針', body: '申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。' }
-      ]
-    },
-    sp500: {
-      name: 'S&P500インデックス',
-      label: 'インデックス型 — S&P500',
-      title: '海外積立投資プログラム（S&P500参照型）ご契約に関する重要事項同意書',
-      preamble: '本同意書は、お客様が「Investors Trust S&P500インデックス」へのお申し込みを行うにあたり、投資に伴う諸リスクおよび契約上の各種制限事項を明確にお伝えするものです。以下の各項目を十分にご確認いただき、すべての内容にご納得・ご同意いただいた上でご署名をお願いいたします。',
-      articles: [
-        { num: '第1条', title: 'サポートの範囲および自己責任の原則', body: 'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されるものであり、最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。' },
-        { num: '第2条', title: '投資リスクおよび各種手数料の存在', body: '本プランは元本が保証された金融商品ではありません。市場環境や為替レートの変動により運用成績が上下し、場合によっては元本割れが生じるリスク（カントリーリスク、カウンターパーティーリスクを含む）があることを承諾します。毎月のプラン手数料および資産管理費用、ならびに年間管理手数料といった費用構造が設定されていることを了承します。' },
-        { num: '第3条', title: '元本確保機能およびロイヤルティボーナスの適用要件', body: '「元本確保機能」および「ロイヤルティボーナス」の権利を有効に維持するためには、以下の条件をすべて満たす必要があります。①拠出金を支払期日から90日以内に必ず入金すること。②契約当初に設定した拠出金額を契約期間中に一切減額しないこと。③一部資金の引き出し・積立の90日以上の停止・プラン内貸付制度を一切利用しないこと。' },
-        { num: '第4条', title: '初期積立期間における厳格な制限と途中解約のリスク', body: '【初期期間の制限】当該期間中は、積立金額の減額、一部解約、および積立の一時停止を一切行うことができません。解約・失効させた場合、解約返戻金が完全にゼロとなることを了承します。\n【満期前の早期解約リスク】初期期間経過後でも満期前に解約した場合、S&P500の運用状況と各種手数料の負担により、返戻金が著しく減少またはゼロとなる危険性があります。' },
-        { num: '第5条', title: '一部解約に関する規定', body: '初期ユニット期間に積み立てた資産枠からの引き出しはできません。一部解約を行う場合、プラン内に最低2,400 USDの純現金価値を維持できる範囲でのみ申請が可能です。海外送金手数料（現行50 USD）や受取先金融機関が定める為替手数料等はお客様負担となることに同意します。' },
-        { num: '第6条', title: '死亡給付金に関する規定', body: '拠出金の支払いが猶予期間（90日）を超過した場合、死亡給付金に関する保障は即時消滅し、その後いかなる理由があっても権利は復活しません。プラン発行から2年以内に発生した既往症・障害に起因する死亡および自殺については給付金の支払い対象外となります。受益者の事前設定が必須であることを承諾します。' },
-        { num: '第7条', title: '米国居住者へのステータス変更に関する留意点', body: '将来的にアメリカ合衆国の居住者となった場合、証券の発行籍地に応じた対応が求められます。【プエルトリコ籍】原則として親族等への譲渡またはプランの解約が必須。【ラブアン籍】米国への転居前に担当者経由でITA社へ申告し所定の手続きを完了することで継続が認められる場合があります。なお、契約成立後に籍地変更はできません。' },
-        { num: '第8条', title: '個人情報の取り扱いに関する同意', body: '本お申し込み手続きに関連して提供・取得された個人情報は、各種事務手続きの代行・レポート業務、ならびにWawasan Global Support Limitedが提供する関連サービスのご案内以外の目的には一切使用されないことを確認します。' }
-      ]
-    },
-    fip: {
-      name: 'FIP（確定利回りポートフォリオ）',
-      label: '固定金利型 — FIP',
-      title: '確定利回りポートフォリオ・固定金利プランご契約に関する重要事項同意書',
-      preamble: '本同意書は、お客様がITA International Holdings（Investors Trust）が提供する商品「確定利回りポートフォリオ・固定金利プラン（FIP）」へのお申し込みを行うにあたり、投資に伴う諸リスクおよび契約上の各種制限事項を明確にお伝えするものです。',
-      articles: [
-        { num: '第1条', title: 'サポートの範囲および自己責任の原則', body: 'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されるものであり、最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。' },
-        { num: '第2条', title: '投資リスクに関する事項', body: '本プランは為替リスクを伴うため、日本円に換算した際に元本割れが生じる可能性があることを十分理解しております。本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。' },
-        { num: '第3条', title: '元本確保の適用条件', body: '本商品は「元本確保100%」と記載されておりますが、これは契約期間中に元本の解約（一部解約を含む）が一切行われなかった場合に限り確保されるものであることを理解しております。当該元本の確保は、Investors Trustによって保証されています。' },
-        { num: '第4条', title: '流動性制限および解約に関する規定', body: '【全解約の禁止】契約期間終了前（満期前）の全解約は不可であることを十分理解しております。\n【流動性制限】パンフレットに記載されている「流動性」および「解約手数料」を確認し、本プランにおける流動性の制限について理解しております。\n【一部解約の変動性】一部解約可能な金額については、イラストレーション記載の「可能な現金解約価値」の推移を参照していますが、実際の申請時の金額とは変動が生じることを了承します。\n【利息引き出しの影響】契約途中で利息分の引き出しを行った場合、イラストレーション記載の推移は参考にならなくなることを理解しております。' },
-        { num: '第5条', title: '金利に関する規定', body: 'お申し込み時に選択した契約年数（3年・5年・7年・10年）の期間中は金利の変更はありませんが、当該契約年数を終えた後には金利が変更されることを理解しております。' },
-        { num: '第6条', title: '費用および各種手数料', body: '本プランの費用構造として、月額プラン手数料が7米ドルかかることを理解しております。出金手続き時は送金手数料（現時点で50 USD）や為替手数料等がかかります。クレジットカードでの海外送金（入金時）は3.5%の手数料がかかること、国内銀行・ネットバンク経由での海外送金は各行所定の手数料がお客様負担となることを理解しております。' },
-        { num: '第7条', title: '死亡給付金に関する規定', body: '死亡給付金に関して、支払基準額は解約返戻金の101%であることを理解しております。プラン発行後2年以内に発生した既往症・障害に起因する死亡および自殺に対しては死亡給付金が支払われないことを理解しております。受益者の設定が必須であることを理解しております。' },
-        { num: '第8条', title: '米国居住者へのステータス変更に関する留意点', body: '契約途中にアメリカ居住者となられた場合、親族等への譲渡または解約が必要となることを理解しております。' },
-        { num: '第9条', title: '個人情報の取扱方針', body: '申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。' }
-      ]
-    },
-    platinum: {
-      name: 'プラチナプラス',
-      label: 'プレミアム型 — プラチナプラス',
-      title: 'プラチナプラスご契約に関する重要事項同意書',
-      preamble: 'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、お客様そして社会全体が共に豊かになる持続可能なライフプランニングの実現を重視しております。本同意書は、その理念に基づき、お客様が自らの意思と判断によってITA International Holdings（Investors Trust）の商品「プラチナプラス」へのお申し込みを希望されるにあたり、投資に伴う諸リスクおよび当社のサポート範囲を事前にお伝えし、お客様の利益を保護するためのものです。内容を確認・同意した証として、【重要条項】の右欄にローマ字でご自身のイニシャルをご記入ください。',
-      articles: [
-        { num: '第1条', title: 'サポートの範囲および自己責任の原則', body: '当社（ラブアン法人 Wawasan Global Support Limited）が提供する本サービスは、お客様のご要望に基づく海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されるものであり、最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。' },
-        { num: '第2条', title: '投資リスクに関する事項', body: '【為替リスク】本プランは為替リスクを伴うため、日本円に換算した際に元本割れが生じる可能性があることを十分理解しております。\n【市場動向リスク】為替リスクとは別に、市場動向によって元本割れが生じる可能性があることを十分理解しております。\n【カントリーリスク】本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。' },
-        { num: '第3条', title: 'プランの費用構造および商品条件', body: '別紙の商品条件シートを確認し、プランの費用構造や商品の内容を十分理解しております。' },
-        { num: '第4条', title: '外部委託とアドバイザリーサービス', body: '運用を外部委託（アドバイザリーサービス合意書を提出）する場合、顧問サービス料がかかることをアドバイザリーサービス合意書を確認し、十分理解しております。' },
-        { num: '第5条', title: '解約手数料および送金に関する規定', body: '【解約手数料】契約開始後12か月以内の解約のみ1.5%かかることを理解しております。\n【送金手数料（出金時）】1回あたりの送金手数料として50 USDかかることを理解しております。\n【海外送金手数料（入金時）】クレジットカードでの海外送金の場合3.5%の手数料とクレジットカード会社所定の手数料がかかること。国内銀行窓口やネットバンク等では各行所定の海外送金手数料がかかることを理解しております。' },
-        { num: '第6条', title: '米国居住者へのステータス変更に関する留意点', body: '契約途中にアメリカ居住者となられる場合、親族等への譲渡または解約が必要となることを理解しております。' },
-        { num: '第7条', title: '個人情報の取扱方針', body: '申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。' }
-      ]
-    }
-  };
+/* =========================================================
+   TRANSLATIONS & LANGUAGE TOGGLE
+   ========================================================= */
+let lang = 'ja';
 
-  let selectedProduct = null;
-  let currentStep = 1;
-
-  function selectProduct(key) {
-    selectedProduct = key;
-    document.querySelectorAll('.product-option').forEach(el => el.classList.remove('selected'));
-    document.getElementById('opt-' + key).classList.add('selected');
-    document.getElementById('btn1Next').disabled = false;
+function setLang(l) {
+  lang = l;
+  document.getElementById('btnJA').className = 'lang-btn' + (l === 'ja' ? ' active' : '');
+  document.getElementById('btnEN').className = 'lang-btn' + (l === 'en' ? ' active' : '');
+  document.querySelectorAll('[data-ja]').forEach(el => {
+    el.textContent = l === 'ja' ? el.getAttribute('data-ja') : el.getAttribute('data-en');
+  });
+  // Re-render articles if on step 2
+  if (selectedProduct && document.getElementById('screen2').classList.contains('active')) {
+    buildArticles(products[selectedProduct]);
+    checkAllInitials();
   }
+  // Notice text
+  document.getElementById('noticeText').innerHTML = l === 'ja'
+    ? '各条項をよくお読みいただき、ご理解・ご同意いただけた場合に、各条項の入力欄にローマ字でイニシャルをご記入ください。<strong>すべての条項へのご記入が必要です。</strong>'
+    : 'Please read each article carefully. If you understand and agree, enter your initials in Roman letters in the box for each article. <strong>All articles must be initialed.</strong>';
+  document.getElementById('agreeText').textContent = l === 'ja'
+    ? '上記の重要事項をすべて確認・理解し、自己の自由な意思に基づき本プランの申し込みを行うことに同意します。また、投資に伴うリスクを十分に理解した上で申し込みを行うことを確認します。'
+    : 'I confirm that I have read and understood all of the above important matters, and I agree to apply for this plan of my own free will, having fully understood the risks involved.';
+  // Update confirm box labels
+  document.querySelectorAll('.confirm-key').forEach(el => {
+    if (el.getAttribute('data-ja')) el.textContent = l === 'ja' ? el.getAttribute('data-ja') : el.getAttribute('data-en');
+  });
+  document.querySelectorAll('.done-key').forEach(el => {
+    if (el.getAttribute('data-ja')) el.textContent = l === 'ja' ? el.getAttribute('data-ja') : el.getAttribute('data-en');
+  });
+}
 
-  function buildArticles(product) {
-    const container = document.getElementById('articlesContainer');
-    container.innerHTML = '';
-    product.articles.forEach((art, i) => {
-      const div = document.createElement('div');
-      div.className = 'article';
-      const bodyLines = art.body.split('\n').map(l => `<p style="margin-bottom:6px;">${l}</p>`).join('');
-      div.innerHTML = `
-        <div class="article-title">
-          ${art.num}　${art.title}
-          <div class="initial-check" id="check-${i}">✓</div>
-        </div>
-        <div class="article-body">
-          ${bodyLines}
-          <div class="initial-row">
-            <span class="initial-label">イニシャルをご記入：</span>
-            <input class="initial-input" type="text" maxlength="5" placeholder="例）T.Y"
-              id="initial-${i}" oninput="onInitialInput(${i}, this.value)" autocomplete="off">
-            <span class="initial-hint">（ローマ字・姓名の頭文字）</span>
-          </div>
-        </div>
-      `;
-      container.appendChild(div);
-    });
+/* =========================================================
+   PRODUCT DATA
+   ========================================================= */
+/* Format convention in body text:
+   [[R: text ]]  → red bold (risk/demerit)
+   [[B: text ]]  → bold only (important note)
+   \n            → new paragraph
+*/
+const products = {
+  evolution: {
+    name: { ja: 'Evolution', en: 'Evolution' },
+    label: { ja: '積立型 — Evolution', en: 'Savings Type — Evolution' },
+    title: {
+      ja: 'Evolutionに関する重要事項同意書',
+      en: 'Important Matters Consent Form — Evolution'
+    },
+    preamble: {
+      ja: 'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、持続可能なライフプランニングの実現を重視しております。本同意書は、ITA International Holdingsが提供する商品「Evolution」へのお申し込みにあたり、投資に伴う諸リスクおよび当社のサポート範囲を事前にお伝えし、お客様の利益を保護するためのものです。各条項の右欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。',
+      en: 'Wawasan Global Support Limited values sustainable life planning that supports customers\' proactive asset formation. This consent form is intended to protect your interests by communicating in advance the risks associated with the product "Evolution" provided by ITA International Holdings. Please enter your initials (e.g. T.Y for Taro Yamada) in the box for each article.'
+    },
+    articles: [
+      {
+        num: { ja: '第1条', en: 'Article 1' },
+        title: { ja: 'サポートの範囲および自己責任の原則', en: 'Scope of Support and Principle of Self-Responsibility' },
+        body: {
+          ja: '当社（ラブアン法人 Wawasan Global Support Limited）が提供する本サービスは、海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',
+          en: 'The services provided by our company (Labuan corporation, Wawasan Global Support Limited) are limited to administrative support and agency services for enrollment procedures of trust products offered by overseas insurance companies. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'
+        }
+      },
+      {
+        num: { ja: '第2条', en: 'Article 2' },
+        title: { ja: '投資リスクおよび各種手数料', en: 'Investment Risks and Fees' },
+        body: {
+          ja: '[[R:本プランは元本が保証された金融商品ではありません。]]市場環境や為替レートの変動により運用成績が上下し、[[R:場合によっては元本割れが生じるリスク、およびカントリーリスクがあります。]]\n本プランを維持するため、毎月のプラン手数料・資産管理費用・年間管理手数料といった費用構造が設定されていることを了承します。',
+          en: '[[R:This plan does not guarantee your principal.]] Investment performance may fluctuate due to market conditions and foreign exchange rates, and [[R:there is a risk that you may lose part or all of your principal, including country risk.]]\nYou acknowledge that this plan has a fee structure including monthly plan fees, asset management costs, and annual management fees.'
+        }
+      },
+      {
+        num: { ja: '第3条', en: 'Article 3' },
+        title: { ja: '初期積立期間の制限と途中解約のリスク', en: 'Restrictions During Initial Savings Period and Early Cancellation Risk' },
+        body: {
+          ja: '【初期期間（イニシャルユニット期間）の制限】\n[[R:この期間中は、積立金額の減額・一部解約・一時停止を行うことは一切認められません。この期間中に解約・失効させた場合、解約手数料の影響により解約返戻金が完全に「ゼロ」となります。]]\n【満期前の早期解約リスク】\n初期期間経過後は減額や一部引き出しが可能ですが、[[R:満期を待たずに解約した場合、返戻金が著しく減少またはゼロとなる危険性があります。]]手数料負担でプラン内の純現金価値が無くなった場合は自動的に契約が失効します。',
+          en: '[Restrictions during Initial Unit Period]\n[[R:During this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. If the plan is cancelled or lapses during this period, the surrender value will become completely ZERO due to cancellation fees.]]\n[Early Cancellation Risk Before Maturity]\nAfter the initial period, reductions and partial withdrawals become available, but [[R:if cancelled before maturity, there is a serious risk that the refund amount will be significantly reduced or become zero.]] If plan fees deplete the net cash value, the contract will automatically lapse.'
+        }
+      },
+      {
+        num: { ja: '第4条', en: 'Article 4' },
+        title: { ja: '一部解約に関する規定', en: 'Regulations on Partial Cancellation' },
+        body: {
+          ja: '[[R:初期ユニット期間に積み立てた金額からの一部解約は不可能です。]]一部解約を行う場合、プラン内に最低 [[B:1,200 USD]] の純現金価値を維持できる金額であれば申請可能です。\n手続きに伴う送金手数料（現時点で [[B:50 USD]]）や受取銀行所定の為替手数料は[[B:お客様負担]]となります。',
+          en: '[[R:Partial cancellation from amounts accumulated during the initial unit period is not possible.]] Partial cancellation applications are only possible if a minimum net cash value of [[B:USD 1,200]] can be maintained in the plan.\nWire transfer fees (currently [[B:USD 50]]) and exchange fees charged by receiving banks are [[B:borne by the customer.]]'
+        }
+      },
+      {
+        num: { ja: '第5条', en: 'Article 5' },
+        title: { ja: 'ロイヤルティーボーナスの適用要件', en: 'Loyalty Bonus Requirements' },
+        body: {
+          ja: '「ロイヤルティーボーナス」を有効に維持するためには、以下の[[B:すべての条件]]を満たす必要があります。\n① 拠出金の支払いが[[B:90日以内]]の猶予期間内に行われていること\n② プランの拠出金の[[R:減額がないこと]]\n③ [[R:一部解約がないこと]]\n[[R:1つでも条件を満たさない場合、ロイヤルティーボーナスの権利は失われます。]]',
+          en: 'To validly maintain the "Loyalty Bonus," you must satisfy [[B:all of the following conditions]]:\n① Contributions are paid within the [[B:90-day]] grace period\n② [[R:No reduction in contribution amount]]\n③ [[R:No partial cancellations]]\n[[R:Failure to meet even one condition will result in the loss of the Loyalty Bonus.]]'
+        }
+      },
+      {
+        num: { ja: '第6条', en: 'Article 6' },
+        title: { ja: '継続の推奨', en: 'Recommendation to Continue' },
+        body: {
+          ja: '契約期間中は、減額・一部引出し・一時停止などをせずに、契約時に決めた積立金額で積立期間満了まで継続することが最善です。[[R:途中の変更はボーナス失効・返戻金減少につながる可能性があります。]]',
+          en: 'It is recommended to continue contributing at the originally set amount throughout the entire savings period without any reductions, partial withdrawals, or suspensions. [[R:Mid-term changes may result in loss of bonuses or reduction of surrender values.]]'
+        }
+      },
+      {
+        num: { ja: '第7条', en: 'Article 7' },
+        title: { ja: '死亡給付金に関する規定', en: 'Death Benefit Regulations' },
+        body: {
+          ja: '[[R:拠出金を猶予期間（90日）以内に支払っていない場合、死亡給付金の保証は消失し、復活することはありません。]]\n[[R:プラン発行後2年以内に、契約以前からの疾患・障害に起因する死亡および自殺に対しては死亡給付金は支払われません。]]\n受益者の設定が[[B:必須]]です。',
+          en: '[[R:If contributions are not paid within the 90-day grace period, the death benefit guarantee is extinguished and cannot be reinstated under any circumstances.]]\n[[R:Death benefits will not be paid for deaths caused by pre-existing conditions or disabilities within 2 years of plan issuance, or for suicide.]]\nSetting a beneficiary is [[B:mandatory.]]'
+        }
+      },
+      {
+        num: { ja: '第8条', en: 'Article 8' },
+        title: { ja: '米国居住者へのステータス変更', en: 'Change of Status to US Resident' },
+        body: {
+          ja: '将来的にアメリカ居住者（ビザ取得含む）となった場合、証券の発行籍地に応じた対応が求められます。\n【プエルトリコ証券】[[R:親族等への譲渡または解約が必要になります。]]\n【ラブアン証券】転居前に担当者経由でITA社への申告・手続き完了で継続可能な場合がありますが、[[R:状況により譲渡または解約が必要になる可能性があります。]]\n契約成立後にプエルトリコ籍とラブアン籍間での変更はできません。',
+          en: 'If you become a US resident in the future (including obtaining a visa), corresponding actions will be required depending on the jurisdiction of your securities.\n[Puerto Rico Securities] [[R:Transfer to relatives or cancellation of the plan will be required.]]\n[Labuan Securities] Continuation may be possible by notifying ITA through your agent before moving, but [[R:depending on circumstances, transfer or cancellation may be required.]] Changing between Puerto Rico and Labuan jurisdiction after contract establishment is not permitted.'
+        }
+      },
+      {
+        num: { ja: '第9条', en: 'Article 9' },
+        title: { ja: '個人情報の取扱方針', en: 'Privacy Policy' },
+        body: {
+          ja: '申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',
+          en: 'Personal information viewed or obtained to report enrollment procedures will not be used for any purpose other than those enrollment procedures and introductions to similar products.'
+        }
+      }
+    ]
+  },
+
+  sp500: {
+    name: { ja: 'S&P500インデックス', en: 'S&P500 Index' },
+    label: { ja: 'インデックス型 — S&P500', en: 'Index Type — S&P500' },
+    title: { ja: '海外積立投資プログラム（S&P500参照型）ご契約に関する重要事項同意書', en: 'Important Matters Consent Form — Overseas Savings Investment Program (S&P500 Reference Type)' },
+    preamble: {
+      ja: '本同意書は、お客様が「Investors Trust S&P500インデックス」へのお申し込みを行うにあたり、投資に伴う諸リスクおよび各種制限事項を明確にお伝えするものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。',
+      en: 'This consent form clearly communicates the various risks and restrictions associated with applying for the "Investors Trust S&P500 Index." Please enter your initials (e.g. T.Y for Taro Yamada) in the box for each article.'
+    },
+    articles: [
+      {
+        num: { ja: '第1条', en: 'Article 1' },
+        title: { ja: 'サポートの範囲および自己責任の原則', en: 'Scope of Support and Principle of Self-Responsibility' },
+        body: {
+          ja: 'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',
+          en: 'The services provided by Wawasan Global Support Limited (Labuan corporation) are limited to administrative support and agency services for enrollment procedures of trust products offered by overseas insurance companies. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'
+        }
+      },
+      {
+        num: { ja: '第2条', en: 'Article 2' },
+        title: { ja: '投資リスクおよび各種手数料', en: 'Investment Risks and Fees' },
+        body: {
+          ja: '[[R:本プランは元本が保証された金融商品ではありません。]]市場環境や為替レートの変動により運用成績が上下し、[[R:場合によっては元本割れが生じるリスク（カントリーリスク・カウンターパーティーリスクを含む）があります。]]\n毎月のプラン手数料・資産管理費用・年間管理手数料といった費用構造が設定されていることを了承します。',
+          en: '[[R:This plan does not guarantee your principal.]] Investment performance may fluctuate due to market conditions and exchange rates, and [[R:there is a risk of capital loss (including country risk and counterparty risk).]]\nYou acknowledge the fee structure including monthly plan fees, asset management costs, and annual management fees.'
+        }
+      },
+      {
+        num: { ja: '第3条', en: 'Article 3' },
+        title: { ja: '元本確保機能およびロイヤルティボーナスの適用要件', en: 'Principal Protection and Loyalty Bonus Requirements' },
+        body: {
+          ja: '「元本確保機能」および「ロイヤルティボーナス」の権利を有効に維持するためには、以下の[[B:すべての条件]]を満たす必要があります。\n① 拠出金を支払期日から[[B:90日以内]]に必ず入金すること\n② 契約当初に設定した拠出金額を[[R:一切減額しないこと]]\n③ [[R:一部引き出し・90日以上の積立停止・プラン内貸付制度を一切利用しないこと]]\n[[R:1つでも条件を満たさない場合、元本確保の権利およびロイヤルティボーナスは消滅します。]]',
+          en: 'To validly maintain the "Principal Protection" and "Loyalty Bonus," [[B:all of the following conditions]] must be met:\n① Contributions must be paid within [[B:90 days]] of the due date\n② [[R:No reduction in the contribution amount set at contract inception]]\n③ [[R:No partial withdrawals, no suspension of savings for 90+ days, and no use of the plan loan feature]]\n[[R:Failure to meet even one condition will result in the loss of both the principal protection right and the loyalty bonus.]]'
+        }
+      },
+      {
+        num: { ja: '第4条', en: 'Article 4' },
+        title: { ja: '初期積立期間の制限と途中解約のリスク', en: 'Restrictions During Initial Period and Early Cancellation Risk' },
+        body: {
+          ja: '【初期期間の制限】\n[[R:この期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。解約・失効した場合、解約返戻金が完全に「ゼロ」となります。]]\n【満期前の早期解約リスク】\n初期期間経過後でも、[[R:満期前に解約した場合、S&P500の運用状況と各種手数料の影響により、返戻金が著しく減少またはゼロとなる危険性があります。]]',
+          en: '[Initial Period Restrictions]\n[[R:During this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. If cancelled or lapsed, the surrender value will become completely ZERO.]]\n[Early Cancellation Risk Before Maturity]\nEven after the initial period, [[R:if cancelled before maturity, the refund amount may be significantly reduced or become zero depending on S&P500 performance and accumulated fees.]]'
+        }
+      },
+      {
+        num: { ja: '第5条', en: 'Article 5' },
+        title: { ja: '一部解約に関する規定', en: 'Regulations on Partial Cancellation' },
+        body: {
+          ja: '[[R:初期ユニット期間に積み立てた資産枠からの引き出しはできません。]]一部解約は、プラン内に最低 [[B:2,400 USD]] の純現金価値を維持できる範囲でのみ申請可能です。\n海外送金手数料（現行 [[B:50 USD]]）や受取先金融機関が定める為替手数料は[[B:お客様負担]]となります。',
+          en: '[[R:Withdrawals from assets accumulated during the initial unit period are not permitted.]] Partial cancellation is only available if a minimum net cash value of [[B:USD 2,400]] can be maintained in the plan.\nOverseas wire transfer fees (currently [[B:USD 50]]) and exchange fees set by receiving institutions are [[B:borne by the customer.]]'
+        }
+      },
+      {
+        num: { ja: '第6条', en: 'Article 6' },
+        title: { ja: '死亡給付金に関する規定', en: 'Death Benefit Regulations' },
+        body: {
+          ja: '[[R:拠出金の支払いが猶予期間（90日）を超過した場合、死亡給付金の保障は即時消滅し、その後いかなる理由があっても権利は復活しません。]]\n[[R:プラン発行から2年以内に発生した既往症・障害に起因する死亡および自殺については給付金の支払い対象外です。]]\n受益者の事前設定が[[B:必須]]です。',
+          en: '[[R:If contributions are not paid within the 90-day grace period, the death benefit is immediately extinguished and cannot be reinstated under any circumstances.]]\n[[R:Deaths caused by pre-existing conditions or disabilities within 2 years of plan issuance, and suicide, are excluded from death benefit payments.]]\nPre-setting a beneficiary is [[B:mandatory.]]'
+        }
+      },
+      {
+        num: { ja: '第7条', en: 'Article 7' },
+        title: { ja: '米国居住者へのステータス変更', en: 'Change of Status to US Resident' },
+        body: {
+          ja: '将来的にアメリカ合衆国の居住者となった場合、証券の発行籍地に応じた対応が求められます。\n【プエルトリコ籍】[[R:原則として親族等への譲渡またはプランの解約が必須となります。]]\n【ラブアン籍】米国転居前に担当者経由で所定の手続きを完了することで継続が認められる場合があります。[[R:ただし、状況によっては譲渡や解約が義務付けられる可能性があります。]]\n籍地の変更（プエルトリコ←→ラブアン）は契約成立後にはできません。',
+          en: 'If you become a US resident in the future, actions will be required based on the jurisdiction of your securities.\n[Puerto Rico] [[R:Transfer to relatives or cancellation of the plan is generally required.]]\n[Labuan] Continuation may be permitted if the required procedures are completed through your agent before moving to the US. [[R:However, depending on circumstances, transfer or cancellation may be required.]] Changing between Puerto Rico and Labuan jurisdiction after contract establishment is not permitted.'
+        }
+      },
+      {
+        num: { ja: '第8条', en: 'Article 8' },
+        title: { ja: '個人情報の取り扱い', en: 'Privacy Policy' },
+        body: {
+          ja: '本お申し込み手続きに関連して提供・取得された個人情報は、各種事務手続きの代行・レポート業務、ならびに関連サービスのご案内以外の目的には一切使用されません。',
+          en: 'Personal information provided or obtained in connection with this application will not be used for any purpose other than administrative agency and reporting services and introductions to related services.'
+        }
+      }
+    ]
+  },
+
+  fip: {
+    name: { ja: 'FIP（確定利回りポートフォリオ）', en: 'FIP (Fixed Yield Portfolio)' },
+    label: { ja: '固定金利型 — FIP', en: 'Fixed Rate Type — FIP' },
+    title: { ja: '確定利回りポートフォリオ・固定金利プランご契約に関する重要事項同意書', en: 'Important Matters Consent Form — Fixed Yield Portfolio / Fixed Interest Rate Plan (FIP)' },
+    preamble: {
+      ja: '本同意書は、ITA International Holdings（Investors Trust）が提供する「確定利回りポートフォリオ・固定金利プラン（FIP）」へのお申し込みにあたり、投資に伴う諸リスクおよび各種制限事項を明確にお伝えするものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。',
+      en: 'This consent form clearly communicates the various risks and restrictions associated with applying for the "Fixed Yield Portfolio / Fixed Interest Rate Plan (FIP)" provided by ITA International Holdings (Investors Trust). Please enter your initials (e.g. T.Y for Taro Yamada) in the box for each article.'
+    },
+    articles: [
+      {
+        num: { ja: '第1条', en: 'Article 1' },
+        title: { ja: 'サポートの範囲および自己責任の原則', en: 'Scope of Support and Principle of Self-Responsibility' },
+        body: {
+          ja: 'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',
+          en: 'The services provided by Wawasan Global Support Limited (Labuan corporation) are limited to administrative support and agency services. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'
+        }
+      },
+      {
+        num: { ja: '第2条', en: 'Article 2' },
+        title: { ja: '投資リスクに関する事項', en: 'Investment Risks' },
+        body: {
+          ja: '本プランは為替リスクを伴うため、[[R:日本円に換算した際に元本割れが生じる可能性があります。]]\n[[R:本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。]]',
+          en: 'This plan involves foreign exchange risk, and [[R:when converted to Japanese yen, there is a possibility that you may lose part or all of your principal.]]\n[[R:You understand and accept the country risk associated with this investment.]]'
+        }
+      },
+      {
+        num: { ja: '第3条', en: 'Article 3' },
+        title: { ja: '元本確保の適用条件', en: 'Principal Protection Conditions' },
+        body: {
+          ja: '本商品は「元本確保100%」と記載されていますが、[[R:これは契約期間中に元本の解約（一部解約を含む）が一切行われなかった場合に限り確保されるものです。]]\n当該元本の確保は、Investors Trustによって保証されています。',
+          en: 'Although this product states "100% Principal Protection," [[R:this protection only applies if no cancellation (including partial cancellation) of the principal is made throughout the entire contract period.]]\nThe principal protection is guaranteed by Investors Trust.'
+        }
+      },
+      {
+        num: { ja: '第4条', en: 'Article 4' },
+        title: { ja: '流動性制限および解約に関する規定', en: 'Liquidity Restrictions and Cancellation Regulations' },
+        body: {
+          ja: '【全解約の禁止】[[R:契約期間終了前（満期前）の全解約は不可です。]]\n【流動性制限】パンフレットに記載の「流動性」および「解約手数料」を確認し、制限について理解しております。\n【一部解約の変動性】一部解約可能な金額はイラストレーションの「可能な現金解約価値」を参照していますが、[[R:実際の申請時の金額と変動が生じることを了承します。]]\n【利息引き出しの影響】[[R:契約途中で利息分の引き出しを行った場合、イラストレーション記載の推移は参考にならなくなります。]]',
+          en: '[Full Cancellation Prohibition] [[R:Full cancellation before the end of the contract period (before maturity) is not permitted.]]\n[Liquidity Restrictions] You have confirmed and understood the "liquidity" and "cancellation fee" information stated in the brochure.\n[Partial Cancellation Variability] The partial cancellation amount is based on the "Available Cash Surrender Value" in the illustration, but [[R:you acknowledge that the actual amount available at the time of application may vary.]]\n[Impact of Interest Withdrawals] [[R:If interest is withdrawn during the contract period, the projected values shown in the illustration will no longer be a reliable reference.]]'
+        }
+      },
+      {
+        num: { ja: '第5条', en: 'Article 5' },
+        title: { ja: '金利に関する規定', en: 'Interest Rate Regulations' },
+        body: {
+          ja: 'お申し込み時に選択した契約年数（3・5・7・10年）の期間中は金利の変更はありませんが、[[R:当該契約年数を終えた後には金利が変更されることを理解しております。]]',
+          en: 'The interest rate will not change during the contract term selected at application (3, 5, 7, or 10 years), however [[R:you understand that the interest rate may change after that contract term ends.]]'
+        }
+      },
+      {
+        num: { ja: '第6条', en: 'Article 6' },
+        title: { ja: '費用および各種手数料', en: 'Costs and Fees' },
+        body: {
+          ja: '本プランの費用として、[[B:月額プラン手数料 7 USD]] がかかります。\n出金手続き時は[[B:送金手数料 50 USD]]（将来改定の可能性あり）および各受取銀行の為替手数料が[[B:お客様負担]]となります。\nクレジットカードでの海外送金（入金時）は[[B:3.5%の手数料]]およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由の海外送金は各行所定の手数料が[[B:お客様負担]]となります。',
+          en: 'This plan charges a [[B:monthly plan fee of USD 7.]] \nFor withdrawals, a [[B:wire transfer fee of USD 50]] (subject to future revision) and exchange fees charged by receiving banks are [[B:borne by the customer.]] \nFor overseas wire transfers by credit card (when depositing), [[B:a fee of 3.5%]] plus the credit card company\'s own fee applies. For overseas wire transfers via domestic banks or internet banking, the respective fees are [[B:borne by the customer.]]'
+        }
+      },
+      {
+        num: { ja: '第7条', en: 'Article 7' },
+        title: { ja: '死亡給付金に関する規定', en: 'Death Benefit Regulations' },
+        body: {
+          ja: '死亡給付金の支払基準額は[[B:解約返戻金の101%]]です。\n[[R:プラン発行後2年以内の既往症・障害に起因する死亡および自殺に対しては死亡給付金が支払われません。]]\n受益者の設定が[[B:必須]]です。',
+          en: 'The death benefit payment standard is [[B:101% of the surrender value.]] \n[[R:Death benefits will not be paid for deaths caused by pre-existing conditions or disabilities within 2 years of plan issuance, or for suicide.]]\nSetting a beneficiary is [[B:mandatory.]]'
+        }
+      },
+      {
+        num: { ja: '第8条', en: 'Article 8' },
+        title: { ja: '米国居住者へのステータス変更', en: 'Change of Status to US Resident' },
+        body: {
+          ja: '[[R:契約途中にアメリカ居住者となられた場合、親族等への譲渡または解約が必要となることを理解しております。]]',
+          en: '[[R:You understand that if you become a US resident during the contract period, transfer to relatives or cancellation of the plan will be required.]]'
+        }
+      },
+      {
+        num: { ja: '第9条', en: 'Article 9' },
+        title: { ja: '個人情報の取扱方針', en: 'Privacy Policy' },
+        body: {
+          ja: '申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',
+          en: 'Personal information viewed or obtained to report enrollment procedures will not be used for any purpose other than those enrollment procedures and introductions to similar products.'
+        }
+      }
+    ]
+  },
+
+  platinum: {
+    name: { ja: 'プラチナプラス', en: 'Platinum Plus' },
+    label: { ja: 'プレミアム型 — プラチナプラス', en: 'Premium Type — Platinum Plus' },
+    title: { ja: 'プラチナプラスご契約に関する重要事項同意書', en: 'Important Matters Consent Form — Platinum Plus' },
+    preamble: {
+      ja: 'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、持続可能なライフプランニングの実現を重視しております。本同意書は、ITA International Holdings（Investors Trust）の商品「プラチナプラス」へのお申し込みにあたり、投資に伴う諸リスクおよびサポート範囲を事前にお伝えし、お客様の利益を保護するためのものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。',
+      en: 'Wawasan Global Support Limited values sustainable life planning that supports customers\' proactive asset formation. This consent form is intended to protect your interests by communicating in advance the risks and scope of support for the product "Platinum Plus" provided by ITA International Holdings (Investors Trust). Please enter your initials (e.g. T.Y for Taro Yamada) in the box for each article.'
+    },
+    articles: [
+      {
+        num: { ja: '第1条', en: 'Article 1' },
+        title: { ja: 'サポートの範囲および自己責任の原則', en: 'Scope of Support and Principle of Self-Responsibility' },
+        body: {
+          ja: '当社（ラブアン法人 Wawasan Global Support Limited）が提供する本サービスは、海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',
+          en: 'The services provided by our company (Labuan corporation, Wawasan Global Support Limited) are limited to administrative support and agency services for enrollment procedures. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'
+        }
+      },
+      {
+        num: { ja: '第2条', en: 'Article 2' },
+        title: { ja: '投資リスクに関する事項', en: 'Investment Risks' },
+        body: {
+          ja: '【為替リスク】[[R:本プランは為替リスクを伴うため、日本円に換算した際に元本割れが生じる可能性があります。]]\n【市場動向リスク】[[R:為替リスクとは別に、市場動向によって元本割れが生じる可能性があります。]]\n【カントリーリスク】[[R:本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。]]',
+          en: '[Foreign Exchange Risk] [[R:This plan involves foreign exchange risk, and when converted to Japanese yen, there is a possibility of capital loss.]]\n[Market Risk] [[R:In addition to exchange rate risk, capital loss may occur depending on market conditions.]]\n[Country Risk] [[R:You understand and accept the country risk associated with this investment.]]'
+        }
+      },
+      {
+        num: { ja: '第3条', en: 'Article 3' },
+        title: { ja: 'プランの費用構造および商品条件', en: 'Plan Fee Structure and Product Terms' },
+        body: {
+          ja: '別紙の商品条件シートを確認し、プランの費用構造や商品の内容を十分理解しております。',
+          en: 'You confirm that you have reviewed the separate product conditions sheet and fully understand the plan\'s fee structure and product details.'
+        }
+      },
+      {
+        num: { ja: '第4条', en: 'Article 4' },
+        title: { ja: '外部委託とアドバイザリーサービス', en: 'External Delegation and Advisory Services' },
+        body: {
+          ja: '運用を外部委託（アドバイザリーサービス合意書を提出）する場合、[[B:顧問サービス料がかかること]]をアドバイザリーサービス合意書を確認の上、十分理解しております。',
+          en: 'If asset management is delegated externally (by submitting an Advisory Service Agreement), you confirm that you have reviewed the Advisory Service Agreement and fully understand that [[B:an advisory service fee will be charged.]]'
+        }
+      },
+      {
+        num: { ja: '第5条', en: 'Article 5' },
+        title: { ja: '解約手数料および送金に関する規定', en: 'Cancellation Fees and Wire Transfer Regulations' },
+        body: {
+          ja: '【解約手数料】[[R:契約開始後12か月以内の解約には1.5%の手数料がかかります。]]\n【送金手数料（出金時）】1回あたり[[B:50 USD]]の送金手数料がかかります。\n【海外送金手数料（入金時）】クレジットカードでの海外送金の場合[[B:3.5%の手数料]]およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由では各行所定の手数料が[[B:お客様負担]]となります。',
+          en: '[Cancellation Fee] [[R:A cancellation fee of 1.5% applies only for cancellations within 12 months of contract commencement.]]\n[Wire Transfer Fee (Withdrawal)] A wire transfer fee of [[B:USD 50]] applies per transaction.\n[Overseas Wire Transfer Fee (Deposit)] For credit card overseas transfers, [[B:a 3.5% fee]] plus the credit card company\'s fee applies. For transfers via domestic banks or internet banking, the respective bank fees are [[B:borne by the customer.]]'
+        }
+      },
+      {
+        num: { ja: '第6条', en: 'Article 6' },
+        title: { ja: '米国居住者へのステータス変更', en: 'Change of Status to US Resident' },
+        body: {
+          ja: '[[R:契約途中にアメリカ居住者となられる場合、親族等への譲渡または解約が必要となることを理解しております。]]',
+          en: '[[R:You understand that if you become a US resident during the contract period, transfer to relatives or cancellation of the plan will be required.]]'
+        }
+      },
+      {
+        num: { ja: '第7条', en: 'Article 7' },
+        title: { ja: '個人情報の取扱方針', en: 'Privacy Policy' },
+        body: {
+          ja: '申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',
+          en: 'Personal information viewed or obtained to report enrollment procedures will not be used for any purpose other than those enrollment procedures and introductions to similar products.'
+        }
+      }
+    ]
   }
+};
 
-  function onInitialInput(i, val) {
-    const check = document.getElementById('check-' + i);
-    if (val.trim().length > 0) {
-      check.classList.add('filled');
-    } else {
-      check.classList.remove('filled');
+/* =========================================================
+   FORM LOGIC
+   ========================================================= */
+let selectedProduct = null;
+
+function selectProduct(key) {
+  selectedProduct = key;
+  document.querySelectorAll('.product-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('opt-' + key).classList.add('selected');
+  document.getElementById('btn1Next').disabled = false;
+}
+
+/* Parse [[R:...]] → red bold, [[B:...]] → bold, \n → new <p> */
+function parseBody(text) {
+  const paragraphs = text.split('\n');
+  return paragraphs.map(para => {
+    let html = para
+      .replace(/\[\[R:(.*?)\]\]/g, '<strong class="risk">$1</strong>')
+      .replace(/\[\[B:(.*?)\]\]/g, '<strong>$1</strong>');
+    // Detect section headers like 【...】 and make them bold
+    html = html.replace(/【(.*?)】/g, '<strong>【$1】</strong>');
+    return `<p>${html}</p>`;
+  }).join('');
+}
+
+function buildArticles(product) {
+  const container = document.getElementById('articlesContainer');
+  // Save existing initials before rebuilding
+  const saved = {};
+  product.articles.forEach((_, i) => {
+    const el = document.getElementById('initial-' + i);
+    if (el) saved[i] = el.value;
+  });
+
+  container.innerHTML = '';
+  product.articles.forEach((art, i) => {
+    const div = document.createElement('div');
+    div.className = 'article';
+    const numText = typeof art.num === 'object' ? art.num[lang] : art.num;
+    const titleText = typeof art.title === 'object' ? art.title[lang] : art.title;
+    const bodyText = typeof art.body === 'object' ? art.body[lang] : art.body;
+    const initialLabel = lang === 'ja'
+      ? 'イニシャルをご記入：'
+      : 'Enter your initials:';
+    const initialHint = lang === 'ja'
+      ? '（山田　太郎さんの場合：T.Y）'
+      : '(e.g. T.Y for Taro Yamada)';
+
+    div.innerHTML = `
+      <div class="article-title">
+        <span>${numText}　${titleText}</span>
+        <div class="initial-check" id="check-${i}">✓</div>
+      </div>
+      <div class="article-body">
+        ${parseBody(bodyText)}
+        <div class="initial-row">
+          <span class="initial-label">${initialLabel}</span>
+          <input class="initial-input" type="text" maxlength="6" placeholder="T.Y"
+            id="initial-${i}" oninput="onInitialInput(${i}, this.value)" autocomplete="off"
+            value="${saved[i] || ''}">
+          <span class="initial-hint">${initialHint}</span>
+        </div>
+      </div>
+    `;
+    container.appendChild(div);
+    // Restore check state
+    if (saved[i] && saved[i].trim().length > 0) {
+      setTimeout(() => {
+        const chk = document.getElementById('check-' + i);
+        if (chk) chk.classList.add('filled');
+      }, 0);
     }
+  });
+}
+
+function onInitialInput(i, val) {
+  const check = document.getElementById('check-' + i);
+  if (val.trim().length > 0) {
+    check.classList.add('filled');
+  } else {
+    check.classList.remove('filled');
+  }
+  checkAllInitials();
+}
+
+function checkAllInitials() {
+  const product = products[selectedProduct];
+  const allFilled = product.articles.every((_, i) => {
+    const v = document.getElementById('initial-' + i);
+    return v && v.value.trim().length > 0;
+  });
+  document.getElementById('btn2Next').disabled = !allFilled;
+}
+
+function goToStep(step) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen' + step).classList.add('active');
+  updateProgress(step);
+
+  if (step === 2 && selectedProduct) {
+    const p = products[selectedProduct];
+    document.getElementById('consentBadge').textContent = '📄 ' + p.label[lang];
+    document.getElementById('consentTitle').textContent = p.title[lang];
+    document.getElementById('consentPreamble').textContent = p.preamble[lang];
+    buildArticles(p);
     checkAllInitials();
   }
 
-  function checkAllInitials() {
-    const product = products[selectedProduct];
-    const allFilled = product.articles.every((_, i) => {
-      const v = document.getElementById('initial-' + i);
-      return v && v.value.trim().length > 0;
-    });
-    document.getElementById('btn2Next').disabled = !allFilled;
+  if (step === 3) {
+    const p = products[selectedProduct];
+    document.getElementById('confirmProduct').textContent = p.name[lang];
+    const count = p.articles.length;
+    document.getElementById('confirmCount').textContent = lang === 'ja'
+      ? count + '条項すべて記入済み'
+      : count + ' articles — all initialed';
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('sigDate').value = today;
+    document.getElementById('finalAgree').checked = false;
+    document.getElementById('btn3Submit').disabled = true;
   }
 
-  function goToStep(step) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById('screen' + step).classList.add('active');
-    currentStep = step;
-    updateProgress(step);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
-    if (step === 2 && selectedProduct) {
-      const p = products[selectedProduct];
-      document.getElementById('consentBadge').textContent = '📄 ' + p.label;
-      document.getElementById('consentTitle').textContent = p.title;
-      buildArticles(p);
+function checkStep3() {
+  const name = document.getElementById('sigName').value.trim();
+  const date = document.getElementById('sigDate').value;
+  const email = document.getElementById('sigEmail').value.trim();
+  const agreed = document.getElementById('finalAgree').checked;
+  document.getElementById('btn3Submit').disabled = !(name && date && email && agreed);
+}
+
+function submitForm() {
+  const refNum = 'WGS-' + Date.now().toString(36).toUpperCase().slice(-8);
+  document.getElementById('refNumber').textContent = refNum;
+  const p = products[selectedProduct];
+  document.getElementById('doneProduct').textContent = p.name[lang];
+  document.getElementById('doneName').textContent = document.getElementById('sigName').value;
+  document.getElementById('doneDate').textContent = document.getElementById('sigDate').value;
+  goToStep(4);
+}
+
+function updateProgress(step) {
+  for (let i = 1; i <= 4; i++) {
+    const num = document.getElementById('pnum' + i);
+    const label = document.getElementById('plabel' + i);
+    if (i < step) {
+      num.className = 'step-num done';
+      num.textContent = '✓';
+    } else if (i === step) {
+      num.className = 'step-num active';
+      num.textContent = i;
+      label.className = 'step-label active';
+    } else {
+      num.className = 'step-num pending';
+      num.textContent = i;
+      label.className = 'step-label';
     }
-
-    if (step === 3) {
-      document.getElementById('confirmProduct').textContent = products[selectedProduct].name;
-      const initials = products[selectedProduct].articles.map((_, i) => {
-        const el = document.getElementById('initial-' + i);
-        return el ? el.value.trim() : '';
-      }).filter(v => v).join(' / ');
-      document.getElementById('confirmInitials').textContent = initials;
-      const today = new Date().toISOString().split('T')[0];
-      document.getElementById('sigDate').value = today;
-    }
-
-    window.scrollTo(0, 0);
-  }
-
-  function checkStep3() {
-    const name = document.getElementById('sigName').value.trim();
-    const date = document.getElementById('sigDate').value;
-    const email = document.getElementById('sigEmail').value.trim();
-    const agreed = document.getElementById('finalAgree').checked;
-    document.getElementById('btn3Submit').disabled = !(name && date && email && agreed);
-  }
-
-  function submitForm() {
-    const refNum = 'WGS-' + Date.now().toString(36).toUpperCase().slice(-8);
-    document.getElementById('refNumber').textContent = refNum;
-    document.getElementById('doneProduct').textContent = products[selectedProduct].name;
-    document.getElementById('doneName').textContent = document.getElementById('sigName').value;
-    document.getElementById('doneDate').textContent = document.getElementById('sigDate').value;
-    goToStep(4);
-  }
-
-  function updateProgress(step) {
-    for (let i = 1; i <= 4; i++) {
-      const num = document.getElementById('pnum' + i);
-      const label = document.getElementById('plabel' + i);
-      if (i < step) {
-        num.className = 'step-num done';
-        num.textContent = '✓';
-      } else if (i === step) {
-        num.className = 'step-num active';
-        num.textContent = i;
-        label.className = 'step-label active';
-      } else {
-        num.className = 'step-num pending';
-        num.textContent = i;
-        label.className = 'step-label';
-      }
-      if (i < 4) {
-        const line = document.getElementById('pline' + i);
-        if (line) line.className = i < step ? 'step-line done' : 'step-line';
-      }
+    if (i < 4) {
+      const line = document.getElementById('pline' + i);
+      if (line) line.className = i < step ? 'step-line done' : 'step-line';
     }
   }
+}
 </script>
 </body>
 </html>

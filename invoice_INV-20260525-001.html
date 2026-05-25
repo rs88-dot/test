@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>請求書 INV-20260525-001</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 20px;
+      color: #1a1a2e;
+    }
+
+    .page {
+      background: #ffffff;
+      width: 794px;
+      min-height: 1123px;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ── ヘッダーバー ── */
+    .header-bar {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+      padding: 36px 48px 32px;
+      position: relative;
+      overflow: hidden;
+    }
+    .header-bar::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.04);
+    }
+    .header-bar::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 30px;
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.03);
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      position: relative;
+      z-index: 1;
+    }
+
+    .doc-label {
+      font-size: 32px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.18em;
+    }
+    .doc-label span {
+      display: block;
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+    }
+
+    .header-meta {
+      text-align: right;
+    }
+    .inv-number {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      letter-spacing: 0.08em;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      padding: 6px 14px;
+      display: inline-block;
+      margin-bottom: 10px;
+    }
+    .inv-date {
+      font-size: 12px;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.05em;
+    }
+    .inv-date strong {
+      color: rgba(255,255,255,0.8);
+      font-weight: 500;
+    }
+
+    /* ── アクセントライン ── */
+    .accent-line {
+      height: 4px;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 40%, #f093fb 100%);
+    }
+
+    /* ── ボディ ── */
+    .body {
+      padding: 40px 48px 48px;
+    }
+
+    /* ── 宛先 ／ 発行者 ── */
+    .parties {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 40px;
+    }
+
+    .bill-to {
+      flex: 1;
+    }
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #764ba2;
+      margin-bottom: 8px;
+    }
+    .company-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1a1a2e;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+    .honorific {
+      font-size: 13px;
+      color: #555;
+    }
+
+    .issuer {
+      text-align: right;
+      background: #f8f7ff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      border: 1px solid #e8e4f3;
+      min-width: 260px;
+    }
+    .issuer-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #302b63;
+      margin-bottom: 6px;
+    }
+    .issuer-detail {
+      font-size: 11.5px;
+      color: #666;
+      line-height: 1.8;
+    }
+    .tax-badge {
+      display: inline-block;
+      font-size: 10px;
+      color: #888;
+      background: #eee;
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-top: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── 請求金額ハイライト ── */
+    .amount-highlight {
+      background: linear-gradient(135deg, #0f0c29 0%, #302b63 100%);
+      border-radius: 14px;
+      padding: 28px 36px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 36px;
+    }
+    .amount-highlight .label {
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.12em;
+    }
+    .amount-highlight .value {
+      font-size: 38px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.04em;
+    }
+    .amount-highlight .value sup {
+      font-size: 20px;
+      font-weight: 400;
+      vertical-align: super;
+      margin-right: 4px;
+      color: rgba(255,255,255,0.7);
+    }
+    .amount-highlight .sub {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+
+    /* ── 明細テーブル ── */
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #764ba2;
+      margin-bottom: 12px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 36px;
+      font-size: 13px;
+    }
+    thead tr {
+      background: #f3f0fb;
+    }
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: #302b63;
+      border-bottom: 2px solid #e0d9f5;
+    }
+    thead th:last-child { text-align: right; }
+
+    tbody tr {
+      border-bottom: 1px solid #f0eef8;
+      transition: background 0.15s;
+    }
+    tbody tr:hover { background: #faf9ff; }
+    tbody td {
+      padding: 16px 16px;
+      color: #333;
+      vertical-align: top;
+      line-height: 1.6;
+    }
+    tbody td:last-child { text-align: right; font-weight: 500; }
+
+    .badge-tax {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      background: #ede9fb;
+      color: #764ba2;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    /* ── 合計行 ── */
+    .total-block {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 40px;
+    }
+    .total-table {
+      width: 300px;
+    }
+    .total-table tr td {
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #555;
+    }
+    .total-table tr td:last-child { text-align: right; }
+    .total-table tr.grand td {
+      border-top: 2px solid #302b63;
+      padding-top: 12px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #302b63;
+    }
+
+    /* ── 振込先 ── */
+    .bank-section {
+      background: #f8f7ff;
+      border: 1px solid #e0d9f5;
+      border-radius: 12px;
+      padding: 24px 28px;
+      margin-bottom: 36px;
+    }
+    .bank-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .bank-item .key {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #999;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .bank-item .val {
+      font-size: 14px;
+      font-weight: 600;
+      color: #302b63;
+    }
+
+    /* ── フッター ── */
+    .footer {
+      border-top: 1px solid #f0eef8;
+      padding-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .footer-note {
+      font-size: 11px;
+      color: #bbb;
+      line-height: 1.7;
+    }
+    .footer-stamp {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 2px solid #302b63;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 10px;
+      font-weight: 700;
+      color: #302b63;
+      letter-spacing: 0.08em;
+      opacity: 0.35;
+    }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .page { box-shadow: none; border-radius: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <!-- ヘッダー -->
+    <div class="header-bar">
+      <div class="header-inner">
+        <div class="doc-label">
+          <span>Invoice</span>
+          請 求 書
+        </div>
+        <div class="header-meta">
+          <div class="inv-number">INV-20260525-001</div>
+          <div class="inv-date">発行日：<strong>2026年5月25日</strong></div>
+        </div>
+      </div>
+    </div>
+    <div class="accent-line"></div>
+
+    <div class="body">
+
+      <!-- 宛先 / 発行者 -->
+      <div class="parties">
+        <div class="bill-to">
+          <div class="section-label">Bill To / 請求先</div>
+          <div class="company-name">合同会社 Frigus</div>
+          <div class="honorific">御中</div>
+        </div>
+        <div class="issuer">
+          <div class="section-label" style="text-align:right;">Issued By / 発行者</div>
+          <div class="issuer-name">可知 優也</div>
+          <div class="issuer-detail">
+            愛知県名古屋市昭和区壇溪通1丁目7番地<br>
+            アンシェリーナ106<br>
+            TEL：080-6925-9411
+          </div>
+          <div class="tax-badge">免税事業者 ／ 登録番号なし</div>
+        </div>
+      </div>
+
+      <!-- 請求金額 -->
+      <div class="amount-highlight">
+        <div>
+          <div class="label">ご請求金額（税込）</div>
+          <div class="sub">Total Amount Due</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="value"><sup>¥</sup>202,306</div>
+          <div class="sub">消費税対象外</div>
+        </div>
+      </div>
+
+      <!-- 明細 -->
+      <div class="section-title">Invoice Details / 請求明細</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:120px;">日付</th>
+            <th>内容</th>
+            <th style="width:70px; text-align:center;">数量</th>
+            <th style="width:80px; text-align:center;">単位</th>
+            <th style="width:80px; text-align:center;">税区分</th>
+            <th style="width:100px;">金額</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#888; font-size:12px;">2026年5月25日</td>
+            <td>
+              Goo社より預り金（2026年2月分）精算
+            </td>
+            <td style="text-align:center;">1</td>
+            <td style="text-align:center;">式</td>
+            <td style="text-align:center;"><span class="badge-tax">対象外</span></td>
+            <td>¥202,306</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- 合計 -->
+      <div class="total-block">
+        <table class="total-table">
+          <tr>
+            <td>小計</td>
+            <td>¥202,306</td>
+          </tr>
+          <tr>
+            <td>消費税</td>
+            <td>¥0（対象外）</td>
+          </tr>
+          <tr class="grand">
+            <td>合　計</td>
+            <td>¥202,306</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- 振込先 -->
+      <div class="bank-section">
+        <div class="section-title">Bank Transfer / お振込先</div>
+        <div class="bank-grid">
+          <div class="bank-item">
+            <div class="key">銀行名</div>
+            <div class="val">楽天銀行</div>
+          </div>
+          <div class="bank-item">
+            <div class="key">支店名</div>
+            <div class="val">ボレロ支店</div>
+          </div>
+          <div class="bank-item">
+            <div class="key">口座種別</div>
+            <div class="val">普通預金</div>
+          </div>
+          <div class="bank-item">
+            <div class="key">口座番号</div>
+            <div class="val">4541728</div>
+          </div>
+          <div class="bank-item">
+            <div class="key">口座名義</div>
+            <div class="val">カチユウヤ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- フッター -->
+      <div class="footer">
+        <div class="footer-note">
+          ご不明な点がございましたら、お気軽にご連絡ください。<br>
+          TEL: 080-6925-9411
+        </div>
+        <div class="footer-stamp">確認済</div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

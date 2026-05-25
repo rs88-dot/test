@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>重要事項同意書 | Wawasan Global Support Limited</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0f4f8; color: #1a1a2e; min-height: 100vh; }
+
+    /* ===== HEADER ===== */
+    header { background: #1e3a8a; color: #fff; padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+    header .logo { font-size: 16px; font-weight: bold; }
+    header .tagline { font-size: 11px; opacity: 0.7; margin-top: 2px; }
+
+    /* ===== PROGRESS ===== */
+    .progress-bar { background: #fff; border-bottom: 1px solid #e5e7eb; padding: 14px 24px; }
+    .steps { display: flex; align-items: center; gap: 0; max-width: 600px; margin: 0 auto; }
+    .step { display: flex; align-items: center; gap: 6px; flex: 1; }
+    .step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; }
+    .step-num.done { background: #16a34a; color: #fff; }
+    .step-num.active { background: #1e3a8a; color: #fff; }
+    .step-num.pending { background: #e5e7eb; color: #9ca3af; }
+    .step-label { font-size: 11px; color: #6b7280; }
+    .step-label.active { color: #1e3a8a; font-weight: bold; }
+    .step-line { flex: 1; height: 2px; background: #e5e7eb; margin: 0 6px; }
+    .step-line.done { background: #16a34a; }
+
+    /* ===== MAIN ===== */
+    main { max-width: 720px; margin: 30px auto; padding: 0 16px 60px; }
+
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); overflow: hidden; }
+
+    /* ===== STEP 1: 商品選択 ===== */
+    .step-header { padding: 28px 32px 20px; border-bottom: 1px solid #f3f4f6; }
+    .step-header h2 { font-size: 20px; color: #1e3a8a; margin-bottom: 6px; }
+    .step-header p { font-size: 13px; color: #6b7280; line-height: 1.6; }
+
+    .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; padding: 24px 32px 32px; }
+    .product-option { border: 2px solid #e5e7eb; border-radius: 12px; padding: 18px; cursor: pointer; transition: all 0.2s; position: relative; }
+    .product-option:hover { border-color: #93c5fd; background: #f0f9ff; }
+    .product-option.selected { border-color: #1e3a8a; background: #eff6ff; }
+    .product-option input[type=radio] { position: absolute; opacity: 0; }
+    .product-tag { font-size: 10px; font-weight: bold; border-radius: 4px; padding: 2px 8px; display: inline-block; margin-bottom: 8px; }
+    .tag-evolution { background: #fef3c7; color: #92400e; }
+    .tag-sp500 { background: #dbeafe; color: #1e40af; }
+    .tag-fip { background: #dcfce7; color: #166534; }
+    .tag-platinum { background: #f3e8ff; color: #6b21a8; }
+    .product-name { font-size: 15px; font-weight: bold; margin-bottom: 4px; }
+    .product-desc { font-size: 11px; color: #6b7280; line-height: 1.5; }
+    .check-icon { position: absolute; top: 12px; right: 12px; width: 22px; height: 22px; border-radius: 50%; background: #1e3a8a; color: #fff; display: none; align-items: center; justify-content: center; font-size: 12px; }
+    .product-option.selected .check-icon { display: flex; }
+
+    /* ===== STEP 2: 同意書 ===== */
+    .consent-header { padding: 24px 32px 16px; border-bottom: 1px solid #f3f4f6; }
+    .consent-header .product-badge { display: inline-flex; align-items: center; gap: 6px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 6px 12px; font-size: 12px; color: #1e40af; font-weight: bold; margin-bottom: 12px; }
+    .consent-header h2 { font-size: 17px; color: #1e3a8a; margin-bottom: 8px; line-height: 1.5; }
+    .consent-header p { font-size: 12px; color: #6b7280; line-height: 1.7; }
+
+    .notice-box { margin: 0 32px 0; background: #fff7ed; border: 1.5px solid #fb923c; border-radius: 8px; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start; }
+    .notice-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+    .notice-box p { font-size: 12px; color: #9a3412; line-height: 1.6; }
+
+    .articles { padding: 20px 32px 0; }
+    .article { border: 1.5px solid #e5e7eb; border-radius: 10px; margin-bottom: 14px; overflow: hidden; }
+    .article-title { background: #f8fafc; padding: 12px 16px; font-size: 13px; font-weight: bold; color: #1e3a8a; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: space-between; align-items: center; }
+    .article-body { padding: 14px 16px; font-size: 12px; color: #374151; line-height: 1.8; }
+    .article-body ul { padding-left: 18px; margin-top: 6px; }
+    .article-body li { margin-bottom: 4px; }
+    .initial-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #e5e7eb; }
+    .initial-label { font-size: 11px; color: #6b7280; white-space: nowrap; }
+    .initial-input { border: 1.5px solid #d1d5db; border-radius: 6px; padding: 6px 10px; font-size: 13px; width: 100px; text-align: center; letter-spacing: 2px; }
+    .initial-input:focus { outline: none; border-color: #1e3a8a; }
+    .initial-hint { font-size: 10px; color: #9ca3af; }
+    .initial-check { width: 22px; height: 22px; border-radius: 50%; background: #e5e7eb; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #9ca3af; flex-shrink: 0; transition: all 0.2s; }
+    .initial-check.filled { background: #16a34a; color: #fff; }
+
+    /* 署名エリア */
+    .signature-section { padding: 20px 32px 28px; }
+    .sig-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .field-group label { display: block; font-size: 12px; font-weight: bold; color: #374151; margin-bottom: 6px; }
+    .field-group input { width: 100%; border: 1.5px solid #d1d5db; border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+    .field-group input:focus { outline: none; border-color: #1e3a8a; }
+    .field-full { grid-column: 1 / -1; }
+
+    .agree-check { display: flex; align-items: flex-start; gap: 10px; background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 8px; padding: 14px 16px; margin-bottom: 20px; cursor: pointer; }
+    .agree-check input[type=checkbox] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; accent-color: #16a34a; cursor: pointer; }
+    .agree-check-text { font-size: 13px; color: #166534; line-height: 1.6; }
+
+    /* ===== STEP 3: 完了 ===== */
+    .complete-section { text-align: center; padding: 60px 32px; }
+    .complete-icon { width: 72px; height: 72px; background: #dcfce7; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 36px; margin: 0 auto 20px; }
+    .complete-section h2 { font-size: 22px; color: #16a34a; margin-bottom: 10px; }
+    .complete-section p { font-size: 14px; color: #6b7280; line-height: 1.7; margin-bottom: 6px; }
+    .complete-ref { display: inline-block; background: #f3f4f6; border-radius: 8px; padding: 10px 20px; font-size: 13px; color: #374151; font-family: monospace; margin: 16px 0; letter-spacing: 1px; }
+
+    /* ===== BUTTONS ===== */
+    .btn-row { display: flex; gap: 12px; padding: 20px 32px; border-top: 1px solid #f3f4f6; }
+    .btn { padding: 12px 28px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; border: none; transition: all 0.2s; }
+    .btn-primary { background: #1e3a8a; color: #fff; flex: 1; }
+    .btn-primary:hover { background: #1e40af; }
+    .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+    .btn-secondary { background: #f3f4f6; color: #374151; }
+    .btn-secondary:hover { background: #e5e7eb; }
+    .btn-success { background: #16a34a; color: #fff; flex: 1; }
+    .btn-success:hover { background: #15803d; }
+    .btn-success:disabled { background: #86efac; cursor: not-allowed; }
+
+    /* ===== SCREENS ===== */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    @media (max-width: 600px) {
+      .product-grid { grid-template-columns: 1fr; }
+      .sig-grid { grid-template-columns: 1fr; }
+      main { padding: 0 8px 60px; }
+      .step-header, .consent-header, .articles, .signature-section, .btn-row { padding-left: 20px; padding-right: 20px; }
+      .notice-box { margin: 0 20px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">Wawasan Global Support Limited</div>
+    <div class="tagline">重要事項同意書 — オンライン承認システム</div>
+  </div>
+</header>
+
+<!-- プログレスバー -->
+<div class="progress-bar">
+  <div class="steps" id="progressSteps">
+    <div class="step">
+      <div class="step-num active" id="pnum1">1</div>
+      <div class="step-label active" id="plabel1">商品選択</div>
+    </div>
+    <div class="step-line" id="pline1"></div>
+    <div class="step">
+      <div class="step-num pending" id="pnum2">2</div>
+      <div class="step-label" id="plabel2">重要事項確認</div>
+    </div>
+    <div class="step-line" id="pline2"></div>
+    <div class="step">
+      <div class="step-num pending" id="pnum3">3</div>
+      <div class="step-label" id="plabel3">署名・承認</div>
+    </div>
+    <div class="step-line" id="pline3"></div>
+    <div class="step">
+      <div class="step-num pending" id="pnum4">4</div>
+      <div class="step-label" id="plabel4">完了</div>
+    </div>
+  </div>
+</div>
+
+<main>
+
+  <!-- ===== SCREEN 1: 商品選択 ===== -->
+  <div class="card screen active" id="screen1">
+    <div class="step-header">
+      <h2>お申し込み商品を選択してください</h2>
+      <p>ご希望の商品を1つお選びください。選択後、その商品に関する重要確認事項をご確認いただきます。</p>
+    </div>
+
+    <div class="product-grid">
+      <label class="product-option" id="opt-evolution" onclick="selectProduct('evolution')">
+        <input type="radio" name="product" value="evolution">
+        <div class="check-icon">✓</div>
+        <div class="product-tag tag-evolution">積立型</div>
+        <div class="product-name">Evolution</div>
+        <div class="product-desc">長期積立による資産形成プラン。ロイヤルティボーナス付き。</div>
+      </label>
+
+      <label class="product-option" id="opt-sp500" onclick="selectProduct('sp500')">
+        <input type="radio" name="product" value="sp500">
+        <div class="check-icon">✓</div>
+        <div class="product-tag tag-sp500">インデックス型</div>
+        <div class="product-name">S&P500インデックス</div>
+        <div class="product-desc">S&P500連動型の海外積立投資プログラム。元本確保機能付き。</div>
+      </label>
+
+      <label class="product-option" id="opt-fip" onclick="selectProduct('fip')">
+        <input type="radio" name="product" value="fip">
+        <div class="check-icon">✓</div>
+        <div class="product-tag tag-fip">固定金利型</div>
+        <div class="product-name">FIP（確定利回りポートフォリオ）</div>
+        <div class="product-desc">固定金利で安定運用。3・5・7・10年の契約期間から選択可能。</div>
+      </label>
+
+      <label class="product-option" id="opt-platinum" onclick="selectProduct('platinum')">
+        <input type="radio" name="product" value="platinum">
+        <div class="check-icon">✓</div>
+        <div class="product-tag tag-platinum">プレミアム型</div>
+        <div class="product-name">プラチナプラス</div>
+        <div class="product-desc">外部委託アドバイザリーサービス対応の上位プラン。</div>
+      </label>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn1Next" disabled onclick="goToStep(2)">
+        次へ：重要事項を確認する →
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 2: 重要事項 ===== -->
+  <div class="card screen" id="screen2">
+    <div class="consent-header">
+      <div class="product-badge" id="consentBadge">📄 商品名</div>
+      <h2 id="consentTitle">重要事項同意書</h2>
+      <p>以下の各条項を十分にお読みいただき、各条項の右欄にローマ字でご自身のイニシャル（例：山田太郎様の場合は <strong>T.Y</strong>）をご記入ください。すべての条項へのご記入が必要です。</p>
+    </div>
+
+    <div style="height:16px;"></div>
+    <div class="notice-box">
+      <div class="notice-icon">⚠</div>
+      <p>本同意書は法的効力を持つ重要な書類です。内容を十分にご理解いただいた上でイニシャルをご記入ください。不明な点は担当者にお問い合わせください。</p>
+    </div>
+
+    <div class="articles" id="articlesContainer">
+      <!-- JSで動的に生成 -->
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goToStep(1)">← 戻る</button>
+      <button class="btn btn-primary" id="btn2Next" disabled onclick="goToStep(3)">
+        次へ：署名・承認へ →
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 3: 署名・承認 ===== -->
+  <div class="card screen" id="screen3">
+    <div class="step-header">
+      <h2>署名・最終承認</h2>
+      <p>以下の情報をご入力いただき、重要事項同意書への最終承認をお願いします。</p>
+    </div>
+
+    <div class="signature-section">
+      <div class="sig-grid">
+        <div class="field-group">
+          <label>お名前（フルネーム）<span style="color:red;">*</span></label>
+          <input type="text" id="sigName" placeholder="山田 太郎" oninput="checkStep3()">
+        </div>
+        <div class="field-group">
+          <label>署名日<span style="color:red;">*</span></label>
+          <input type="date" id="sigDate" oninput="checkStep3()">
+        </div>
+        <div class="field-group field-full">
+          <label>メールアドレス（確認用）<span style="color:red;">*</span></label>
+          <input type="email" id="sigEmail" placeholder="example@email.com" oninput="checkStep3()">
+        </div>
+      </div>
+
+      <div style="margin-bottom: 20px; padding: 16px; background: #f8fafc; border-radius: 10px; font-size: 12px; color: #6b7280; border: 1px solid #e5e7eb;">
+        <strong style="color: #374151; display:block; margin-bottom:8px;">承認内容の確認</strong>
+        商品：<span id="confirmProduct" style="color:#1e3a8a; font-weight:bold;"></span><br>
+        記入イニシャル：<span id="confirmInitials" style="font-family:monospace; color:#374151;"></span>
+      </div>
+
+      <label class="agree-check">
+        <input type="checkbox" id="finalAgree" onchange="checkStep3()">
+        <div class="agree-check-text">
+          上記の重要事項をすべて確認・理解し、自己の自由な意思に基づき本プランの申し込みを行うことに同意します。また、投資に伴うリスクを十分に理解した上で申し込みを行うことを確認します。
+        </div>
+      </label>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="goToStep(2)">← 戻る</button>
+      <button class="btn btn-success" id="btn3Submit" disabled onclick="submitForm()">
+        ✓ 同意して承認する
+      </button>
+    </div>
+  </div>
+
+  <!-- ===== SCREEN 4: 完了 ===== -->
+  <div class="card screen" id="screen4">
+    <div class="complete-section">
+      <div class="complete-icon">✓</div>
+      <h2>承認が完了しました</h2>
+      <p>重要事項同意書へのご同意ありがとうございます。</p>
+      <p>以下の受付番号をお控えください。担当者より改めてご連絡いたします。</p>
+      <div class="complete-ref" id="refNumber"></div>
+      <p style="margin-top: 8px; font-size: 13px;">登録メールアドレスへ確認メールをお送りしました。</p>
+      <div style="margin-top: 32px; padding: 20px; background: #f8fafc; border-radius: 10px; text-align: left; font-size: 12px; color: #6b7280;">
+        <strong style="color: #374151; display:block; margin-bottom:8px;">承認済み内容</strong>
+        商品名：<span id="doneProduct" style="color:#1e3a8a; font-weight:bold;"></span><br>
+        お名前：<span id="doneName" style="color:#374151;"></span><br>
+        署名日：<span id="doneDate" style="color:#374151;"></span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+  const products = {
+    evolution: {
+      name: 'Evolution',
+      label: '積立型 — Evolution',
+      title: 'Evolutionに関する重要事項同意書',
+      preamble: 'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、お客様そして社会全体が共に豊かになる持続可能なライフプランニングの実現を重視しております。本同意書は、その理念に基づき、お客様が自らの意思と判断によってITA International Holdingsが提供する商品「Evolution」へのお申し込みを希望されるにあたり、投資に伴う諸リスクおよび当社のサポート範囲を事前にお伝えし、お客様の利益を保護するためのものです。',
+      articles: [
+        { num: '第1条', title: 'サポートの範囲および自己責任の原則', body: '当社（ラブアン法人 Wawasan Global Support Limited）が提供する本サービスは、お客様のご要望に基づく海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されるものであり、最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。' },
+        { num: '第2条', title: '投資リスクおよび各種手数料の存在', body: '本プランは元本が保証された金融商品ではありません。市場環境や為替レートの変動により運用成績が上下し、場合によっては元本割れが生じるリスク、およびカントリーリスクがあることを承諾します。本プランを維持するため、毎月のプラン手数料および資産管理費用、ならびに年間管理手数料といった費用構造が設定されていることを了承します。' },
+        { num: '第3条', title: '初期積立期間における厳格な制限と途中解約のリスク', body: '【初期期間の制限】当該期間中は、積立金額の減額、一部解約、および積立の一時停止を一切行うことができません。この期間中にプランを解約・失効させた場合、解約手数料の影響により解約返戻金が完全にゼロとなることを了承します。\n【満期前の早期解約リスク】初期期間経過後であれば減額や一部引き出し等が可能となりますが、満期を待たずに解約した場合、返戻金が著しく減少またはゼロとなる危険性があります。' },
+        { num: '第4条', title: '一部解約に関する規定', body: '初期ユニット期間に積み立てた金額からの一部解約は不可能です。一部解約を行う場合、プラン内に最低1,200 USDの純現金価値（解約返戻金）を維持できる金額であれば申請が可能となります。手続きに伴う送金手数料（現時点において50 USD）や為替手数料等はお客様負担となることに同意します。' },
+        { num: '第5条', title: 'ロイヤルティーボーナスの適用要件', body: '本プランに付帯する「ロイヤルティーボーナス」を有効に維持するためには、以下の条件を満たす必要があります。①拠出金の支払いが90日以内の猶予期間内に滞りなく支払われていること。②プランの拠出金の減額がないこと。③一部解約がないこと。' },
+        { num: '第6条', title: '継続の推奨', body: '契約期間中は、減額や一部引出し、一時停止などをせずに、契約時に決めた積立金額で積立期間満了まで積立を継続することが最善であると理解しております。' },
+        { num: '第7条', title: '死亡給付金に関する規定', body: '拠出金を猶予期間（90日）以内に支払っていない場合、死亡給付金の保証は消失し、その権利が復活することはないことを理解しております。プラン発行後2年以内の既往症・障害に起因する死亡および自殺に対しては死亡給付金が支払われないことを理解しております。受益者の設定が必須であることを理解しております。' },
+        { num: '第8条', title: '米国居住者へのステータス変更に関する留意点', body: '将来的にアメリカ居住者（ビザ取得等を含む）となった場合、証券の発行籍地に応じた対応が求められます。【プエルトリコ証券】親族等への譲渡または解約が必要。【ラブアン証券】転居前に所定の手続きを完了することで継続可能な場合があります。契約成立後にプエルトリコ籍とラブアン籍の間での変更はできません。' },
+        { num: '第9条', title: '個人情報の取扱方針', body: '申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。' }
+      ]
+    },
+    sp500: {
+      name: 'S&P500インデックス',
+      label: 'インデックス型 — S&P500',
+      title: '海外積立投資プログラム（S&P500参照型）ご契約に関する重要事項同意書',
+      preamble: '本同意書は、お客様が「Investors Trust S&P500インデックス」へのお申し込みを行うにあたり、投資に伴う諸リスクおよび契約上の各種制限事項を明確にお伝えするものです。以下の各項目を十分にご確認いただき、すべての内容にご納得・ご同意いただいた上でご署名をお願いいたします。',
+      articles: [
+        { num: '第1条', title: 'サポートの範囲および自己責任の原則', body: 'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されるものであり、最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。' },
+        { num: '第2条', title: '投資リスクおよび各種手数料の存在', body: '本プランは元本が保証された金融商品ではありません。市場環境や為替レートの変動により運用成績が上下し、場合によっては元本割れが生じるリスク（カントリーリスク、カウンターパーティーリスクを含む）があることを承諾します。毎月のプラン手数料および資産管理費用、ならびに年間管理手数料といった費用構造が設定されていることを了承します。' },
+        { num: '第3条', title: '元本確保機能およびロイヤルティボーナスの適用要件', body: '「元本確保機能」および「ロイヤルティボーナス」の権利を有効に維持するためには、以下の条件をすべて満たす必要があります。①拠出金を支払期日から90日以内に必ず入金すること。②契約当初に設定した拠出金額を契約期間中に一切減額しないこと。③一部資金の引き出し・積立の90日以上の停止・プラン内貸付制度を一切利用しないこと。' },
+        { num: '第4条', title: '初期積立期間における厳格な制限と途中解約のリスク', body: '【初期期間の制限】当該期間中は、積立金額の減額、一部解約、および積立の一時停止を一切行うことができません。解約・失効させた場合、解約返戻金が完全にゼロとなることを了承します。\n【満期前の早期解約リスク】初期期間経過後でも満期前に解約した場合、S&P500の運用状況と各種手数料の負担により、返戻金が著しく減少またはゼロとなる危険性があります。' },
+        { num: '第5条', title: '一部解約に関する規定', body: '初期ユニット期間に積み立てた資産枠からの引き出しはできません。一部解約を行う場合、プラン内に最低2,400 USDの純現金価値を維持できる範囲でのみ申請が可能です。海外送金手数料（現行50 USD）や受取先金融機関が定める為替手数料等はお客様負担となることに同意します。' },
+        { num: '第6条', title: '死亡給付金に関する規定', body: '拠出金の支払いが猶予期間（90日）を超過した場合、死亡給付金に関する保障は即時消滅し、その後いかなる理由があっても権利は復活しません。プラン発行から2年以内に発生した既往症・障害に起因する死亡および自殺については給付金の支払い対象外となります。受益者の事前設定が必須であることを承諾します。' },
+        { num: '第7条', title: '米国居住者へのステータス変更に関する留意点', body: '将来的にアメリカ合衆国の居住者となった場合、証券の発行籍地に応じた対応が求められます。【プエルトリコ籍】原則として親族等への譲渡またはプランの解約が必須。【ラブアン籍】米国への転居前に担当者経由でITA社へ申告し所定の手続きを完了することで継続が認められる場合があります。なお、契約成立後に籍地変更はできません。' },
+        { num: '第8条', title: '個人情報の取り扱いに関する同意', body: '本お申し込み手続きに関連して提供・取得された個人情報は、各種事務手続きの代行・レポート業務、ならびにWawasan Global Support Limitedが提供する関連サービスのご案内以外の目的には一切使用されないことを確認します。' }
+      ]
+    },
+    fip: {
+      name: 'FIP（確定利回りポートフォリオ）',
+      label: '固定金利型 — FIP',
+      title: '確定利回りポートフォリオ・固定金利プランご契約に関する重要事項同意書',
+      preamble: '本同意書は、お客様がITA International Holdings（Investors Trust）が提供する商品「確定利回りポートフォリオ・固定金利プラン（FIP）」へのお申し込みを行うにあたり、投資に伴う諸リスクおよび契約上の各種制限事項を明確にお伝えするものです。',
+      articles: [
+        { num: '第1条', title: 'サポートの範囲および自己責任の原則', body: 'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されるものであり、最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。' },
+        { num: '第2条', title: '投資リスクに関する事項', body: '本プランは為替リスクを伴うため、日本円に換算した際に元本割れが生じる可能性があることを十分理解しております。本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。' },
+        { num: '第3条', title: '元本確保の適用条件', body: '本商品は「元本確保100%」と記載されておりますが、これは契約期間中に元本の解約（一部解約を含む）が一切行われなかった場合に限り確保されるものであることを理解しております。当該元本の確保は、Investors Trustによって保証されています。' },
+        { num: '第4条', title: '流動性制限および解約に関する規定', body: '【全解約の禁止】契約期間終了前（満期前）の全解約は不可であることを十分理解しております。\n【流動性制限】パンフレットに記載されている「流動性」および「解約手数料」を確認し、本プランにおける流動性の制限について理解しております。\n【一部解約の変動性】一部解約可能な金額については、イラストレーション記載の「可能な現金解約価値」の推移を参照していますが、実際の申請時の金額とは変動が生じることを了承します。\n【利息引き出しの影響】契約途中で利息分の引き出しを行った場合、イラストレーション記載の推移は参考にならなくなることを理解しております。' },
+        { num: '第5条', title: '金利に関する規定', body: 'お申し込み時に選択した契約年数（3年・5年・7年・10年）の期間中は金利の変更はありませんが、当該契約年数を終えた後には金利が変更されることを理解しております。' },
+        { num: '第6条', title: '費用および各種手数料', body: '本プランの費用構造として、月額プラン手数料が7米ドルかかることを理解しております。出金手続き時は送金手数料（現時点で50 USD）や為替手数料等がかかります。クレジットカードでの海外送金（入金時）は3.5%の手数料がかかること、国内銀行・ネットバンク経由での海外送金は各行所定の手数料がお客様負担となることを理解しております。' },
+        { num: '第7条', title: '死亡給付金に関する規定', body: '死亡給付金に関して、支払基準額は解約返戻金の101%であることを理解しております。プラン発行後2年以内に発生した既往症・障害に起因する死亡および自殺に対しては死亡給付金が支払われないことを理解しております。受益者の設定が必須であることを理解しております。' },
+        { num: '第8条', title: '米国居住者へのステータス変更に関する留意点', body: '契約途中にアメリカ居住者となられた場合、親族等への譲渡または解約が必要となることを理解しております。' },
+        { num: '第9条', title: '個人情報の取扱方針', body: '申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。' }
+      ]
+    },
+    platinum: {
+      name: 'プラチナプラス',
+      label: 'プレミアム型 — プラチナプラス',
+      title: 'プラチナプラスご契約に関する重要事項同意書',
+      preamble: 'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、お客様そして社会全体が共に豊かになる持続可能なライフプランニングの実現を重視しております。本同意書は、その理念に基づき、お客様が自らの意思と判断によってITA International Holdings（Investors Trust）の商品「プラチナプラス」へのお申し込みを希望されるにあたり、投資に伴う諸リスクおよび当社のサポート範囲を事前にお伝えし、お客様の利益を保護するためのものです。内容を確認・同意した証として、【重要条項】の右欄にローマ字でご自身のイニシャルをご記入ください。',
+      articles: [
+        { num: '第1条', title: 'サポートの範囲および自己責任の原則', body: '当社（ラブアン法人 Wawasan Global Support Limited）が提供する本サービスは、お客様のご要望に基づく海外保険会社が提供する信託商品の加入手続き等の事務代行・サポート業務に限定されるものであり、最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。' },
+        { num: '第2条', title: '投資リスクに関する事項', body: '【為替リスク】本プランは為替リスクを伴うため、日本円に換算した際に元本割れが生じる可能性があることを十分理解しております。\n【市場動向リスク】為替リスクとは別に、市場動向によって元本割れが生じる可能性があることを十分理解しております。\n【カントリーリスク】本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。' },
+        { num: '第3条', title: 'プランの費用構造および商品条件', body: '別紙の商品条件シートを確認し、プランの費用構造や商品の内容を十分理解しております。' },
+        { num: '第4条', title: '外部委託とアドバイザリーサービス', body: '運用を外部委託（アドバイザリーサービス合意書を提出）する場合、顧問サービス料がかかることをアドバイザリーサービス合意書を確認し、十分理解しております。' },
+        { num: '第5条', title: '解約手数料および送金に関する規定', body: '【解約手数料】契約開始後12か月以内の解約のみ1.5%かかることを理解しております。\n【送金手数料（出金時）】1回あたりの送金手数料として50 USDかかることを理解しております。\n【海外送金手数料（入金時）】クレジットカードでの海外送金の場合3.5%の手数料とクレジットカード会社所定の手数料がかかること。国内銀行窓口やネットバンク等では各行所定の海外送金手数料がかかることを理解しております。' },
+        { num: '第6条', title: '米国居住者へのステータス変更に関する留意点', body: '契約途中にアメリカ居住者となられる場合、親族等への譲渡または解約が必要となることを理解しております。' },
+        { num: '第7条', title: '個人情報の取扱方針', body: '申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。' }
+      ]
+    }
+  };
+
+  let selectedProduct = null;
+  let currentStep = 1;
+
+  function selectProduct(key) {
+    selectedProduct = key;
+    document.querySelectorAll('.product-option').forEach(el => el.classList.remove('selected'));
+    document.getElementById('opt-' + key).classList.add('selected');
+    document.getElementById('btn1Next').disabled = false;
+  }
+
+  function buildArticles(product) {
+    const container = document.getElementById('articlesContainer');
+    container.innerHTML = '';
+    product.articles.forEach((art, i) => {
+      const div = document.createElement('div');
+      div.className = 'article';
+      const bodyLines = art.body.split('\n').map(l => `<p style="margin-bottom:6px;">${l}</p>`).join('');
+      div.innerHTML = `
+        <div class="article-title">
+          ${art.num}　${art.title}
+          <div class="initial-check" id="check-${i}">✓</div>
+        </div>
+        <div class="article-body">
+          ${bodyLines}
+          <div class="initial-row">
+            <span class="initial-label">イニシャルをご記入：</span>
+            <input class="initial-input" type="text" maxlength="5" placeholder="例）T.Y"
+              id="initial-${i}" oninput="onInitialInput(${i}, this.value)" autocomplete="off">
+            <span class="initial-hint">（ローマ字・姓名の頭文字）</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function onInitialInput(i, val) {
+    const check = document.getElementById('check-' + i);
+    if (val.trim().length > 0) {
+      check.classList.add('filled');
+    } else {
+      check.classList.remove('filled');
+    }
+    checkAllInitials();
+  }
+
+  function checkAllInitials() {
+    const product = products[selectedProduct];
+    const allFilled = product.articles.every((_, i) => {
+      const v = document.getElementById('initial-' + i);
+      return v && v.value.trim().length > 0;
+    });
+    document.getElementById('btn2Next').disabled = !allFilled;
+  }
+
+  function goToStep(step) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById('screen' + step).classList.add('active');
+    currentStep = step;
+    updateProgress(step);
+
+    if (step === 2 && selectedProduct) {
+      const p = products[selectedProduct];
+      document.getElementById('consentBadge').textContent = '📄 ' + p.label;
+      document.getElementById('consentTitle').textContent = p.title;
+      buildArticles(p);
+    }
+
+    if (step === 3) {
+      document.getElementById('confirmProduct').textContent = products[selectedProduct].name;
+      const initials = products[selectedProduct].articles.map((_, i) => {
+        const el = document.getElementById('initial-' + i);
+        return el ? el.value.trim() : '';
+      }).filter(v => v).join(' / ');
+      document.getElementById('confirmInitials').textContent = initials;
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('sigDate').value = today;
+    }
+
+    window.scrollTo(0, 0);
+  }
+
+  function checkStep3() {
+    const name = document.getElementById('sigName').value.trim();
+    const date = document.getElementById('sigDate').value;
+    const email = document.getElementById('sigEmail').value.trim();
+    const agreed = document.getElementById('finalAgree').checked;
+    document.getElementById('btn3Submit').disabled = !(name && date && email && agreed);
+  }
+
+  function submitForm() {
+    const refNum = 'WGS-' + Date.now().toString(36).toUpperCase().slice(-8);
+    document.getElementById('refNumber').textContent = refNum;
+    document.getElementById('doneProduct').textContent = products[selectedProduct].name;
+    document.getElementById('doneName').textContent = document.getElementById('sigName').value;
+    document.getElementById('doneDate').textContent = document.getElementById('sigDate').value;
+    goToStep(4);
+  }
+
+  function updateProgress(step) {
+    for (let i = 1; i <= 4; i++) {
+      const num = document.getElementById('pnum' + i);
+      const label = document.getElementById('plabel' + i);
+      if (i < step) {
+        num.className = 'step-num done';
+        num.textContent = '✓';
+      } else if (i === step) {
+        num.className = 'step-num active';
+        num.textContent = i;
+        label.className = 'step-label active';
+      } else {
+        num.className = 'step-num pending';
+        num.textContent = i;
+        label.className = 'step-label';
+      }
+      if (i < 4) {
+        const line = document.getElementById('pline' + i);
+        if (line) line.className = i < step ? 'step-line done' : 'step-line';
+      }
+    }
+  }
+</script>
+</body>
+</html>

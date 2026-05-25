@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>サイト構成イメージ比較</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Hiragino Sans', 'Meiryo', sans-serif; background: #f0f4f8; color: #333; padding: 40px 20px; }
+
+    h1 { text-align: center; font-size: 22px; margin-bottom: 10px; color: #1a1a2e; }
+    .subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 50px; }
+
+    .compare { display: flex; gap: 40px; max-width: 1100px; margin: 0 auto; flex-wrap: wrap; }
+
+    /* ===== CARD ===== */
+    .card { flex: 1; min-width: 300px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.10); }
+    .card-header { padding: 20px 24px 16px; }
+    .badge { display: inline-block; font-size: 11px; font-weight: bold; border-radius: 20px; padding: 4px 12px; margin-bottom: 10px; }
+    .badge-cms { background: #e0f2fe; color: #0369a1; }
+    .badge-manual { background: #fef9c3; color: #854d0e; }
+    .card-header h2 { font-size: 17px; margin-bottom: 4px; }
+    .card-header p { font-size: 12px; color: #888; }
+
+    /* ===== SITE MAP ===== */
+    .sitemap { padding: 16px 24px 24px; background: #f8fafc; border-top: 1px solid #e5e7eb; }
+    .sitemap-title { font-size: 11px; color: #999; font-weight: bold; letter-spacing: 1px; margin-bottom: 14px; }
+
+    .node { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+    .node-top { background: #1e40af; color: #fff; width: fit-content; }
+    .node-mid { background: #3b82f6; color: #fff; width: fit-content; margin-left: 30px; }
+    .node-mid-green { background: #16a34a; color: #fff; width: fit-content; margin-left: 30px; }
+    .node-leaf { background: #dbeafe; color: #1e3a8a; width: fit-content; margin-left: 60px; font-weight: 400; }
+    .node-leaf-green { background: #dcfce7; color: #14532d; width: fit-content; margin-left: 60px; font-weight: 400; }
+    .node-auto { background: #ede9fe; color: #5b21b6; width: fit-content; margin-left: 60px; font-weight: 400; font-style: italic; }
+
+    .connector { width: 2px; height: 10px; background: #cbd5e1; margin-left: 20px; }
+    .connector-deep { margin-left: 50px; }
+
+    .auto-label { font-size: 11px; color: #7c3aed; background: #f5f3ff; border: 1px dashed #a78bfa; border-radius: 6px; padding: 6px 12px; margin-left: 60px; margin-top: 4px; margin-bottom: 8px; }
+
+    /* ===== PAGE PREVIEW ===== */
+    .preview-section { padding: 20px 24px 24px; border-top: 1px solid #e5e7eb; }
+    .preview-title { font-size: 11px; color: #999; font-weight: bold; letter-spacing: 1px; margin-bottom: 14px; }
+
+    .browser { border: 1.5px solid #d1d5db; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .browser-bar { background: #f3f4f6; padding: 8px 12px; display: flex; align-items: center; gap: 6px; border-bottom: 1px solid #e5e7eb; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-r { background: #f87171; }
+    .dot-y { background: #fbbf24; }
+    .dot-g { background: #4ade80; }
+    .url-bar { background: #fff; border: 1px solid #d1d5db; border-radius: 4px; font-size: 11px; color: #6b7280; padding: 2px 8px; flex: 1; }
+
+    .page-body { padding: 16px; background: #fff; }
+
+    /* HEADER */
+    .pg-header { background: #1e40af; color: #fff; padding: 10px 14px; border-radius: 8px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+    .pg-logo { font-weight: bold; font-size: 13px; }
+    .pg-nav { display: flex; gap: 8px; }
+    .pg-nav span { font-size: 11px; opacity: 0.85; cursor: pointer; }
+
+    /* HERO */
+    .pg-hero { background: linear-gradient(135deg, #dbeafe, #e0f2fe); border-radius: 8px; padding: 14px; text-align: center; margin-bottom: 12px; }
+    .pg-hero h3 { font-size: 14px; color: #1e40af; margin-bottom: 4px; }
+    .pg-hero p { font-size: 11px; color: #3b82f6; }
+
+    /* PRODUCT GRID */
+    .pg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+    .pg-product-card { border: 1.5px solid #e5e7eb; border-radius: 8px; padding: 10px; cursor: pointer; transition: border-color 0.2s; }
+    .pg-product-card:hover { border-color: #3b82f6; }
+    .pg-product-tag { font-size: 9px; background: #dbeafe; color: #1e40af; border-radius: 4px; padding: 2px 6px; display: inline-block; margin-bottom: 4px; }
+    .pg-product-name { font-size: 12px; font-weight: bold; margin-bottom: 3px; }
+    .pg-product-desc { font-size: 10px; color: #888; }
+    .pg-arrow { font-size: 10px; color: #3b82f6; margin-top: 4px; }
+
+    /* DETAIL PAGE */
+    .pg-breadcrumb { font-size: 10px; color: #9ca3af; margin-bottom: 10px; }
+    .pg-breadcrumb span { color: #3b82f6; }
+    .pg-detail-title { font-size: 15px; font-weight: bold; color: #1e40af; margin-bottom: 4px; }
+    .pg-detail-tag { font-size: 10px; background: #dbeafe; color: #1e40af; border-radius: 4px; padding: 2px 8px; display: inline-block; margin-bottom: 10px; }
+    .pg-important { background: #fff7ed; border: 1.5px solid #fb923c; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .pg-important-title { font-size: 11px; font-weight: bold; color: #ea580c; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+    .pg-important ul { padding-left: 16px; }
+    .pg-important li { font-size: 11px; color: #7c2d12; margin-bottom: 3px; line-height: 1.5; }
+    .pg-cms-badge { font-size: 9px; background: #ede9fe; color: #7c3aed; border-radius: 4px; padding: 2px 6px; display: inline-block; margin-bottom: 8px; }
+
+    /* TABS (manual) */
+    .pg-tabs { display: flex; border-bottom: 2px solid #e5e7eb; margin-bottom: 12px; }
+    .pg-tab { font-size: 11px; padding: 6px 12px; cursor: pointer; color: #6b7280; border-bottom: 2px solid transparent; margin-bottom: -2px; }
+    .pg-tab.active { color: #1e40af; border-bottom-color: #1e40af; font-weight: bold; }
+
+    .arrow-down { text-align: center; font-size: 20px; color: #94a3b8; margin: 10px 0; }
+
+    /* FLOW */
+    .flow { display: flex; flex-direction: column; gap: 0; }
+    .flow-step { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; }
+    .flow-num { width: 26px; height: 26px; background: #1e40af; color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0; margin-top: 2px; }
+    .flow-num-green { background: #16a34a; }
+    .flow-content strong { font-size: 13px; display: block; margin-bottom: 2px; }
+    .flow-content span { font-size: 11px; color: #6b7280; }
+    .flow-line { width: 2px; background: #e5e7eb; height: 16px; margin-left: 12px; }
+
+    .pros { background: #f0fdf4; border-radius: 8px; padding: 12px 16px; margin-top: 12px; }
+    .pros h4 { font-size: 12px; color: #16a34a; font-weight: bold; margin-bottom: 6px; }
+    .pros li { font-size: 11px; color: #166534; margin-bottom: 3px; list-style: none; padding-left: 4px; }
+    .pros li::before { content: "✓ "; color: #22c55e; }
+
+    .cons { background: #fff7ed; border-radius: 8px; padding: 12px 16px; margin-top: 8px; }
+    .cons h4 { font-size: 12px; color: #ea580c; font-weight: bold; margin-bottom: 6px; }
+    .cons li { font-size: 11px; color: #9a3412; margin-bottom: 3px; list-style: none; padding-left: 4px; }
+    .cons li::before { content: "△ "; color: #fb923c; }
+
+    @media (max-width: 700px) { .compare { flex-direction: column; } }
+  </style>
+</head>
+<body>
+
+<h1>サイト構成イメージ比較</h1>
+<p class="subtitle">運用商品ごとの重要確認事項 — 方法1 vs 方法2</p>
+
+<div class="compare">
+
+  <!-- ===== 方法1: CMS ===== -->
+  <div class="card">
+    <div class="card-header">
+      <div class="badge badge-cms">方法1 — 商品数が多い・今後増える</div>
+      <h2>CMS機能を使った動的ページ生成</h2>
+      <p>商品データを登録するだけでページが自動生成される</p>
+    </div>
+
+    <!-- サイトマップ -->
+    <div class="sitemap">
+      <div class="sitemap-title">サイト構成イメージ</div>
+
+      <div class="node node-top">トップページ</div>
+      <div class="connector"></div>
+      <div class="node node-mid">商品一覧ページ</div>
+      <div class="connector connector-deep"></div>
+      <div class="node-auto">CMSテンプレート（1枚）</div>
+      <div class="auto-label">↓ データ登録で自動生成</div>
+      <div class="node node-leaf">商品A の詳細ページ</div>
+      <div class="node node-leaf">商品B の詳細ページ</div>
+      <div class="node node-leaf">商品C の詳細ページ</div>
+      <div class="node node-leaf">商品D の詳細ページ</div>
+      <div class="node node-leaf">商品E … 以降も自動追加</div>
+    </div>
+
+    <!-- プレビュー：一覧ページ -->
+    <div class="preview-section">
+      <div class="preview-title">画面プレビュー — 商品一覧ページ</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <div class="url-bar">example.studio.site/products</div>
+        </div>
+        <div class="page-body">
+          <div class="pg-header">
+            <div class="pg-logo">WAWASAN ITA</div>
+            <div class="pg-nav"><span>ホーム</span><span>商品一覧</span><span>お問合せ</span></div>
+          </div>
+          <div class="pg-hero">
+            <h3>運用商品一覧</h3>
+            <p>商品を選択して重要確認事項をご確認ください</p>
+          </div>
+          <div class="pg-grid">
+            <div class="pg-product-card">
+              <div class="pg-product-tag">バランス型</div>
+              <div class="pg-product-name">商品A</div>
+              <div class="pg-product-desc">安定重視の運用プラン</div>
+              <div class="pg-arrow">詳細を見る →</div>
+            </div>
+            <div class="pg-product-card">
+              <div class="pg-product-tag">成長型</div>
+              <div class="pg-product-name">商品B</div>
+              <div class="pg-product-desc">積極的な資産形成</div>
+              <div class="pg-arrow">詳細を見る →</div>
+            </div>
+            <div class="pg-product-card">
+              <div class="pg-product-tag">安定型</div>
+              <div class="pg-product-name">商品C</div>
+              <div class="pg-product-desc">リスクを抑えた運用</div>
+              <div class="pg-arrow">詳細を見る →</div>
+            </div>
+            <div class="pg-product-card">
+              <div class="pg-product-tag">海外型</div>
+              <div class="pg-product-name">商品D</div>
+              <div class="pg-product-desc">グローバル分散投資</div>
+              <div class="pg-arrow">詳細を見る →</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down">↓ 商品カードをクリック</div>
+
+      <!-- プレビュー：詳細ページ -->
+      <div class="preview-title">画面プレビュー — 商品詳細ページ（CMS自動生成）</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <div class="url-bar">example.studio.site/products/product-a</div>
+        </div>
+        <div class="page-body">
+          <div class="pg-header">
+            <div class="pg-logo">WAWASAN ITA</div>
+            <div class="pg-nav"><span>ホーム</span><span>商品一覧</span><span>お問合せ</span></div>
+          </div>
+          <div class="pg-breadcrumb">ホーム &gt; <span>商品一覧</span> &gt; 商品A</div>
+          <div class="pg-cms-badge">CMS自動生成ページ</div>
+          <div class="pg-detail-title">商品A — バランス型運用プラン</div>
+          <div class="pg-detail-tag">バランス型</div>
+          <div class="pg-important">
+            <div class="pg-important-title">⚠ 重要確認事項</div>
+            <ul>
+              <li>元本保証はありません。運用成果によっては損失が生じる可能性があります。</li>
+              <li>換金は原則として毎営業日可能です。</li>
+              <li>手数料：購入時 1.0% / 信託報酬 年0.5%</li>
+              <li>本商品はリスクが伴います。詳細は目論見書をご確認ください。</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- メリット・デメリット -->
+    <div style="padding: 0 24px 24px;">
+      <div class="pros">
+        <h4>メリット</h4>
+        <ul>
+          <li>商品追加時はデータ入力だけ、ページ作成不要</li>
+          <li>デザインが全商品で統一される</li>
+          <li>商品が増えても管理が楽</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>注意点</h4>
+        <ul>
+          <li>初期設定に少し手間がかかる</li>
+          <li>商品ごとに大きくレイアウトを変えるのは難しい</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 方法2: 手動 ===== -->
+  <div class="card">
+    <div class="card-header">
+      <div class="badge badge-manual">方法2 — 商品数が少ない（5個以下）</div>
+      <h2>手動でページを個別作成</h2>
+      <p>商品ごとにページを1枚ずつ作成してカスタマイズ</p>
+    </div>
+
+    <!-- サイトマップ -->
+    <div class="sitemap">
+      <div class="sitemap-title">サイト構成イメージ</div>
+
+      <div class="node node-top">トップページ</div>
+      <div class="connector"></div>
+      <div class="node node-mid">商品一覧ページ</div>
+      <div class="connector connector-deep"></div>
+      <div class="node node-leaf-green" style="background:#dcfce7;color:#14532d;margin-left:60px;">商品A ページ（手動作成）</div>
+      <div class="node node-leaf-green" style="background:#dcfce7;color:#14532d;margin-left:60px;">商品B ページ（手動作成）</div>
+      <div class="node node-leaf-green" style="background:#dcfce7;color:#14532d;margin-left:60px;">商品C ページ（手動作成）</div>
+      <div class="node node-leaf-green" style="background:#dcfce7;color:#14532d;margin-left:60px;">商品D ページ（手動作成）</div>
+      <div class="node node-leaf-green" style="background:#dcfce7;color:#14532d;margin-left:60px;">商品E ページ（手動作成）</div>
+    </div>
+
+    <!-- プレビュー：一覧ページ -->
+    <div class="preview-section">
+      <div class="preview-title">画面プレビュー — 商品一覧ページ</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <div class="url-bar">example.studio.site/products</div>
+        </div>
+        <div class="page-body">
+          <div class="pg-header">
+            <div class="pg-logo">WAWASAN ITA</div>
+            <div class="pg-nav"><span>ホーム</span><span>商品一覧</span><span>お問合せ</span></div>
+          </div>
+          <div class="pg-hero">
+            <h3>運用商品一覧</h3>
+            <p>商品を選択して重要確認事項をご確認ください</p>
+          </div>
+          <div class="pg-grid">
+            <div class="pg-product-card" style="border-color:#86efac;">
+              <div class="pg-product-tag" style="background:#dcfce7;color:#16a34a;">バランス型</div>
+              <div class="pg-product-name">商品A</div>
+              <div class="pg-product-desc">安定重視の運用プラン</div>
+              <div class="pg-arrow" style="color:#16a34a;">詳細を見る →</div>
+            </div>
+            <div class="pg-product-card" style="border-color:#86efac;">
+              <div class="pg-product-tag" style="background:#dcfce7;color:#16a34a;">成長型</div>
+              <div class="pg-product-name">商品B</div>
+              <div class="pg-product-desc">積極的な資産形成</div>
+              <div class="pg-arrow" style="color:#16a34a;">詳細を見る →</div>
+            </div>
+            <div class="pg-product-card" style="border-color:#86efac;">
+              <div class="pg-product-tag" style="background:#dcfce7;color:#16a34a;">安定型</div>
+              <div class="pg-product-name">商品C</div>
+              <div class="pg-product-desc">リスクを抑えた運用</div>
+              <div class="pg-arrow" style="color:#16a34a;">詳細を見る →</div>
+            </div>
+            <div class="pg-product-card" style="border-color:#86efac; opacity:0.4;">
+              <div class="pg-product-tag" style="background:#dcfce7;color:#16a34a;">海外型</div>
+              <div class="pg-product-name">商品D（予定）</div>
+              <div class="pg-product-desc">準備中</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="arrow-down">↓ 商品カードをクリック</div>
+
+      <!-- プレビュー：詳細ページ（手動） -->
+      <div class="preview-title">画面プレビュー — 商品詳細ページ（手動作成・カスタマイズ自由）</div>
+      <div class="browser">
+        <div class="browser-bar">
+          <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+          <div class="url-bar">example.studio.site/product-a</div>
+        </div>
+        <div class="page-body">
+          <div class="pg-header">
+            <div class="pg-logo">WAWASAN ITA</div>
+            <div class="pg-nav"><span>ホーム</span><span>商品一覧</span><span>お問合せ</span></div>
+          </div>
+          <div class="pg-breadcrumb">ホーム &gt; <span>商品一覧</span> &gt; 商品A</div>
+          <div class="pg-tabs">
+            <div class="pg-tab active">概要</div>
+            <div class="pg-tab">重要確認事項</div>
+            <div class="pg-tab">お申込み</div>
+          </div>
+          <div class="pg-detail-title">商品A — バランス型運用プラン</div>
+          <div class="pg-detail-tag" style="background:#dcfce7;color:#16a34a;">バランス型</div>
+          <div class="pg-important">
+            <div class="pg-important-title">⚠ 重要確認事項</div>
+            <ul>
+              <li>元本保証はありません。運用成果によっては損失が生じる可能性があります。</li>
+              <li>換金は原則として毎営業日可能です。</li>
+              <li>手数料：購入時 1.0% / 信託報酬 年0.5%</li>
+              <li>本商品はリスクが伴います。詳細は目論見書をご確認ください。</li>
+            </ul>
+          </div>
+          <div style="font-size:11px;color:#6b7280;background:#f9fafb;border-radius:6px;padding:8px 10px;">
+            ※ このページは商品Aに特化したレイアウト。タブや画像など自由にカスタマイズ可能。
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- メリット・デメリット -->
+    <div style="padding: 0 24px 24px;">
+      <div class="pros">
+        <h4>メリット</h4>
+        <ul>
+          <li>商品ごとにレイアウトを自由に変えられる</li>
+          <li>初期設定がシンプルで始めやすい</li>
+          <li>CMS知識が不要</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>注意点</h4>
+        <ul>
+          <li>商品が増えるたびにページを1枚ずつ作成する必要がある</li>
+          <li>デザイン変更時は全ページを個別に修正する必要がある</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p style="text-align:center;margin-top:30px;font-size:12px;color:#aaa;">WAWASAN ITA — サイト構成イメージ比較 モックアップ</p>
+
+</body>
+</html>

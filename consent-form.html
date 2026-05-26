@@ -53,6 +53,7 @@
     .badge-sp500{background:#d4dce8;color:#162040}
     .badge-fip{background:#d4e0d4;color:#183018}
     .badge-platinum{background:#dcd4e4;color:#281840}
+    .badge-platinumselect{background:#e8dcc8;color:#3d2b0a}
     .product-name{font-size:15px;font-weight:bold;color:#1a1a2e;line-height:1.4}
     .check-icon{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;background:#1e2e52;color:#fff;display:none;align-items:center;justify-content:center;font-size:12px}
     .product-option.selected .check-icon{display:flex}
@@ -303,6 +304,13 @@
         <div class="product-type-badge badge-platinum" id="tag-platinum">一括変動型</div>
         <div class="product-name" id="name-platinum">プラチナプラス（一括変動型）</div>
       </label>
+
+      <label class="product-option" id="opt-platinumselect" onclick="selectProduct('platinumselect')">
+        <input type="radio" name="product" value="platinumselect">
+        <div class="check-icon">✓</div>
+        <div class="product-type-badge badge-platinumselect" id="tag-platinumselect">一括変動型</div>
+        <div class="product-name" id="name-platinumselect">プラチナセレクト（一括変動型）</div>
+      </label>
     </div>
 
     <div class="btn-row">
@@ -453,11 +461,13 @@ const T = {
   'tag-evolution': { ja:'積立変動型',  en:'Variable Savings' },
   'tag-sp500':     { ja:'積立確定型',  en:'Fixed Savings' },
   'tag-fip':       { ja:'一括確定型',  en:'Lump-sum Fixed' },
-  'tag-platinum':  { ja:'一括変動型',  en:'Lump-sum Variable' },
-  'name-evolution':{ ja:'エボリューション（積立変動型）', en:'Evolution (Variable Savings Type)' },
-  'name-sp500':    { ja:'S&P500（積立確定型）',           en:'S&P500 (Fixed Savings Type)' },
-  'name-fip':      { ja:'確定利回りポートフォリオ（一括確定型）', en:'Fixed Yield Portfolio (Lump-sum Fixed Type)' },
-  'name-platinum': { ja:'プラチナプラス（一括変動型）',   en:'Platinum Plus (Lump-sum Variable Type)' },
+  'tag-platinum':       { ja:'一括変動型',  en:'Lump-sum Variable' },
+  'tag-platinumselect': { ja:'一括変動型',  en:'Lump-sum Variable' },
+  'name-evolution':     { ja:'エボリューション（積立変動型）', en:'Evolution (Variable Savings Type)' },
+  'name-sp500':         { ja:'S&P500（積立確定型）',           en:'S&P500 (Fixed Savings Type)' },
+  'name-fip':           { ja:'確定利回りポートフォリオ（一括確定型）', en:'Fixed Yield Portfolio (Lump-sum Fixed Type)' },
+  'name-platinum':      { ja:'プラチナプラス（一括変動型）',   en:'Platinum Plus (Lump-sum Variable Type)' },
+  'name-platinumselect':{ ja:'プラチナセレクト（一括変動型）', en:'Platinum Select (Lump-sum Variable Type)' },
   btn1Text:        { ja:'次へ：重要事項を確認する →', en:'Next: Review Important Matters →' },
   btn2Back:        { ja:'← 商品を選び直す', en:'← Change Product' },
   btn2Text:        { ja:'次へ：署名・承認へ →', en:'Next: Sign & Approve →' },
@@ -903,6 +913,67 @@ const products = {
           en:'[[R:You understand that if you become a US resident during the contract period, transfer to relatives or cancellation of the plan will be required.]]'
         }
       },
+    ]
+  },
+
+  platinumselect: {
+    key: 'platinumselect',
+    name:  { ja:'プラチナセレクト（一括変動型）', en:'Platinum Select (Lump-sum Variable Type)' },
+    label: { ja:'一括変動型 — プラチナセレクト',  en:'Lump-sum Variable — Platinum Select' },
+    title: { ja:'プラチナセレクト（一括変動型）ご契約に関する重要事項同意書', en:'Important Matters Consent Form — Platinum Select (Lump-sum Variable Type)' },
+    preamble: {
+      ja:'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、持続可能なライフプランニングの実現を重視しております。本同意書は、ITA International Holdings（Investors Trust）の商品「プラチナセレクト」へのお申し込みにあたり、投資に伴う諸リスクおよびサポート範囲を事前にお伝えし、お客様の利益を保護するためのものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。',
+      en:'Wawasan Global Support Limited supports customers\' proactive asset formation and sustainable life planning. This consent form communicates investment risks and scope of support for the product "Platinum Select" by ITA International Holdings (Investors Trust). Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article.'
+    },
+    articles: [
+      {
+        num:   { ja:'第1条', en:'Article 1' },
+        title: { ja:'サポートの範囲および自己責任の原則', en:'Scope of Support / Principle of Self-Responsibility' },
+        body:  {
+          ja:'当社（Wawasan Global Support Limited）が提供する本サービスは、海外保険会社の信託商品の加入手続き等の事務代行・サポート業務に限定されます。最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。',
+          en:'Services provided by our company (Wawasan Global Support Limited) are limited to administrative support for enrollment procedures of trust products offered by overseas insurance companies. You agree that the responsibility for all final investment decisions belongs solely to you.'
+        }
+      },
+      {
+        num:   { ja:'第2条', en:'Article 2' },
+        title: { ja:'投資リスクに関する事項', en:'Investment Risks' },
+        body:  {
+          ja:'【為替リスク】本プランは為替リスクを伴うため、日本円に換算した際に元本割れが生じる可能性があります。\n【市場動向リスク】為替リスクとは別に、市場動向によって元本割れが生じる可能性があります。\n【カントリーリスク】本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。',
+          en:'【Foreign Exchange Risk】This plan involves foreign exchange risk, and when converted to Japanese yen, there is a possibility of capital loss.\n【Market Risk】In addition to exchange rate risk, capital loss may occur depending on market conditions.\n【Country Risk】You understand and accept the country risk associated with this investment.'
+        }
+      },
+      {
+        num:   { ja:'第3条', en:'Article 3' },
+        title: { ja:'プランの費用構造および商品条件', en:'Plan Fee Structure and Product Terms' },
+        body:  {
+          ja:'別紙の商品条件シートを確認し、プランの費用構造や商品の内容を十分理解しております。',
+          en:'You confirm that you have reviewed the separate product conditions sheet and fully understand the plan\'s fee structure and product details.'
+        }
+      },
+      {
+        num:   { ja:'第4条', en:'Article 4' },
+        title: { ja:'外部委託とアドバイザリーサービス', en:'External Delegation and Advisory Services' },
+        body:  {
+          ja:'運用を外部委託（アドバイザリーサービス合意書を提出）する場合、顧問サービス料がかかることをアドバイザリーサービス合意書を確認の上、十分理解しております。',
+          en:'If asset management is delegated externally (by submitting an Advisory Service Agreement), you confirm that you have reviewed the Advisory Service Agreement and fully understand that an advisory service fee will be charged.'
+        }
+      },
+      {
+        num:   { ja:'第5条', en:'Article 5' },
+        title: { ja:'解約手数料および送金に関する規定', en:'Cancellation Fees and Wire Transfer Regulations' },
+        body:  {
+          ja:'プラン途中で解約した場合は所定の解約手数料がかかります。\n1回あたりの送金手数料として 50 USD かかります。\nクレジットカードにて海外送金する場合、3.5%の手数料とクレジットカード会社所定の手数料がかかります。国内銀行窓口やネットバンク等での海外送金する場合、各銀行・各ネットバンクが定める所定の海外送金手数料がかかります。',
+          en:'If the plan is cancelled mid-term, predetermined cancellation fees will apply.\nA wire transfer fee of USD 50 applies per transaction.\nFor overseas wire transfers by credit card, a 3.5% fee plus the credit card company\'s fee applies. For transfers via domestic banks or internet banking, the respective overseas wire transfer fees set by each bank apply.'
+        }
+      },
+      {
+        num:   { ja:'第6条', en:'Article 6' },
+        title: { ja:'米国居住者へのステータス変更', en:'Change of Status to US Resident' },
+        body:  {
+          ja:'契約途中にアメリカ居住者となられる場合、親族等への譲渡または解約が必要となることを理解しております。',
+          en:'You understand that if you become a US resident during the contract period, transfer to relatives or cancellation of the plan will be required.'
+        }
+      }
     ]
   }
 };

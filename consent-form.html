@@ -328,7 +328,7 @@
     <div class="articles" id="articlesContainer"></div>
 
     <div class="btn-row">
-      <button class="btn btn-secondary" id="btn2Back" onclick="goToStep(1)">← 戻る</button>
+      <button class="btn btn-secondary" id="btn2Back" onclick="goToStep(1)">← 商品を選び直す</button>
       <button class="btn btn-primary" id="btn2Next" disabled onclick="goToStep(3)">
         <span id="btn2Text">次へ：署名・承認へ →</span>
       </button>
@@ -459,7 +459,7 @@ const T = {
   'name-fip':      { ja:'確定利回りポートフォリオ（一括確定型）', en:'Fixed Yield Portfolio (Lump-sum Fixed Type)' },
   'name-platinum': { ja:'プラチナプラス（一括変動型）',   en:'Platinum Plus (Lump-sum Variable Type)' },
   btn1Text:        { ja:'次へ：重要事項を確認する →', en:'Next: Review Important Matters →' },
-  btn2Back:        { ja:'← 戻る', en:'← Back' },
+  btn2Back:        { ja:'← 商品を選び直す', en:'← Change Product' },
   btn2Text:        { ja:'次へ：署名・承認へ →', en:'Next: Sign & Approve →' },
   s3Title:         { ja:'署名・最終承認', en:'Signature & Final Approval' },
   s3Desc:          { ja:'以下の情報をご入力いただき、重要事項同意書への最終承認をお願いします。', en:'Please fill in the details below to complete your final approval of the consent form.' },
@@ -913,6 +913,11 @@ const products = {
 let selectedProduct = null;
 
 function selectProduct(key) {
+  if (selectedProduct !== key) {
+    // Clear old initials so they don't carry over to a different product
+    document.getElementById('articlesContainer').innerHTML = '';
+    document.getElementById('btn2Next').disabled = true;
+  }
   selectedProduct = key;
   document.querySelectorAll('.product-option').forEach(el => el.classList.remove('selected'));
   document.getElementById('opt-' + key).classList.add('selected');

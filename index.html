@@ -78,7 +78,7 @@
     .article-body p:last-of-type{margin-bottom:0}
 
     /* INITIAL ROW */
-    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1.5px dashed #c8c8c8;flex-wrap:wrap}
+    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border-radius:6px;background:#fffbcc;border:1.5px solid #e8d800;flex-wrap:wrap}
     .initial-label{font-size:13px;color:#333;font-weight:600;white-space:nowrap}
     .initial-input{border:2px solid #c4c4c4;border-radius:6px;padding:8px 12px;font-size:15px;width:110px;text-align:center;letter-spacing:3px;font-weight:bold;transition:border-color .2s}
     .initial-input:focus{outline:none;border-color:#1e2e52;box-shadow:0 0 0 3px #b8c4d8}
@@ -120,6 +120,7 @@
     .done-key{color:#888;min-width:80px}
     .pdf-btn{display:inline-block;margin-top:16px;padding:13px 32px;background:#fff;color:#1e2e52;border:2px solid #1e2e52;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;transition:all .2s;letter-spacing:.3px}
     .pdf-btn:hover{background:#eef1f8;transform:translateY(-1px)}
+    .pdf-warning{margin-top:10px;background:#fffbcc;border:1.5px solid #e8d800;border-radius:7px;padding:10px 14px;font-size:12px;color:#5a4a00;line-height:1.7;text-align:left}
     .restart-btn{display:inline-block;margin-top:14px;padding:10px 26px;background:#f0f0f0;color:#444;border:2px solid #ccc;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all .2s}
     .restart-btn:hover{background:#e4e4e4}
 
@@ -364,6 +365,7 @@
 
       <br>
       <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">📄 PDFをダウンロード</button>
+      <div class="pdf-warning" id="pdfWarning">⚠️ 書類で保管を希望される場合は、この画面を閉じる前に必ずダウンロードしてください。<br>この画面を閉じるとダウンロードができなくなります。</div>
       <br>
       <button class="restart-btn" id="restartBtn" onclick="restartForm()">最初からやり直す</button>
     </div>
@@ -421,6 +423,7 @@ const T = {
   doneKeyRef:      { ja:'受付番号', en:'Reference No.' },
   restartBtn:      { ja:'最初からやり直す', en:'Start Over' },
   pdfBtn:          { ja:'📄 PDFをダウンロード', en:'📄 Download PDF' },
+  pdfWarning:      { ja:'⚠️ 書類で保管を希望される場合は、この画面を閉じる前に必ずダウンロードしてください。<br>この画面を閉じるとダウンロードができなくなります。', en:'⚠️ If you wish to keep a copy, please download before closing this screen.<br>The PDF will not be available after this page is closed.' },
   labelSig:        { ja:'手書きサイン', en:'Handwritten Signature' },
   sigClearBtn:     { ja:'クリア / Clear', en:'Clear' },
   sigStatusEmpty:  { ja:'未記入', en:'Not signed' },
@@ -587,7 +590,7 @@ const products = {
         title: { ja:'初期積立期間の制限と途中解約のリスク', en:'Initial Period Restrictions and Early Cancellation Risk' },
         body:  {
           ja:'【初期期間（イニシャルユニット期間）の制限】\nこの期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。またこの期間中に解約を希望された場合、解約返戻金が完全に「ゼロ」となるため、解約手続きはできません。未納を [[B:90日以上]] 続けることでプランステータスを「失効」させる方法のみとなります。\n※ 失効は解約と同等の扱いとなります。\n※ 解約手続きは解約返戻金額が [[B:一定金額以上]] ある場合のみ手続き可能です。\n【満期前の早期解約リスク】\n解約返戻金額は、イニシャルユニット期間（初期口座）の積立を終えた後、それ以降 [[B:アキュムレーションユニット（貯蓄口座）]] に積み立てた分が解約返戻金として積み上がっていきます。そのため、初期期間経過後であっても、満期前に解約した場合、運用状況と各種手数料の影響により、[[R:解約返戻金が著しく減少またはゼロとなる危険性があります。]]本プランは [[B:満期まで継続することを大前提]] としてお申し込みください。',
-          en:'[Initial Unit Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]].\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to investment performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
+          en:'[Initial Unit Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]]\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to investment performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
         }
       },
       {
@@ -680,7 +683,7 @@ const products = {
         title: { ja:'初期積立期間の制限と途中解約のリスク', en:'Initial Period Restrictions and Early Cancellation Risk' },
         body:  {
           ja:'【初期期間の制限】\nこの期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。またこの期間中に解約を希望された場合、解約返戻金が完全に「ゼロ」となるため、解約手続きはできません。未納を [[B:90日以上]] 続けることでプランステータスを「失効」させる方法のみとなります。\n※ 失効は解約と同等の扱いとなります。\n※ 解約手続きは解約返戻金額が [[B:一定金額以上]] ある場合のみ手続き可能です。\n【満期前の早期解約リスク】\n解約返戻金額は、イニシャルユニット期間（初期口座）の積立を終えた後、それ以降 [[B:アキュムレーションユニット（貯蓄口座）]] に積み立てた分が解約返戻金として積み上がっていきます。そのため、初期期間経過後であっても、満期前に解約した場合、S&P500の運用状況と各種手数料の影響により、[[R:解約返戻金が著しく減少またはゼロとなる危険性があります。]]本プランは [[B:満期まで継続することを大前提]] としてお申し込みください。',
-          en:'[Initial Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]].\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to S&P500 performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
+          en:'[Initial Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]]\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to S&P500 performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
         }
       },
       {

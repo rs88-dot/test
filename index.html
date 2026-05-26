@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>重要事項同意書 | Wawasan Global Support Limited</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#e8e8e8;color:#1a1a2e;min-height:100vh;font-size:15px;line-height:1.7}
@@ -117,7 +118,9 @@
     .done-box strong{color:#333;display:block;margin-bottom:10px;font-size:14px}
     .done-row{display:flex;gap:10px;margin-bottom:6px;font-size:13px}
     .done-key{color:#888;min-width:80px}
-    .restart-btn{display:inline-block;margin-top:24px;padding:10px 26px;background:#f0f0f0;color:#444;border:2px solid #ccc;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all .2s}
+    .pdf-btn{display:inline-block;margin-top:16px;padding:13px 32px;background:#fff;color:#1e2e52;border:2px solid #1e2e52;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+    .pdf-btn:hover{background:#eef1f8;transform:translateY(-1px)}
+    .restart-btn{display:inline-block;margin-top:14px;padding:10px 26px;background:#f0f0f0;color:#444;border:2px solid #ccc;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all .2s}
     .restart-btn:hover{background:#e4e4e4}
 
     /* BUTTONS */
@@ -335,6 +338,8 @@
       </div>
 
       <br>
+      <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">📄 PDFをダウンロード</button>
+      <br>
       <button class="restart-btn" id="restartBtn" onclick="restartForm()">最初からやり直す</button>
     </div>
   </div>
@@ -390,6 +395,7 @@ const T = {
   doneKeyDate:     { ja:'署名日', en:'Date' },
   doneKeyRef:      { ja:'受付番号', en:'Reference No.' },
   restartBtn:      { ja:'最初からやり直す', en:'Start Over' },
+  pdfBtn:          { ja:'📄 PDFをダウンロード', en:'📄 Download PDF' },
   noticeText:      { ja:'各条項をよくお読みいただき、ご理解・ご同意いただけた場合に、各条項の入力欄にローマ字でイニシャルをご記入ください。<strong>すべての条項へのご記入が必要です。</strong>',
                      en:'Please read each article carefully. If you understand and agree, enter your initials in Roman letters in the box provided. <strong>All articles must be initialed before proceeding.</strong>' },
 };
@@ -935,6 +941,90 @@ function updateProgress(step) {
       if (line) line.className = i < step ? 'step-line done' : 'step-line';
     }
   }
+}
+
+function generatePDF() {
+  const p = products[selectedProduct];
+  const name    = document.getElementById('sigName').value.trim();
+  const date    = document.getElementById('sigDate').value;
+  const refNum  = document.getElementById('doneRef').textContent;
+  const isJa    = lang === 'ja';
+
+  let articlesHtml = '';
+  p.articles.forEach((art, i) => {
+    const initial = (document.getElementById('initial-' + i) || {}).value || '';
+    const bodyHtml = parseBody(art.body[lang]);
+    articlesHtml += `
+      <div style="margin-bottom:16px;border:1px solid #c8c8d0;border-radius:5px;overflow:hidden;page-break-inside:avoid">
+        <div style="background:#eef1f8;padding:9px 14px;font-weight:bold;font-size:12px;color:#1e2e52;border-bottom:1px solid #c8c8d0">
+          ${art.num[lang]}　${art.title[lang]}
+        </div>
+        <div style="padding:12px 14px;font-size:11.5px;line-height:1.85;color:#333">
+          ${bodyHtml}
+          <div style="margin-top:10px;padding-top:8px;border-top:1px dashed #ccc;display:flex;align-items:center;gap:10px">
+            <span style="font-weight:600;font-size:11.5px;color:#444">${isJa ? 'イニシャル：' : 'Initials:'}</span>
+            <span style="border:2px solid #1e2e52;border-radius:4px;padding:3px 14px;font-weight:bold;letter-spacing:3px;font-size:14px;min-width:56px;display:inline-block;text-align:center;color:#1e2e52">${initial}</span>
+            ${initial ? '<span style="color:#1e2e52;font-weight:bold;font-size:14px">✓</span>' : ''}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  const html = `
+    <div style="font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;max-width:680px;margin:0 auto;padding:28px 32px;color:#1a1a2e;font-size:12px">
+      <div style="text-align:center;border-bottom:3px solid #1e2e52;padding-bottom:18px;margin-bottom:22px">
+        <div style="font-size:12px;color:#666;margin-bottom:5px;letter-spacing:.5px">Wawasan Global Support Limited</div>
+        <div style="font-size:20px;font-weight:bold;color:#1e2e52;letter-spacing:.5px">${isJa ? '重要事項同意書' : 'Important Matters Consent Form'}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;background:#f4f5f8;border:1px solid #c8ccd8;border-radius:6px;margin-bottom:20px">
+        <tr>
+          <td style="padding:10px 16px;border-right:1px solid #c8ccd8">
+            <div style="font-size:10px;color:#888;margin-bottom:3px">${isJa ? '商品名' : 'Product'}</div>
+            <div style="font-weight:bold;font-size:13px;color:#1e2e52">${p.name[lang]}</div>
+          </td>
+          <td style="padding:10px 16px;text-align:right">
+            <div style="font-size:10px;color:#888;margin-bottom:3px">${isJa ? '受付番号' : 'Reference No.'}</div>
+            <div style="font-weight:bold;font-family:monospace;font-size:13px">${refNum}</div>
+          </td>
+          <td style="padding:10px 16px;border-left:1px solid #c8ccd8;text-align:right">
+            <div style="font-size:10px;color:#888;margin-bottom:3px">${isJa ? '署名日' : 'Date'}</div>
+            <div style="font-weight:bold;font-size:13px">${date}</div>
+          </td>
+        </tr>
+      </table>
+      <div style="font-size:11.5px;color:#4a5068;line-height:1.9;background:#f8f8f8;border-left:4px solid #7a90b4;padding:12px 16px;border-radius:0 5px 5px 0;margin-bottom:22px">
+        ${p.preamble[lang]}
+      </div>
+      ${articlesHtml}
+      <div style="margin-top:28px;border:2px solid #1e2e52;border-radius:7px;padding:18px 22px;page-break-inside:avoid">
+        <div style="font-size:13px;font-weight:bold;color:#1e2e52;margin-bottom:14px;border-bottom:1px solid #d8d8d8;padding-bottom:10px">
+          ${isJa ? '署名・承認' : 'Signature & Approval'}
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <tr><td style="padding:6px 0;color:#666;width:110px">${isJa ? 'お名前' : 'Full Name'}</td><td style="padding:6px 0;font-weight:bold">${name}</td></tr>
+          <tr><td style="padding:6px 0;color:#666">${isJa ? '署名日' : 'Date'}</td><td style="padding:6px 0">${date}</td></tr>
+          <tr><td style="padding:6px 0;color:#666">${isJa ? '受付番号' : 'Reference No.'}</td><td style="padding:6px 0;font-family:monospace;font-weight:bold">${refNum}</td></tr>
+        </table>
+        <div style="margin-top:18px;border-top:1px solid #ddd;padding-top:14px">
+          <div style="font-size:10px;color:#888;margin-bottom:6px">${isJa ? '署名 / Signature' : 'Signature'}</div>
+          <div style="border-bottom:2px solid #1e2e52;padding-bottom:4px;font-size:18px;font-style:italic;color:#1e2e52;min-height:34px">${name}</div>
+        </div>
+      </div>
+      <div style="margin-top:20px;text-align:center;font-size:10px;color:#aaa;border-top:1px solid #eee;padding-top:12px">
+        Wawasan Global Support Limited — ${isJa ? '重要事項同意書' : 'Important Matters Consent Form'} — ${refNum}
+      </div>
+    </div>`;
+
+  const el = document.createElement('div');
+  el.innerHTML = html;
+  document.body.appendChild(el);
+  html2pdf().set({
+    margin: [10, 10, 10, 10],
+    filename: `WGS_重要事項同意書_${refNum}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+  }).from(el).save().then(() => document.body.removeChild(el));
 }
 
 applyLang();

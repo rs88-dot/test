@@ -974,6 +974,18 @@ const products = {
 };
 
 /* =====================================================
+   GOOGLE SHEETS INTEGRATION
+   ===================================================== */
+const GAS_URL = 'YOUR_SCRIPT_URL_HERE'; // ← Google Apps Script のウェブアプリURLをここに貼り付け
+
+function sendToSheet(data) {
+  if (!GAS_URL || GAS_URL === 'YOUR_SCRIPT_URL_HERE') return;
+  const params = new URLSearchParams();
+  params.append('d', JSON.stringify(data));
+  fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: params }).catch(() => {});
+}
+
+/* =====================================================
    FORM LOGIC
    ===================================================== */
 let selectedProduct = null;
@@ -1124,6 +1136,16 @@ function submitForm() {
       : `Your Important Matters Consent Form has been approved.\n\nReference No.: ${refNum}\nProduct: ${product}\nName: ${name}\nDate: ${date}\n\n--- Initialed Articles ---\n${initials}\n\nYour representative will contact you shortly.\nWawasan Global Support Limited`
   );
   window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
+
+  sendToSheet({
+    refNum,
+    product,
+    name,
+    email,
+    date,
+    timestamp: new Date().toLocaleString('ja-JP'),
+    initials: initials.replace(/\n/g, ' | ')
+  });
 
   document.getElementById('refNumber').textContent = refNum;
   document.getElementById('doneProduct').textContent = product;

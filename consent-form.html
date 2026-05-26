@@ -72,7 +72,6 @@
     .article-body{padding:16px 18px;font-size:14px;color:#374151;line-height:1.9}
     .article-body p{margin-bottom:8px}
     .article-body p:last-of-type{margin-bottom:0}
-    .risk{color:#dc2626;font-weight:700}
 
     /* INITIAL ROW */
     .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1.5px dashed #d1d5db;flex-wrap:wrap}
@@ -412,7 +411,7 @@ function setLang(l) {
 /* =====================================================
    PRODUCT DATA
    ===================================================== */
-/* [[R:text]] = red bold (risk)  [[B:text]] = bold only */
+/* [[R:text]] = plain text (no emphasis)  [[B:text]] = bold only */
 const products = {
   evolution: {
     key: 'evolution',
@@ -746,7 +745,7 @@ function selectProduct(key) {
 function parseBody(text) {
   return text.split('\n').map(para => {
     let html = para
-      .replace(/\[\[R:(.*?)\]\]/g, '<strong class="risk">$1</strong>')
+      .replace(/\[\[R:(.*?)\]\]/g, '$1')
       .replace(/\[\[B:(.*?)\]\]/g, '<strong>$1</strong>')
       .replace(/【(.*?)】/g, '<strong>【$1】</strong>');
     return `<p>${html}</p>`;

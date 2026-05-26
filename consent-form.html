@@ -78,7 +78,7 @@
     .article-body p:last-of-type{margin-bottom:0}
 
     /* INITIAL ROW */
-    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border-radius:6px;background:#fffbcc;border:1.5px solid #e8d800;flex-wrap:wrap}
+    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px 14px;border-radius:6px;background:#fff59d;border:2px solid #f9a825;flex-wrap:wrap}
     .initial-label{font-size:13px;color:#333;font-weight:600;white-space:nowrap}
     .initial-input{border:2px solid #c4c4c4;border-radius:6px;padding:8px 12px;font-size:15px;width:110px;text-align:center;letter-spacing:3px;font-weight:bold;transition:border-color .2s}
     .initial-input:focus{outline:none;border-color:#1e2e52;box-shadow:0 0 0 3px #b8c4d8}
@@ -343,7 +343,11 @@
       <h2 id="doneTitle">承認が完了しました</h2>
       <p id="doneMsg1" style="font-size:15px;color:#374151;margin-bottom:6px;"></p>
       <div class="complete-ref" id="refNumber"></div>
-      <p class="email-sent-note" id="doneMsg2"></p>
+
+      <div class="pdf-warning" id="doneMsg2">
+        回答の控えは下記より必ずダウンロードください。<br>一度画面を閉じますとダウンロードできなくなります。
+      </div>
+      <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">📄 PDFをダウンロード</button>
 
       <div class="next-steps-box">
         <strong id="nextStepsTitle">📋 次のステップ</strong>
@@ -363,9 +367,6 @@
         <div class="done-row"><span class="done-key" id="doneKeyRef">受付番号</span><span id="doneRef" style="font-family:monospace;font-weight:bold"></span></div>
       </div>
 
-      <br>
-      <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">📄 PDFをダウンロード</button>
-      <div class="pdf-warning" id="pdfWarning">⚠️ 書類で保管を希望される場合は、この画面を閉じる前に必ずダウンロードしてください。<br>この画面を閉じるとダウンロードができなくなります。</div>
       <br>
       <button class="restart-btn" id="restartBtn" onclick="restartForm()">最初からやり直す</button>
     </div>
@@ -412,9 +413,9 @@ const T = {
   btn3Text:        { ja:'✓ 同意して承認する', en:'✓ Agree & Approve' },
   doneTitle:       { ja:'承認が完了しました', en:'Approval Complete' },
   doneMsg1:        { ja:'重要事項同意書へのご同意ありがとうございます。以下の受付番号をお控えください。', en:'Thank you for completing the Important Matters Consent Form. Please save the reference number below.' },
-  doneMsg2:        { ja:'※ 確認の控えがメールで届きます（メールが届かない場合は受付番号をスクリーンショットにてお控えください）。', en:'※ A confirmation copy will be sent to your email address (if not received, please screenshot the reference number above).' },
+  doneMsg2:        { ja:'回答の控えは下記より必ずダウンロードください。<br>一度画面を閉じますとダウンロードできなくなります。', en:'Please download your copy using the button below.<br>Once this page is closed, the PDF will no longer be available.' },
   nextStepsTitle:  { ja:'📋 次のステップ', en:'📋 Next Steps' },
-  nextStepsText:   { ja:'この画面を閉じ、お申し込みフォームに戻ってご入力をお続けください。ご不明な点は担当者までお問い合わせください。', en:'Please return to the application form to continue. If you have any questions, please contact your representative.' },
+  nextStepsText:   { ja:'お申し込みフォームに戻ってご入力をお続けください。ご不明な点は担当者までお問い合わせください。', en:'Please return to the application form to continue. If you have any questions, please contact your representative.' },
   returnBtn:       { ja:'📝 お申し込みフォームに戻る →', en:'📝 Return to Application Form →' },
   doneSummaryTitle:{ ja:'承認済み内容', en:'Approved Details' },
   doneKeyProduct:  { ja:'商品名', en:'Product' },
@@ -1150,19 +1151,35 @@ function generatePDF() {
       </div>
     </div>`;
 
+  // Loading overlay hides the render element from the user while keeping opacity:1
+  // so html2canvas can capture it correctly (opacity<1 causes blank output)
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:10000;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = '<div style="background:#fff;border-radius:10px;padding:28px 36px;text-align:center;font-family:sans-serif"><div style="font-size:18px;margin-bottom:8px">📄</div><div style="font-size:15px;font-weight:bold;color:#1e2e52">PDFを生成中...</div><div style="font-size:12px;color:#666;margin-top:6px">Generating PDF...</div></div>';
+  document.body.appendChild(overlay);
+
   const el = document.createElement('div');
-  el.style.cssText = 'position:fixed;left:0;top:0;width:720px;background:#fff;opacity:0.02;z-index:9999;pointer-events:none;overflow:visible';
+  el.style.cssText = 'position:fixed;left:0;top:0;width:720px;background:#fff;z-index:9998;pointer-events:none;overflow:visible';
   el.innerHTML = html;
   document.body.appendChild(el);
 
-  html2pdf().set({
-    margin:      [8, 8, 8, 8],
-    filename:    `WGS_重要事項同意書_${refNum}.pdf`,
-    image:       { type: 'jpeg', quality: 0.95 },
-    html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
-    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak:   { mode: ['css', 'legacy'] }
-  }).from(el).save().then(() => document.body.removeChild(el));
+  // Small delay ensures the DOM has painted before html2canvas captures
+  setTimeout(() => {
+    html2pdf().set({
+      margin:      [8, 8, 8, 8],
+      filename:    `WGS_重要事項同意書_${refNum}.pdf`,
+      image:       { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+      jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:   { mode: ['css', 'legacy'] }
+    }).from(el).save().then(() => {
+      document.body.removeChild(el);
+      document.body.removeChild(overlay);
+    }).catch(() => {
+      document.body.removeChild(el);
+      document.body.removeChild(overlay);
+    });
+  }, 100);
 }
 
 applyLang();

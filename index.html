@@ -72,7 +72,6 @@
     .article-body{padding:16px 18px;font-size:14px;color:#374151;line-height:1.9}
     .article-body p{margin-bottom:8px}
     .article-body p:last-of-type{margin-bottom:0}
-    .risk{color:#dc2626;font-weight:700}
 
     /* INITIAL ROW */
     .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1.5px dashed #d1d5db;flex-wrap:wrap}
@@ -329,6 +328,9 @@
 </main>
 
 <script>
+/* =====================================================
+   TRANSLATIONS
+   ===================================================== */
 let lang = 'ja';
 
 const T = {
@@ -384,89 +386,353 @@ function applyLang() {
     const el = document.getElementById(id);
     if (!el) return;
     const val = T[id][lang];
-    if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') { el.textContent = val; }
-    else { el.innerHTML = val; }
+    if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') {
+      el.textContent = val;
+    } else {
+      el.innerHTML = val;
+    }
   });
+  // Rebuild articles if on step 2
   if (selectedProduct && document.getElementById('screen2').classList.contains('active')) {
-    buildArticles(products[selectedProduct]); checkAllInitials();
+    buildArticles(products[selectedProduct]);
+    checkAllInitials();
   }
-  if (selectedProduct && document.getElementById('screen3').classList.contains('active')) { refreshStep3(); }
+  // Refresh step 3 dynamic text if visible
+  if (selectedProduct && document.getElementById('screen3').classList.contains('active')) {
+    refreshStep3();
+  }
 }
 
-function setLang(l) { lang = l; applyLang(); }
+function setLang(l) {
+  lang = l;
+  applyLang();
+}
 
+/* =====================================================
+   PRODUCT DATA
+   ===================================================== */
+/* [[R:text]] = plain text (no emphasis)  [[B:text]] = bold only */
 const products = {
   evolution: {
-    key:'evolution',
-    name:{ ja:'エボリューション（積立変動型）', en:'Evolution (Variable Savings Type)' },
-    label:{ ja:'積立変動型 — エボリューション', en:'Variable Savings — Evolution' },
-    title:{ ja:'Evolutionに関する重要事項同意書', en:'Important Matters Consent Form — Evolution' },
-    preamble:{ ja:'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、持続可能なライフプランニングの実現を重視しております。本同意書はITA International Holdingsの商品「Evolution」へのお申し込みにあたり、投資に伴う諸リスクをお伝えし、お客様の利益を保護するためのものです。各条項の右欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。', en:'Wawasan Global Support Limited supports customers\' proactive asset formation and sustainable life planning. This consent form communicates investment risks for the product "Evolution" by ITA International Holdings to protect your interests. Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article.' },
-    articles:[
-      { num:{ja:'第1条',en:'Article 1'}, title:{ja:'サポートの範囲および自己責任の原則',en:'Scope of Support / Principle of Self-Responsibility'}, body:{ja:'当社（Wawasan Global Support Limited）が提供する本サービスは、海外保険会社の信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',en:'Services provided by our company (Wawasan Global Support Limited) are limited to administrative support for enrollment procedures of trust products offered by overseas insurance companies. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'} },
-      { num:{ja:'第2条',en:'Article 2'}, title:{ja:'投資リスクおよび各種手数料',en:'Investment Risks and Fees'}, body:{ja:'[[R:本プランは元本が保証された金融商品ではありません。]]市場環境や為替レートの変動により運用成績が上下し、[[R:場合によっては元本割れが生じるリスク、およびカントリーリスクがあります。]]\n本プランを維持するため、毎月のプラン手数料・資産管理費用・年間管理手数料といった費用構造が設定されていることを了承します。',en:'[[R:This plan does not guarantee your principal.]] Investment performance may fluctuate due to market and exchange rate conditions, and [[R:there is a risk of capital loss, as well as country risk.]]\nYou acknowledge the fee structure including monthly plan fees, asset management costs, and annual management fees.'} },
-      { num:{ja:'第3条',en:'Article 3'}, title:{ja:'初期積立期間の制限と途中解約のリスク',en:'Initial Period Restrictions and Early Cancellation Risk'}, body:{ja:'【初期期間（イニシャルユニット期間）の制限】\n[[R:この期間中は、積立金額の減額・一部解約・一時停止を行うことは一切認められません。この期間中に解約・失効させた場合、解約返戻金が完全に「ゼロ」となります。]]\n【満期前の早期解約リスク】\n初期期間経過後は減額や一部引き出しが可能ですが、[[R:満期を待たずに解約した場合、返戻金が著しく減少またはゼロとなる危険性があります。]]',en:'[Initial Unit Period Restrictions]\n[[R:During this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. If the plan is cancelled or lapses during this period, the surrender value will become completely ZERO due to cancellation fees.]]\n[Early Cancellation Risk Before Maturity]\nAfter the initial period, reductions and partial withdrawals become possible, but [[R:if cancelled before maturity, there is a serious risk that the refund amount will be significantly reduced or become zero.]]'} },
-      { num:{ja:'第4条',en:'Article 4'}, title:{ja:'一部解約に関する規定',en:'Regulations on Partial Cancellation'}, body:{ja:'[[R:初期ユニット期間に積み立てた金額からの一部解約は不可能です。]]一部解約は、プラン内に最低 [[B:1,200 USD]] の純現金価値を維持できる場合のみ申請可能です。\n手続きに伴う送金手数料（現時点で [[B:50 USD]]）および受取銀行の為替手数料は [[B:お客様負担]] となります。',en:'[[R:Partial cancellation from amounts accumulated during the initial unit period is not possible.]] Partial cancellation may only be requested if a minimum net cash value of [[B:USD 1,200]] can be maintained in the plan.\nWire transfer fees (currently [[B:USD 50]]) and exchange fees charged by receiving banks are [[B:borne by the customer.]]'} },
-      { num:{ja:'第5条',en:'Article 5'}, title:{ja:'ロイヤルティーボーナスの適用要件',en:'Loyalty Bonus Requirements'}, body:{ja:'「ロイヤルティーボーナス」を有効に維持するためには、以下の [[B:すべての条件]] を満たす必要があります。\n① 拠出金が [[B:90日以内]] の猶予期間内に支払われていること\n② [[R:拠出金の減額がないこと]]\n③ [[R:一部解約がないこと]]\n[[R:1つでも条件を満たさない場合、ロイヤルティーボーナスの権利は失われます。]]',en:'To maintain the "Loyalty Bonus," [[B:all of the following conditions]] must be met:\n① Contributions paid within the [[B:90-day]] grace period\n② [[R:No reduction in contribution amount]]\n③ [[R:No partial cancellations]]\n[[R:Failure to meet even one condition will result in the permanent loss of the Loyalty Bonus.]]'} },
-      { num:{ja:'第6条',en:'Article 6'}, title:{ja:'継続の推奨',en:'Recommendation to Continue'}, body:{ja:'契約期間中は、減額・一部引出し・一時停止などをせずに、契約時に決めた積立金額で積立期間満了まで継続することが最善です。[[R:途中変更はボーナス失効・返戻金減少につながる可能性があります。]]',en:'It is strongly recommended to continue contributing at the originally agreed amount throughout the full savings period without any reductions, partial withdrawals, or suspensions. [[R:Mid-term changes may result in loss of bonuses and a significant reduction of the surrender value.]]'} },
-      { num:{ja:'第7条',en:'Article 7'}, title:{ja:'死亡給付金に関する規定',en:'Death Benefit Regulations'}, body:{ja:'[[R:拠出金を猶予期間（90日）以内に支払っていない場合、死亡給付金の保証は消失し、その後復活することはありません。]]\n[[R:プラン発行後2年以内の既往症・障害に起因する死亡および自殺に対しては死亡給付金が支払われません。]]\n受益者の設定が [[B:必須]] です。',en:'[[R:If contributions are not paid within the 90-day grace period, the death benefit guarantee is extinguished and cannot be reinstated under any circumstances.]]\n[[R:Death benefits will not be paid for deaths caused by pre-existing conditions or disabilities within 2 years of plan issuance, or for suicide.]]\nSetting a beneficiary is [[B:mandatory.]]'} },
-      { num:{ja:'第8条',en:'Article 8'}, title:{ja:'米国居住者へのステータス変更',en:'Change of Status to US Resident'}, body:{ja:'将来的にアメリカ居住者（ビザ取得含む）となった場合、証券の発行籍地に応じた対応が求められます。\n【プエルトリコ証券】[[R:親族等への譲渡または解約が必要になります。]]\n【ラブアン証券】転居前に担当者経由でITA社への申告・手続き完了で継続可能な場合がありますが、[[R:状況により譲渡または解約が必要になる可能性があります。]]\n契約成立後にプエルトリコ籍とラブアン籍間での変更はできません。',en:'If you become a US resident in the future (including obtaining a visa), action will be required based on the jurisdiction of your securities.\n[Puerto Rico Securities] [[R:Transfer to relatives or cancellation of the plan will be required.]]\n[Labuan Securities] Continuation may be possible by notifying ITA through your agent before moving, but [[R:depending on circumstances, transfer or cancellation may be required.]] Changing between jurisdictions after contract establishment is not permitted.'} },
-      { num:{ja:'第9条',en:'Article 9'}, title:{ja:'個人情報の取扱方針',en:'Privacy Policy'}, body:{ja:'申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',en:'Personal information viewed or obtained to report enrollment procedures will not be used for any purpose other than those enrollment procedures and introductions to similar products.'} }
+    key: 'evolution',
+    name:  { ja:'エボリューション（積立変動型）', en:'Evolution (Variable Savings Type)' },
+    label: { ja:'積立変動型 — エボリューション',  en:'Variable Savings — Evolution' },
+    title: { ja:'Evolutionに関する重要事項同意書', en:'Important Matters Consent Form — Evolution' },
+    preamble: {
+      ja:'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、持続可能なライフプランニングの実現を重視しております。本同意書はITA International Holdingsの商品「Evolution」へのお申し込みにあたり、投資に伴う諸リスクをお伝えし、お客様の利益を保護するためのものです。各条項の右欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。',
+      en:'Wawasan Global Support Limited supports customers\' proactive asset formation and sustainable life planning. This consent form communicates investment risks for the product "Evolution" by ITA International Holdings to protect your interests. Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article.'
+    },
+    articles: [
+      {
+        num:   { ja:'第1条', en:'Article 1' },
+        title: { ja:'サポートの範囲および自己責任の原則', en:'Scope of Support / Principle of Self-Responsibility' },
+        body:  {
+          ja:'当社（Wawasan Global Support Limited）が提供する本サービスは、海外保険会社の信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',
+          en:'Services provided by our company (Wawasan Global Support Limited) are limited to administrative support for enrollment procedures of trust products offered by overseas insurance companies. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'
+        }
+      },
+      {
+        num:   { ja:'第2条', en:'Article 2' },
+        title: { ja:'投資リスクおよび各種手数料', en:'Investment Risks and Fees' },
+        body:  {
+          ja:'[[R:本プランは元本が保証された金融商品ではありません。]]市場環境や為替レートの変動により運用成績が上下し、[[R:場合によっては元本割れが生じるリスク、およびカントリーリスクがあります。]]\n本プランを維持するため、毎月のプラン手数料・資産管理費用・年間管理手数料といった費用構造が設定されていることを了承します。',
+          en:'[[R:This plan does not guarantee your principal.]] Investment performance may fluctuate due to market and exchange rate conditions, and [[R:there is a risk of capital loss, as well as country risk.]]\nYou acknowledge the fee structure including monthly plan fees, asset management costs, and annual management fees.'
+        }
+      },
+      {
+        num:   { ja:'第3条', en:'Article 3' },
+        title: { ja:'初期積立期間の制限と途中解約のリスク', en:'Initial Period Restrictions and Early Cancellation Risk' },
+        body:  {
+          ja:'【初期期間（イニシャルユニット期間）の制限】\n[[R:この期間中は、積立金額の減額・一部解約・一時停止を行うことは一切認められません。この期間中に解約・失効させた場合、解約返戻金が完全に「ゼロ」となります。]]\n【満期前の早期解約リスク】\n初期期間経過後は減額や一部引き出しが可能ですが、[[R:満期を待たずに解約した場合、返戻金が著しく減少またはゼロとなる危険性があります。]]',
+          en:'[Initial Unit Period Restrictions]\n[[R:During this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. If the plan is cancelled or lapses during this period, the surrender value will become completely ZERO due to cancellation fees.]]\n[Early Cancellation Risk Before Maturity]\nAfter the initial period, reductions and partial withdrawals become possible, but [[R:if cancelled before maturity, there is a serious risk that the refund amount will be significantly reduced or become zero.]]'
+        }
+      },
+      {
+        num:   { ja:'第4条', en:'Article 4' },
+        title: { ja:'一部解約に関する規定', en:'Regulations on Partial Cancellation' },
+        body:  {
+          ja:'[[R:初期ユニット期間に積み立てた金額からの一部解約は不可能です。]]一部解約は、プラン内に最低 [[B:1,200 USD]] の純現金価値を維持できる場合のみ申請可能です。\n手続きに伴う送金手数料（現時点で [[B:50 USD]]）および受取銀行の為替手数料は [[B:お客様負担]] となります。',
+          en:'[[R:Partial cancellation from amounts accumulated during the initial unit period is not possible.]] Partial cancellation may only be requested if a minimum net cash value of [[B:USD 1,200]] can be maintained in the plan.\nWire transfer fees (currently [[B:USD 50]]) and exchange fees charged by receiving banks are [[B:borne by the customer.]]'
+        }
+      },
+      {
+        num:   { ja:'第5条', en:'Article 5' },
+        title: { ja:'ロイヤルティーボーナスの適用要件', en:'Loyalty Bonus Requirements' },
+        body:  {
+          ja:'「ロイヤルティーボーナス」を有効に維持するためには、以下の [[B:すべての条件]] を満たす必要があります。\n① 拠出金が [[B:90日以内]] の猶予期間内に支払われていること\n② [[R:拠出金の減額がないこと]]\n③ [[R:一部解約がないこと]]\n[[R:1つでも条件を満たさない場合、ロイヤルティーボーナスの権利は失われます。]]',
+          en:'To maintain the "Loyalty Bonus," [[B:all of the following conditions]] must be met:\n① Contributions paid within the [[B:90-day]] grace period\n② [[R:No reduction in contribution amount]]\n③ [[R:No partial cancellations]]\n[[R:Failure to meet even one condition will result in the permanent loss of the Loyalty Bonus.]]'
+        }
+      },
+      {
+        num:   { ja:'第6条', en:'Article 6' },
+        title: { ja:'継続の推奨', en:'Recommendation to Continue' },
+        body:  {
+          ja:'契約期間中は、減額・一部引出し・一時停止などをせずに、契約時に決めた積立金額で積立期間満了まで継続することが最善です。[[R:途中変更はボーナス失効・返戻金減少につながる可能性があります。]]',
+          en:'It is strongly recommended to continue contributing at the originally agreed amount throughout the full savings period without any reductions, partial withdrawals, or suspensions. [[R:Mid-term changes may result in loss of bonuses and a significant reduction of the surrender value.]]'
+        }
+      },
+      {
+        num:   { ja:'第7条', en:'Article 7' },
+        title: { ja:'死亡給付金に関する規定', en:'Death Benefit Regulations' },
+        body:  {
+          ja:'[[R:拠出金を猶予期間（90日）以内に支払っていない場合、死亡給付金の保証は消失し、その後復活することはありません。]]\n[[R:プラン発行後2年以内の既往症・障害に起因する死亡および自殺に対しては死亡給付金が支払われません。]]\n受益者の設定が [[B:必須]] です。',
+          en:'[[R:If contributions are not paid within the 90-day grace period, the death benefit guarantee is extinguished and cannot be reinstated under any circumstances.]]\n[[R:Death benefits will not be paid for deaths caused by pre-existing conditions or disabilities within 2 years of plan issuance, or for suicide.]]\nSetting a beneficiary is [[B:mandatory.]]'
+        }
+      },
+      {
+        num:   { ja:'第8条', en:'Article 8' },
+        title: { ja:'米国居住者へのステータス変更', en:'Change of Status to US Resident' },
+        body:  {
+          ja:'将来的にアメリカ居住者（ビザ取得含む）となった場合、証券の発行籍地に応じた対応が求められます。\n【プエルトリコ証券】[[R:親族等への譲渡または解約が必要になります。]]\n【ラブアン証券】転居前に担当者経由でITA社への申告・手続き完了で継続可能な場合がありますが、[[R:状況により譲渡または解約が必要になる可能性があります。]]\n契約成立後にプエルトリコ籍とラブアン籍間での変更はできません。',
+          en:'If you become a US resident in the future (including obtaining a visa), action will be required based on the jurisdiction of your securities.\n[Puerto Rico Securities] [[R:Transfer to relatives or cancellation of the plan will be required.]]\n[Labuan Securities] Continuation may be possible by notifying ITA through your agent before moving, but [[R:depending on circumstances, transfer or cancellation may be required.]] Changing between jurisdictions after contract establishment is not permitted.'
+        }
+      },
+      {
+        num:   { ja:'第9条', en:'Article 9' },
+        title: { ja:'個人情報の取扱方針', en:'Privacy Policy' },
+        body:  {
+          ja:'申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',
+          en:'Personal information viewed or obtained to report enrollment procedures will not be used for any purpose other than those enrollment procedures and introductions to similar products.'
+        }
+      }
     ]
   },
+
   sp500: {
-    key:'sp500',
-    name:{ ja:'S&P500（積立確定型）', en:'S&P500 (Fixed Savings Type)' },
-    label:{ ja:'積立確定型 — S&P500', en:'Fixed Savings — S&P500' },
-    title:{ ja:'S&P500（積立確定型）ご契約に関する重要事項同意書', en:'Important Matters Consent Form — S&P500 (Fixed Savings Type)' },
-    preamble:{ ja:'本同意書は、「Investors Trust S&P500インデックス」へのお申し込みにあたり、投資に伴う諸リスクおよび制限事項を明確にお伝えするものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。', en:'This consent form clearly communicates the risks and restrictions associated with applying for the "Investors Trust S&P500 Index." Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article.' },
-    articles:[
-      { num:{ja:'第1条',en:'Article 1'}, title:{ja:'サポートの範囲および自己責任の原則',en:'Scope of Support / Principle of Self-Responsibility'}, body:{ja:'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社の信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',en:'Services provided by Wawasan Global Support Limited (Labuan corporation) are limited to administrative support for enrollment procedures of trust products offered by overseas insurance companies. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'} },
-      { num:{ja:'第2条',en:'Article 2'}, title:{ja:'投資リスクおよび各種手数料',en:'Investment Risks and Fees'}, body:{ja:'[[R:本プランは元本が保証された金融商品ではありません。]]市場環境や為替レートの変動により運用成績が上下し、[[R:場合によっては元本割れが生じるリスク（カントリーリスク・カウンターパーティーリスクを含む）があります。]]\n毎月のプラン手数料・資産管理費用・年間管理手数料といった費用構造が設定されていることを了承します。',en:'[[R:This plan does not guarantee your principal.]] Investment performance may fluctuate due to market and exchange rate conditions, and [[R:there is a risk of capital loss (including country risk and counterparty risk).]]\nYou acknowledge the fee structure including monthly plan fees, asset management costs, and annual management fees.'} },
-      { num:{ja:'第3条',en:'Article 3'}, title:{ja:'元本確保機能およびロイヤルティボーナスの適用要件',en:'Principal Protection and Loyalty Bonus Requirements'}, body:{ja:'「元本確保機能」および「ロイヤルティボーナス」の権利を有効に維持するためには、以下の [[B:すべての条件]] を満たす必要があります。\n① 拠出金を支払期日から [[B:90日以内]] に必ず入金すること\n② 契約当初に設定した拠出金額を [[R:一切減額しないこと]]\n③ [[R:一部引き出し・90日以上の積立停止・プラン内貸付制度を一切利用しないこと]]\n[[R:1つでも条件を満たさない場合、元本確保の権利およびロイヤルティボーナスは消滅します。]]',en:'To maintain the "Principal Protection" and "Loyalty Bonus," [[B:all of the following conditions]] must be met:\n① Contributions paid within [[B:90 days]] of the due date\n② [[R:No reduction in contribution amount set at contract inception]]\n③ [[R:No partial withdrawals, no suspension of savings for 90+ days, and no use of the plan loan feature]]\n[[R:Failure to meet even one condition will result in the permanent loss of both the principal protection right and the loyalty bonus.]]'} },
-      { num:{ja:'第4条',en:'Article 4'}, title:{ja:'初期積立期間の制限と途中解約のリスク',en:'Initial Period Restrictions and Early Cancellation Risk'}, body:{ja:'【初期期間の制限】\n[[R:この期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。解約・失効した場合、解約返戻金が完全に「ゼロ」となります。]]\n【満期前の早期解約リスク】\n初期期間経過後でも、[[R:満期前に解約した場合、S&P500の運用状況と各種手数料の影響により、返戻金が著しく減少またはゼロとなる危険性があります。]]',en:'[Initial Period Restrictions]\n[[R:During this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted. If cancelled or lapsed, the surrender value will become completely ZERO.]]\n[Early Cancellation Risk Before Maturity]\nEven after the initial period, [[R:if cancelled before maturity, the refund amount may be significantly reduced or become zero due to S&P500 performance and accumulated fees.]]'} },
-      { num:{ja:'第5条',en:'Article 5'}, title:{ja:'一部解約に関する規定',en:'Regulations on Partial Cancellation'}, body:{ja:'[[R:初期ユニット期間に積み立てた資産枠からの引き出しはできません。]]一部解約は、プラン内に最低 [[B:2,400 USD]] の純現金価値を維持できる範囲でのみ申請可能です。\n海外送金手数料（現行 [[B:50 USD]]）および受取先金融機関の為替手数料は [[B:お客様負担]] となります。',en:'[[R:Withdrawals from assets accumulated during the initial unit period are not permitted.]] Partial cancellation is only available if a minimum net cash value of [[B:USD 2,400]] can be maintained.\nOverseas wire transfer fees (currently [[B:USD 50]]) and exchange fees set by receiving institutions are [[B:borne by the customer.]]'} },
-      { num:{ja:'第6条',en:'Article 6'}, title:{ja:'死亡給付金に関する規定',en:'Death Benefit Regulations'}, body:{ja:'[[R:拠出金の支払いが猶予期間（90日）を超過した場合、死亡給付金の保障は即時消滅し、その後いかなる理由があっても権利は復活しません。]]\n[[R:プラン発行から2年以内の既往症・障害に起因する死亡および自殺については給付金の支払い対象外です。]]\n受益者の事前設定が [[B:必須]] です。',en:'[[R:If contributions are not paid within the 90-day grace period, the death benefit is immediately extinguished and cannot be reinstated under any circumstances.]]\n[[R:Deaths caused by pre-existing conditions or disabilities within 2 years of plan issuance, and suicide, are excluded from death benefit payments.]]\nPre-setting a beneficiary is [[B:mandatory.]]'} },
-      { num:{ja:'第7条',en:'Article 7'}, title:{ja:'米国居住者へのステータス変更',en:'Change of Status to US Resident'}, body:{ja:'将来的にアメリカ合衆国の居住者となった場合、証券の発行籍地に応じた対応が求められます。\n【プエルトリコ籍】[[R:原則として親族等への譲渡またはプランの解約が必須となります。]]\n【ラブアン籍】転居前に担当者経由で所定の手続きを完了することで継続が認められる場合がありますが、[[R:状況によっては譲渡や解約が義務付けられる可能性があります。]]\n契約成立後に籍地変更はできません。',en:'If you become a US resident in the future, action will be required based on your securities\' jurisdiction.\n[Puerto Rico] [[R:Transfer to relatives or cancellation of the plan is generally required.]]\n[Labuan] Continuation may be permitted if required procedures are completed through your agent before moving, but [[R:depending on circumstances, transfer or cancellation may be required.]] Changing between jurisdictions after contract establishment is not permitted.'} },
-      { num:{ja:'第8条',en:'Article 8'}, title:{ja:'個人情報の取り扱い',en:'Privacy Policy'}, body:{ja:'本お申し込み手続きに関連して提供・取得された個人情報は、各種事務手続きの代行・レポート業務および関連サービスのご案内以外の目的には一切使用されません。',en:'Personal information provided or obtained in connection with this application will not be used for any purpose other than administrative agency services, reporting, and introductions to related services.'} }
+    key: 'sp500',
+    name:  { ja:'S&P500（積立確定型）',        en:'S&P500 (Fixed Savings Type)' },
+    label: { ja:'積立確定型 — S&P500',          en:'Fixed Savings — S&P500' },
+    title: { ja:'S&P500（積立確定型）ご契約に関する重要事項同意書', en:'Important Matters Consent Form — S&P500 (Fixed Savings Type)' },
+    preamble: {
+      ja:'本同意書は、「Investors Trust S&P500インデックス」へのお申し込みにあたり、投資に伴う諸リスクおよび制限事項を明確にお伝えするものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。',
+      en:'This consent form clearly communicates the risks and restrictions associated with applying for the "Investors Trust S&P500 Index." Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article.'
+    },
+    articles: [
+      {
+        num:   { ja:'第1条', en:'Article 1' },
+        title: { ja:'サポートの範囲および自己責任の原則', en:'Scope of Support / Principle of Self-Responsibility' },
+        body:  {
+          ja:'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社の信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',
+          en:'Services provided by Wawasan Global Support Limited (Labuan corporation) are limited to administrative support for enrollment procedures of trust products offered by overseas insurance companies. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'
+        }
+      },
+      {
+        num:   { ja:'第2条', en:'Article 2' },
+        title: { ja:'投資リスクおよび各種手数料', en:'Investment Risks and Fees' },
+        body:  {
+          ja:'[[R:本プランは元本が保証された金融商品ではありません。]]市場環境や為替レートの変動により運用成績が上下し、[[R:場合によっては元本割れが生じるリスク（カントリーリスク・カウンターパーティーリスクを含む）があります。]]\n毎月のプラン手数料・資産管理費用・年間管理手数料といった費用構造が設定されていることを了承します。',
+          en:'[[R:This plan does not guarantee your principal.]] Investment performance may fluctuate due to market and exchange rate conditions, and [[R:there is a risk of capital loss (including country risk and counterparty risk).]]\nYou acknowledge the fee structure including monthly plan fees, asset management costs, and annual management fees.'
+        }
+      },
+      {
+        num:   { ja:'第3条', en:'Article 3' },
+        title: { ja:'元本確保機能およびロイヤルティボーナスの適用要件', en:'Principal Protection and Loyalty Bonus Requirements' },
+        body:  {
+          ja:'「元本確保機能」および「ロイヤルティボーナス」の権利を有効に維持するためには、以下の [[B:すべての条件]] を満たす必要があります。\n① 拠出金を支払期日から [[B:90日以内]] に必ず入金すること\n② 契約当初に設定した拠出金額を [[R:一切減額しないこと]]\n③ [[R:一部引き出し・90日以上の積立停止・プラン内貸付制度を一切利用しないこと]]\n[[R:1つでも条件を満たさない場合、元本確保の権利およびロイヤルティボーナスは消滅します。]]',
+          en:'To maintain the "Principal Protection" and "Loyalty Bonus," [[B:all of the following conditions]] must be met:\n① Contributions paid within [[B:90 days]] of the due date\n② [[R:No reduction in contribution amount set at contract inception]]\n③ [[R:No partial withdrawals, no suspension of savings for 90+ days, and no use of the plan loan feature]]\n[[R:Failure to meet even one condition will result in the permanent loss of both the principal protection right and the loyalty bonus.]]'
+        }
+      },
+      {
+        num:   { ja:'第4条', en:'Article 4' },
+        title: { ja:'初期積立期間の制限と途中解約のリスク', en:'Initial Period Restrictions and Early Cancellation Risk' },
+        body:  {
+          ja:'【初期期間の制限】\n[[R:この期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。解約・失効した場合、解約返戻金が完全に「ゼロ」となります。]]\n【満期前の早期解約リスク】\n初期期間経過後でも、[[R:満期前に解約した場合、S&P500の運用状況と各種手数料の影響により、返戻金が著しく減少またはゼロとなる危険性があります。]]',
+          en:'[Initial Period Restrictions]\n[[R:During this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted. If cancelled or lapsed, the surrender value will become completely ZERO.]]\n[Early Cancellation Risk Before Maturity]\nEven after the initial period, [[R:if cancelled before maturity, the refund amount may be significantly reduced or become zero due to S&P500 performance and accumulated fees.]]'
+        }
+      },
+      {
+        num:   { ja:'第5条', en:'Article 5' },
+        title: { ja:'一部解約に関する規定', en:'Regulations on Partial Cancellation' },
+        body:  {
+          ja:'[[R:初期ユニット期間に積み立てた資産枠からの引き出しはできません。]]一部解約は、プラン内に最低 [[B:2,400 USD]] の純現金価値を維持できる範囲でのみ申請可能です。\n海外送金手数料（現行 [[B:50 USD]]）および受取先金融機関の為替手数料は [[B:お客様負担]] となります。',
+          en:'[[R:Withdrawals from assets accumulated during the initial unit period are not permitted.]] Partial cancellation is only available if a minimum net cash value of [[B:USD 2,400]] can be maintained.\nOverseas wire transfer fees (currently [[B:USD 50]]) and exchange fees set by receiving institutions are [[B:borne by the customer.]]'
+        }
+      },
+      {
+        num:   { ja:'第6条', en:'Article 6' },
+        title: { ja:'死亡給付金に関する規定', en:'Death Benefit Regulations' },
+        body:  {
+          ja:'[[R:拠出金の支払いが猶予期間（90日）を超過した場合、死亡給付金の保障は即時消滅し、その後いかなる理由があっても権利は復活しません。]]\n[[R:プラン発行から2年以内の既往症・障害に起因する死亡および自殺については給付金の支払い対象外です。]]\n受益者の事前設定が [[B:必須]] です。',
+          en:'[[R:If contributions are not paid within the 90-day grace period, the death benefit is immediately extinguished and cannot be reinstated under any circumstances.]]\n[[R:Deaths caused by pre-existing conditions or disabilities within 2 years of plan issuance, and suicide, are excluded from death benefit payments.]]\nPre-setting a beneficiary is [[B:mandatory.]]'
+        }
+      },
+      {
+        num:   { ja:'第7条', en:'Article 7' },
+        title: { ja:'米国居住者へのステータス変更', en:'Change of Status to US Resident' },
+        body:  {
+          ja:'将来的にアメリカ合衆国の居住者となった場合、証券の発行籍地に応じた対応が求められます。\n【プエルトリコ籍】[[R:原則として親族等への譲渡またはプランの解約が必須となります。]]\n【ラブアン籍】転居前に担当者経由で所定の手続きを完了することで継続が認められる場合がありますが、[[R:状況によっては譲渡や解約が義務付けられる可能性があります。]]\n契約成立後に籍地変更はできません。',
+          en:'If you become a US resident in the future, action will be required based on your securities\' jurisdiction.\n[Puerto Rico] [[R:Transfer to relatives or cancellation of the plan is generally required.]]\n[Labuan] Continuation may be permitted if required procedures are completed through your agent before moving, but [[R:depending on circumstances, transfer or cancellation may be required.]] Changing between jurisdictions after contract establishment is not permitted.'
+        }
+      },
+      {
+        num:   { ja:'第8条', en:'Article 8' },
+        title: { ja:'個人情報の取り扱い', en:'Privacy Policy' },
+        body:  {
+          ja:'本お申し込み手続きに関連して提供・取得された個人情報は、各種事務手続きの代行・レポート業務および関連サービスのご案内以外の目的には一切使用されません。',
+          en:'Personal information provided or obtained in connection with this application will not be used for any purpose other than administrative agency services, reporting, and introductions to related services.'
+        }
+      }
     ]
   },
+
   fip: {
-    key:'fip',
-    name:{ ja:'確定利回りポートフォリオ（一括確定型）', en:'Fixed Yield Portfolio (Lump-sum Fixed Type)' },
-    label:{ ja:'一括確定型 — 確定利回りポートフォリオ', en:'Lump-sum Fixed — Fixed Yield Portfolio' },
-    title:{ ja:'確定利回りポートフォリオ（一括確定型）ご契約に関する重要事項同意書', en:'Important Matters Consent Form — Fixed Yield Portfolio (Lump-sum Fixed Type)' },
-    preamble:{ ja:'本同意書は、ITA International Holdings（Investors Trust）が提供する「確定利回りポートフォリオ（FIP）」へのお申し込みにあたり、投資に伴う諸リスクおよび各種制限事項を明確にお伝えするものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。', en:'This consent form clearly communicates the risks and restrictions for the "Fixed Yield Portfolio (FIP)" provided by ITA International Holdings (Investors Trust). Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article.' },
-    articles:[
-      { num:{ja:'第1条',en:'Article 1'}, title:{ja:'サポートの範囲および自己責任の原則',en:'Scope of Support / Principle of Self-Responsibility'}, body:{ja:'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社の信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',en:'Services provided by Wawasan Global Support Limited (Labuan corporation) are limited to administrative support for enrollment procedures. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'} },
-      { num:{ja:'第2条',en:'Article 2'}, title:{ja:'投資リスクに関する事項',en:'Investment Risks'}, body:{ja:'本プランは為替リスクを伴うため、[[R:日本円に換算した際に元本割れが生じる可能性があります。]]\n[[R:本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。]]',en:'This plan involves foreign exchange risk, and [[R:when converted to Japanese yen, there is a possibility of capital loss.]]\n[[R:You understand and accept the country risk associated with this investment.]]'} },
-      { num:{ja:'第3条',en:'Article 3'}, title:{ja:'元本確保の適用条件',en:'Principal Protection Conditions'}, body:{ja:'本商品は「元本確保100%」と記載されていますが、[[R:これは契約期間中に元本の解約（一部解約を含む）が一切行われなかった場合に限り確保されるものです。]]\n当該元本の確保は、Investors Trustによって保証されています。',en:'Although this product states "100% Principal Protection," [[R:this protection only applies if no cancellation of the principal (including partial cancellation) is made throughout the entire contract period.]]\nThe principal protection is guaranteed by Investors Trust.'} },
-      { num:{ja:'第4条',en:'Article 4'}, title:{ja:'流動性制限および解約に関する規定',en:'Liquidity Restrictions and Cancellation Regulations'}, body:{ja:'【全解約の禁止】[[R:契約期間終了前（満期前）の全解約は不可です。]]\n【流動性制限】パンフレット記載の「流動性」および「解約手数料」を確認し、本プランの制限について理解しております。\n【一部解約の変動性】一部解約可能な金額はイラストレーションの「可能な現金解約価値」を参照しますが、[[R:実際の申請時の金額とは変動が生じることを了承します。]]\n【利息引き出しの影響】[[R:契約途中で利息分の引き出しを行った場合、イラストレーション記載の推移は参考にならなくなります。]]',en:'[Full Cancellation Prohibition] [[R:Full cancellation before the end of the contract period (before maturity) is not permitted.]]\n[Liquidity Restrictions] You have confirmed and understood the "liquidity" and "cancellation fee" information in the brochure.\n[Partial Cancellation Variability] Partial cancellation amounts are based on the illustration, but [[R:you acknowledge that the actual amount available at the time of application may vary.]]\n[Impact of Interest Withdrawals] [[R:If interest is withdrawn during the contract period, the projected values shown in the illustration will no longer be a reliable reference.]]'} },
-      { num:{ja:'第5条',en:'Article 5'}, title:{ja:'金利に関する規定',en:'Interest Rate Regulations'}, body:{ja:'お申し込み時に選択した契約年数（3・5・7・10年）の期間中は金利の変更はありませんが、[[R:当該契約年数を終えた後には金利が変更されることを理解しております。]]',en:'The interest rate will not change during the contract term selected at application (3, 5, 7, or 10 years), however [[R:you understand that the interest rate may change after that contract term ends.]]'} },
-      { num:{ja:'第6条',en:'Article 6'}, title:{ja:'費用および各種手数料',en:'Costs and Fees'}, body:{ja:'本プランの費用として [[B:月額プラン手数料 7 USD]] がかかります。\n出金手続き時は [[B:送金手数料 50 USD]]（将来改定の可能性あり）および各受取銀行の為替手数料が [[B:お客様負担]] となります。\nクレジットカードでの海外送金（入金時）は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由の海外送金は各行所定の手数料が [[B:お客様負担]] となります。',en:'This plan charges a [[B:monthly plan fee of USD 7.]]\nFor withdrawals, a [[B:wire transfer fee of USD 50]] (subject to future revision) and exchange fees of receiving banks are [[B:borne by the customer.]]\nFor overseas wire transfers by credit card, [[B:a 3.5% fee]] plus the credit card company fee applies. For transfers via domestic banks or internet banking, the bank\'s respective fees are [[B:borne by the customer.]]'} },
-      { num:{ja:'第7条',en:'Article 7'}, title:{ja:'死亡給付金に関する規定',en:'Death Benefit Regulations'}, body:{ja:'死亡給付金の支払基準額は [[B:解約返戻金の101%]] です。\n[[R:プラン発行後2年以内の既往症・障害に起因する死亡および自殺に対しては死亡給付金が支払われません。]]\n受益者の設定が [[B:必須]] です。',en:'The death benefit payment standard is [[B:101% of the surrender value.]]\n[[R:Death benefits will not be paid for deaths caused by pre-existing conditions or disabilities within 2 years of plan issuance, or for suicide.]]\nSetting a beneficiary is [[B:mandatory.]]'} },
-      { num:{ja:'第8条',en:'Article 8'}, title:{ja:'米国居住者へのステータス変更',en:'Change of Status to US Resident'}, body:{ja:'[[R:契約途中にアメリカ居住者となられた場合、親族等への譲渡または解約が必要となることを理解しております。]]',en:'[[R:You understand that if you become a US resident during the contract period, transfer to relatives or cancellation of the plan will be required.]]'} },
-      { num:{ja:'第9条',en:'Article 9'}, title:{ja:'個人情報の取扱方針',en:'Privacy Policy'}, body:{ja:'申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',en:'Personal information viewed or obtained to report enrollment procedures will not be used for any purpose other than those enrollment procedures and introductions to similar products.'} }
+    key: 'fip',
+    name:  { ja:'確定利回りポートフォリオ（一括確定型）', en:'Fixed Yield Portfolio (Lump-sum Fixed Type)' },
+    label: { ja:'一括確定型 — 確定利回りポートフォリオ', en:'Lump-sum Fixed — Fixed Yield Portfolio' },
+    title: { ja:'確定利回りポートフォリオ（一括確定型）ご契約に関する重要事項同意書', en:'Important Matters Consent Form — Fixed Yield Portfolio (Lump-sum Fixed Type)' },
+    preamble: {
+      ja:'本同意書は、ITA International Holdings（Investors Trust）が提供する「確定利回りポートフォリオ（FIP）」へのお申し込みにあたり、投資に伴う諸リスクおよび各種制限事項を明確にお伝えするものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。',
+      en:'This consent form clearly communicates the risks and restrictions for the "Fixed Yield Portfolio (FIP)" provided by ITA International Holdings (Investors Trust). Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article.'
+    },
+    articles: [
+      {
+        num:   { ja:'第1条', en:'Article 1' },
+        title: { ja:'サポートの範囲および自己責任の原則', en:'Scope of Support / Principle of Self-Responsibility' },
+        body:  {
+          ja:'Wawasan Global Support Limited（ラブアン法人）が提供する本サービスは、海外保険会社の信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',
+          en:'Services provided by Wawasan Global Support Limited (Labuan corporation) are limited to administrative support for enrollment procedures. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'
+        }
+      },
+      {
+        num:   { ja:'第2条', en:'Article 2' },
+        title: { ja:'投資リスクに関する事項', en:'Investment Risks' },
+        body:  {
+          ja:'本プランは為替リスクを伴うため、[[R:日本円に換算した際に元本割れが生じる可能性があります。]]\n[[R:本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。]]',
+          en:'This plan involves foreign exchange risk, and [[R:when converted to Japanese yen, there is a possibility of capital loss.]]\n[[R:You understand and accept the country risk associated with this investment.]]'
+        }
+      },
+      {
+        num:   { ja:'第3条', en:'Article 3' },
+        title: { ja:'元本確保の適用条件', en:'Principal Protection Conditions' },
+        body:  {
+          ja:'本商品は「元本確保100%」と記載されていますが、[[R:これは契約期間中に元本の解約（一部解約を含む）が一切行われなかった場合に限り確保されるものです。]]\n当該元本の確保は、Investors Trustによって保証されています。',
+          en:'Although this product states "100% Principal Protection," [[R:this protection only applies if no cancellation of the principal (including partial cancellation) is made throughout the entire contract period.]]\nThe principal protection is guaranteed by Investors Trust.'
+        }
+      },
+      {
+        num:   { ja:'第4条', en:'Article 4' },
+        title: { ja:'流動性制限および解約に関する規定', en:'Liquidity Restrictions and Cancellation Regulations' },
+        body:  {
+          ja:'【全解約の禁止】[[R:契約期間終了前（満期前）の全解約は不可です。]]\n【流動性制限】パンフレット記載の「流動性」および「解約手数料」を確認し、本プランの制限について理解しております。\n【一部解約の変動性】一部解約可能な金額はイラストレーションの「可能な現金解約価値」を参照しますが、[[R:実際の申請時の金額とは変動が生じることを了承します。]]\n【利息引き出しの影響】[[R:契約途中で利息分の引き出しを行った場合、イラストレーション記載の推移は参考にならなくなります。]]',
+          en:'[Full Cancellation Prohibition] [[R:Full cancellation before the end of the contract period (before maturity) is not permitted.]]\n[Liquidity Restrictions] You have confirmed and understood the "liquidity" and "cancellation fee" information in the brochure.\n[Partial Cancellation Variability] Partial cancellation amounts are based on the illustration, but [[R:you acknowledge that the actual amount available at the time of application may vary.]]\n[Impact of Interest Withdrawals] [[R:If interest is withdrawn during the contract period, the projected values shown in the illustration will no longer be a reliable reference.]]'
+        }
+      },
+      {
+        num:   { ja:'第5条', en:'Article 5' },
+        title: { ja:'金利に関する規定', en:'Interest Rate Regulations' },
+        body:  {
+          ja:'お申し込み時に選択した契約年数（3・5・7・10年）の期間中は金利の変更はありませんが、[[R:当該契約年数を終えた後には金利が変更されることを理解しております。]]',
+          en:'The interest rate will not change during the contract term selected at application (3, 5, 7, or 10 years), however [[R:you understand that the interest rate may change after that contract term ends.]]'
+        }
+      },
+      {
+        num:   { ja:'第6条', en:'Article 6' },
+        title: { ja:'費用および各種手数料', en:'Costs and Fees' },
+        body:  {
+          ja:'本プランの費用として [[B:月額プラン手数料 7 USD]] がかかります。\n出金手続き時は [[B:送金手数料 50 USD]]（将来改定の可能性あり）および各受取銀行の為替手数料が [[B:お客様負担]] となります。\nクレジットカードでの海外送金（入金時）は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由の海外送金は各行所定の手数料が [[B:お客様負担]] となります。',
+          en:'This plan charges a [[B:monthly plan fee of USD 7.]]\nFor withdrawals, a [[B:wire transfer fee of USD 50]] (subject to future revision) and exchange fees of receiving banks are [[B:borne by the customer.]]\nFor overseas wire transfers by credit card, [[B:a 3.5% fee]] plus the credit card company fee applies. For transfers via domestic banks or internet banking, the bank\'s respective fees are [[B:borne by the customer.]]'
+        }
+      },
+      {
+        num:   { ja:'第7条', en:'Article 7' },
+        title: { ja:'死亡給付金に関する規定', en:'Death Benefit Regulations' },
+        body:  {
+          ja:'死亡給付金の支払基準額は [[B:解約返戻金の101%]] です。\n[[R:プラン発行後2年以内の既往症・障害に起因する死亡および自殺に対しては死亡給付金が支払われません。]]\n受益者の設定が [[B:必須]] です。',
+          en:'The death benefit payment standard is [[B:101% of the surrender value.]]\n[[R:Death benefits will not be paid for deaths caused by pre-existing conditions or disabilities within 2 years of plan issuance, or for suicide.]]\nSetting a beneficiary is [[B:mandatory.]]'
+        }
+      },
+      {
+        num:   { ja:'第8条', en:'Article 8' },
+        title: { ja:'米国居住者へのステータス変更', en:'Change of Status to US Resident' },
+        body:  {
+          ja:'[[R:契約途中にアメリカ居住者となられた場合、親族等への譲渡または解約が必要となることを理解しております。]]',
+          en:'[[R:You understand that if you become a US resident during the contract period, transfer to relatives or cancellation of the plan will be required.]]'
+        }
+      },
+      {
+        num:   { ja:'第9条', en:'Article 9' },
+        title: { ja:'個人情報の取扱方針', en:'Privacy Policy' },
+        body:  {
+          ja:'申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',
+          en:'Personal information viewed or obtained to report enrollment procedures will not be used for any purpose other than those enrollment procedures and introductions to similar products.'
+        }
+      }
     ]
   },
+
   platinum: {
-    key:'platinum',
-    name:{ ja:'プラチナプラス（一括変動型）', en:'Platinum Plus (Lump-sum Variable Type)' },
-    label:{ ja:'一括変動型 — プラチナプラス', en:'Lump-sum Variable — Platinum Plus' },
-    title:{ ja:'プラチナプラス（一括変動型）ご契約に関する重要事項同意書', en:'Important Matters Consent Form — Platinum Plus (Lump-sum Variable Type)' },
-    preamble:{ ja:'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、持続可能なライフプランニングの実現を重視しております。本同意書は、ITA International Holdings（Investors Trust）の商品「プラチナプラス」へのお申し込みにあたり、投資に伴う諸リスクおよびサポート範囲を事前にお伝えし、お客様の利益を保護するためのものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。', en:'Wawasan Global Support Limited supports customers\' proactive asset formation and sustainable life planning. This consent form communicates investment risks and scope of support for the product "Platinum Plus" by ITA International Holdings (Investors Trust). Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article.' },
-    articles:[
-      { num:{ja:'第1条',en:'Article 1'}, title:{ja:'サポートの範囲および自己責任の原則',en:'Scope of Support / Principle of Self-Responsibility'}, body:{ja:'当社（Wawasan Global Support Limited）が提供する本サービスは、海外保険会社の信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',en:'Services provided by our company (Wawasan Global Support Limited) are limited to administrative support for enrollment procedures of trust products offered by overseas insurance companies. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'} },
-      { num:{ja:'第2条',en:'Article 2'}, title:{ja:'投資リスクに関する事項',en:'Investment Risks'}, body:{ja:'【為替リスク】[[R:本プランは為替リスクを伴うため、日本円に換算した際に元本割れが生じる可能性があります。]]\n【市場動向リスク】[[R:為替リスクとは別に、市場動向によって元本割れが生じる可能性があります。]]\n【カントリーリスク】[[R:本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。]]',en:'[Foreign Exchange Risk] [[R:This plan involves foreign exchange risk, and when converted to Japanese yen, there is a possibility of capital loss.]]\n[Market Risk] [[R:In addition to exchange rate risk, capital loss may occur depending on market conditions.]]\n[Country Risk] [[R:You understand and accept the country risk associated with this investment.]]'} },
-      { num:{ja:'第3条',en:'Article 3'}, title:{ja:'プランの費用構造および商品条件',en:'Plan Fee Structure and Product Terms'}, body:{ja:'別紙の商品条件シートを確認し、プランの費用構造や商品の内容を十分理解しております。',en:'You confirm that you have reviewed the separate product conditions sheet and fully understand the plan\'s fee structure and product details.'} },
-      { num:{ja:'第4条',en:'Article 4'}, title:{ja:'外部委託とアドバイザリーサービス',en:'External Delegation and Advisory Services'}, body:{ja:'運用を外部委託（アドバイザリーサービス合意書を提出）する場合、[[B:顧問サービス料がかかること]] をアドバイザリーサービス合意書を確認の上、十分理解しております。',en:'If asset management is delegated externally (by submitting an Advisory Service Agreement), you confirm that you have reviewed the Advisory Service Agreement and fully understand that [[B:an advisory service fee will be charged.]]'} },
-      { num:{ja:'第5条',en:'Article 5'}, title:{ja:'解約手数料および送金に関する規定',en:'Cancellation Fees and Wire Transfer Regulations'}, body:{ja:'【解約手数料】[[R:契約開始後12か月以内の解約には1.5%の手数料がかかります。]]\n【送金手数料（出金時）】1回あたり [[B:50 USD]] の送金手数料がかかります。\n【海外送金手数料（入金時）】クレジットカードでの海外送金は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由では各行所定の手数料が [[B:お客様負担]] となります。',en:'[Cancellation Fee] [[R:A cancellation fee of 1.5% applies for cancellations within 12 months of contract commencement.]]\n[Wire Transfer Fee (Withdrawal)] A wire transfer fee of [[B:USD 50]] applies per transaction.\n[Overseas Wire Transfer Fee (Deposit)] For credit card overseas transfers, [[B:a 3.5% fee]] plus the credit card company\'s fee applies. For transfers via domestic banks or internet banking, the bank\'s fees are [[B:borne by the customer.]]'} },
-      { num:{ja:'第6条',en:'Article 6'}, title:{ja:'米国居住者へのステータス変更',en:'Change of Status to US Resident'}, body:{ja:'[[R:契約途中にアメリカ居住者となられる場合、親族等への譲渡または解約が必要となることを理解しております。]]',en:'[[R:You understand that if you become a US resident during the contract period, transfer to relatives or cancellation of the plan will be required.]]'} },
-      { num:{ja:'第7条',en:'Article 7'}, title:{ja:'個人情報の取扱方針',en:'Privacy Policy'}, body:{ja:'申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',en:'Personal information viewed or obtained to report enrollment procedures will not be used for any purpose other than those enrollment procedures and introductions to similar products.'} }
+    key: 'platinum',
+    name:  { ja:'プラチナプラス（一括変動型）', en:'Platinum Plus (Lump-sum Variable Type)' },
+    label: { ja:'一括変動型 — プラチナプラス',  en:'Lump-sum Variable — Platinum Plus' },
+    title: { ja:'プラチナプラス（一括変動型）ご契約に関する重要事項同意書', en:'Important Matters Consent Form — Platinum Plus (Lump-sum Variable Type)' },
+    preamble: {
+      ja:'Wawasan Global Support Limitedは、お客様主体の自発的な資産形成を支援し、持続可能なライフプランニングの実現を重視しております。本同意書は、ITA International Holdings（Investors Trust）の商品「プラチナプラス」へのお申し込みにあたり、投資に伴う諸リスクおよびサポート範囲を事前にお伝えし、お客様の利益を保護するためのものです。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。',
+      en:'Wawasan Global Support Limited supports customers\' proactive asset formation and sustainable life planning. This consent form communicates investment risks and scope of support for the product "Platinum Plus" by ITA International Holdings (Investors Trust). Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article.'
+    },
+    articles: [
+      {
+        num:   { ja:'第1条', en:'Article 1' },
+        title: { ja:'サポートの範囲および自己責任の原則', en:'Scope of Support / Principle of Self-Responsibility' },
+        body:  {
+          ja:'当社（Wawasan Global Support Limited）が提供する本サービスは、海外保険会社の信託商品の加入手続き等の事務代行・サポート業務に限定されます。[[R:最終的な投資判断に関する責任はお客様ご自身に帰属することに同意します。]]',
+          en:'Services provided by our company (Wawasan Global Support Limited) are limited to administrative support for enrollment procedures of trust products offered by overseas insurance companies. [[R:You agree that the responsibility for all final investment decisions belongs solely to you.]]'
+        }
+      },
+      {
+        num:   { ja:'第2条', en:'Article 2' },
+        title: { ja:'投資リスクに関する事項', en:'Investment Risks' },
+        body:  {
+          ja:'【為替リスク】[[R:本プランは為替リスクを伴うため、日本円に換算した際に元本割れが生じる可能性があります。]]\n【市場動向リスク】[[R:為替リスクとは別に、市場動向によって元本割れが生じる可能性があります。]]\n【カントリーリスク】[[R:本投資に伴うカントリーリスクを負うこと、およびそのリスクの内容を理解しております。]]',
+          en:'[Foreign Exchange Risk] [[R:This plan involves foreign exchange risk, and when converted to Japanese yen, there is a possibility of capital loss.]]\n[Market Risk] [[R:In addition to exchange rate risk, capital loss may occur depending on market conditions.]]\n[Country Risk] [[R:You understand and accept the country risk associated with this investment.]]'
+        }
+      },
+      {
+        num:   { ja:'第3条', en:'Article 3' },
+        title: { ja:'プランの費用構造および商品条件', en:'Plan Fee Structure and Product Terms' },
+        body:  {
+          ja:'別紙の商品条件シートを確認し、プランの費用構造や商品の内容を十分理解しております。',
+          en:'You confirm that you have reviewed the separate product conditions sheet and fully understand the plan\'s fee structure and product details.'
+        }
+      },
+      {
+        num:   { ja:'第4条', en:'Article 4' },
+        title: { ja:'外部委託とアドバイザリーサービス', en:'External Delegation and Advisory Services' },
+        body:  {
+          ja:'運用を外部委託（アドバイザリーサービス合意書を提出）する場合、[[B:顧問サービス料がかかること]] をアドバイザリーサービス合意書を確認の上、十分理解しております。',
+          en:'If asset management is delegated externally (by submitting an Advisory Service Agreement), you confirm that you have reviewed the Advisory Service Agreement and fully understand that [[B:an advisory service fee will be charged.]]'
+        }
+      },
+      {
+        num:   { ja:'第5条', en:'Article 5' },
+        title: { ja:'解約手数料および送金に関する規定', en:'Cancellation Fees and Wire Transfer Regulations' },
+        body:  {
+          ja:'【解約手数料】[[R:契約開始後12か月以内の解約には1.5%の手数料がかかります。]]\n【送金手数料（出金時）】1回あたり [[B:50 USD]] の送金手数料がかかります。\n【海外送金手数料（入金時）】クレジットカードでの海外送金は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由では各行所定の手数料が [[B:お客様負担]] となります。',
+          en:'[Cancellation Fee] [[R:A cancellation fee of 1.5% applies for cancellations within 12 months of contract commencement.]]\n[Wire Transfer Fee (Withdrawal)] A wire transfer fee of [[B:USD 50]] applies per transaction.\n[Overseas Wire Transfer Fee (Deposit)] For credit card overseas transfers, [[B:a 3.5% fee]] plus the credit card company\'s fee applies. For transfers via domestic banks or internet banking, the bank\'s fees are [[B:borne by the customer.]]'
+        }
+      },
+      {
+        num:   { ja:'第6条', en:'Article 6' },
+        title: { ja:'米国居住者へのステータス変更', en:'Change of Status to US Resident' },
+        body:  {
+          ja:'[[R:契約途中にアメリカ居住者となられる場合、親族等への譲渡または解約が必要となることを理解しております。]]',
+          en:'[[R:You understand that if you become a US resident during the contract period, transfer to relatives or cancellation of the plan will be required.]]'
+        }
+      },
+      {
+        num:   { ja:'第7条', en:'Article 7' },
+        title: { ja:'個人情報の取扱方針', en:'Privacy Policy' },
+        body:  {
+          ja:'申込手続をレポートするために閲覧・取得するお客様の個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',
+          en:'Personal information viewed or obtained to report enrollment procedures will not be used for any purpose other than those enrollment procedures and introductions to similar products.'
+        }
+      }
     ]
   }
 };
 
+/* =====================================================
+   FORM LOGIC
+   ===================================================== */
 let selectedProduct = null;
 
 function selectProduct(key) {
@@ -479,7 +745,7 @@ function selectProduct(key) {
 function parseBody(text) {
   return text.split('\n').map(para => {
     let html = para
-      .replace(/\[\[R:(.*?)\]\]/g, '<strong class="risk">$1</strong>')
+      .replace(/\[\[R:(.*?)\]\]/g, '$1')
       .replace(/\[\[B:(.*?)\]\]/g, '<strong>$1</strong>')
       .replace(/【(.*?)】/g, '<strong>【$1】</strong>');
     return `<p>${html}</p>`;
@@ -489,16 +755,40 @@ function parseBody(text) {
 function buildArticles(product) {
   const container = document.getElementById('articlesContainer');
   const saved = {};
-  product.articles.forEach((_, i) => { const el = document.getElementById('initial-' + i); if (el) saved[i] = el.value; });
+  product.articles.forEach((_, i) => {
+    const el = document.getElementById('initial-' + i);
+    if (el) saved[i] = el.value;
+  });
+
   container.innerHTML = '';
   const initialLabel = lang === 'ja' ? 'イニシャルをご記入：' : 'Enter your initials:';
   const initialHint  = lang === 'ja' ? '（山田　太郎さんの場合：T.Y）' : '(e.g. T.Y for Taro Yamada)';
+
   product.articles.forEach((art, i) => {
     const div = document.createElement('div');
     div.className = 'article';
-    div.innerHTML = `<div class="article-title"><span class="article-title-text">${art.num[lang]}　${art.title[lang]}</span><div class="initial-check" id="check-${i}">✓</div></div><div class="article-body">${parseBody(art.body[lang])}<div class="initial-row"><span class="initial-label">${initialLabel}</span><input class="initial-input" type="text" maxlength="6" placeholder="T.Y" id="initial-${i}" oninput="onInitialInput(${i},this.value)" autocomplete="off" value="${saved[i] || ''}"><span class="initial-hint">${initialHint}</span></div></div>`;
+    div.innerHTML = `
+      <div class="article-title">
+        <span class="article-title-text">${art.num[lang]}　${art.title[lang]}</span>
+        <div class="initial-check" id="check-${i}">✓</div>
+      </div>
+      <div class="article-body">
+        ${parseBody(art.body[lang])}
+        <div class="initial-row">
+          <span class="initial-label">${initialLabel}</span>
+          <input class="initial-input" type="text" maxlength="6" placeholder="T.Y"
+            id="initial-${i}" oninput="onInitialInput(${i},this.value)" autocomplete="off"
+            value="${saved[i] || ''}">
+          <span class="initial-hint">${initialHint}</span>
+        </div>
+      </div>`;
     container.appendChild(div);
-    if (saved[i] && saved[i].trim().length > 0) { setTimeout(() => { const chk = document.getElementById('check-' + i); if (chk) chk.classList.add('filled'); }, 0); }
+    if (saved[i] && saved[i].trim().length > 0) {
+      setTimeout(() => {
+        const chk = document.getElementById('check-' + i);
+        if (chk) chk.classList.add('filled');
+      }, 0);
+    }
   });
 }
 
@@ -509,7 +799,10 @@ function onInitialInput(i, val) {
 }
 
 function checkAllInitials() {
-  const allFilled = products[selectedProduct].articles.every((_, i) => { const v = document.getElementById('initial-' + i); return v && v.value.trim().length > 0; });
+  const allFilled = products[selectedProduct].articles.every((_, i) => {
+    const v = document.getElementById('initial-' + i);
+    return v && v.value.trim().length > 0;
+  });
   document.getElementById('btn2Next').disabled = !allFilled;
 }
 
@@ -517,47 +810,73 @@ function refreshStep3() {
   const p = products[selectedProduct];
   document.getElementById('confirmProduct').textContent = p.name[lang];
   const count = p.articles.length;
-  document.getElementById('confirmCount').textContent = lang === 'ja' ? count + '条項すべて記入済み' : count + ' articles — all initialed';
+  document.getElementById('confirmCount').textContent = lang === 'ja'
+    ? count + '条項すべて記入済み'
+    : count + ' articles — all initialed';
 }
 
 function goToStep(step) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen' + step).classList.add('active');
   updateProgress(step);
+
   if (step === 2 && selectedProduct) {
     const p = products[selectedProduct];
     document.getElementById('consentBadge').textContent = '📄 ' + p.label[lang];
     document.getElementById('consentTitle').textContent = p.title[lang];
     document.getElementById('consentPreamble').textContent = p.preamble[lang];
     document.getElementById('noticeText').innerHTML = T.noticeText[lang];
-    buildArticles(p); checkAllInitials();
+    buildArticles(p);
+    checkAllInitials();
   }
+
   if (step === 3) {
     refreshStep3();
     document.getElementById('sigDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('finalAgree').checked = false;
     document.getElementById('btn3Submit').disabled = true;
-    applyLang();
+    applyLang(); // ensure labels are translated
   }
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function checkStep3() {
-  const ok = document.getElementById('sigName').value.trim() && document.getElementById('sigDate').value && document.getElementById('sigEmail').value.trim() && document.getElementById('finalAgree').checked;
+  const ok = document.getElementById('sigName').value.trim() &&
+             document.getElementById('sigDate').value &&
+             document.getElementById('sigEmail').value.trim() &&
+             document.getElementById('finalAgree').checked;
   document.getElementById('btn3Submit').disabled = !ok;
 }
 
 function submitForm() {
-  const refNum = 'WGS-' + Date.now().toString(36).toUpperCase().slice(-8);
-  const p = products[selectedProduct];
-  const name = document.getElementById('sigName').value.trim();
-  const date = document.getElementById('sigDate').value;
-  const email = document.getElementById('sigEmail').value.trim();
-  const product = p.name[lang];
-  const initials = p.articles.map((art, i) => { const v = document.getElementById('initial-' + i) ? document.getElementById('initial-' + i).value : ''; return `${art.num[lang]}: ${v}`; }).join('\n');
-  const subject = encodeURIComponent(lang === 'ja' ? `【重要事項同意書 承認完了】受付番号: ${refNum}` : `[Consent Form Approved] Reference: ${refNum}`);
-  const body = encodeURIComponent(lang === 'ja' ? `重要事項同意書の承認が完了しました。\n\n受付番号：${refNum}\n商品名：${product}\nお名前：${name}\n署名日：${date}\n\n--- イニシャル記入内容 ---\n${initials}\n\n※担当者より改めてご連絡いたします。\nWawasan Global Support Limited` : `Your Important Matters Consent Form has been approved.\n\nReference No.: ${refNum}\nProduct: ${product}\nName: ${name}\nDate: ${date}\n\n--- Initialed Articles ---\n${initials}\n\nYour representative will contact you shortly.\nWawasan Global Support Limited`);
+  const refNum   = 'WGS-' + Date.now().toString(36).toUpperCase().slice(-8);
+  const p        = products[selectedProduct];
+  const name     = document.getElementById('sigName').value.trim();
+  const date     = document.getElementById('sigDate').value;
+  const email    = document.getElementById('sigEmail').value.trim();
+  const product  = p.name[lang];
+
+  // Collect initials
+  const initials = p.articles.map((art, i) => {
+    const v = document.getElementById('initial-' + i) ? document.getElementById('initial-' + i).value : '';
+    return `${art.num[lang]}: ${v}`;
+  }).join('\n');
+
+  // Send confirmation email via mailto
+  const subject = encodeURIComponent(
+    lang === 'ja'
+      ? `【重要事項同意書 承認完了】受付番号: ${refNum}`
+      : `[Consent Form Approved] Reference: ${refNum}`
+  );
+  const body = encodeURIComponent(
+    lang === 'ja'
+      ? `重要事項同意書の承認が完了しました。\n\n受付番号：${refNum}\n商品名：${product}\nお名前：${name}\n署名日：${date}\n\n--- イニシャル記入内容 ---\n${initials}\n\n※担当者より改めてご連絡いたします。\nWawasan Global Support Limited`
+      : `Your Important Matters Consent Form has been approved.\n\nReference No.: ${refNum}\nProduct: ${product}\nName: ${name}\nDate: ${date}\n\n--- Initialed Articles ---\n${initials}\n\nYour representative will contact you shortly.\nWawasan Global Support Limited`
+  );
   window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
+
+  // Show completion screen
   document.getElementById('refNumber').textContent = refNum;
   document.getElementById('doneProduct').textContent = product;
   document.getElementById('doneName').textContent = name;
@@ -566,7 +885,9 @@ function submitForm() {
   document.getElementById('doneMsg1').textContent = T.doneMsg1[lang];
   document.getElementById('doneMsg2').textContent = T.doneMsg2[lang];
   document.getElementById('nextStepsText').textContent = T.nextStepsText[lang];
-  goToStep(4); applyLang();
+
+  goToStep(4);
+  applyLang();
 }
 
 function restartForm() {
@@ -581,15 +902,28 @@ function restartForm() {
 
 function updateProgress(step) {
   for (let i = 1; i <= 4; i++) {
-    const num = document.getElementById('pnum' + i);
+    const num   = document.getElementById('pnum' + i);
     const label = document.getElementById('plabel' + i);
-    if (i < step) { num.className = 'step-num done'; num.textContent = '✓'; }
-    else if (i === step) { num.className = 'step-num active'; num.textContent = i; label.className = 'step-label active'; }
-    else { num.className = 'step-num pending'; num.textContent = i; label.className = 'step-label'; }
-    if (i < 4) { const line = document.getElementById('pline' + i); if (line) line.className = i < step ? 'step-line done' : 'step-line'; }
+    if (i < step) {
+      num.className = 'step-num done';
+      num.textContent = '✓';
+    } else if (i === step) {
+      num.className = 'step-num active';
+      num.textContent = i;
+      label.className = 'step-label active';
+    } else {
+      num.className = 'step-num pending';
+      num.textContent = i;
+      label.className = 'step-label';
+    }
+    if (i < 4) {
+      const line = document.getElementById('pline' + i);
+      if (line) line.className = i < step ? 'step-line done' : 'step-line';
+    }
   }
 }
 
+// Initial lang render
 applyLang();
 </script>
 </body>

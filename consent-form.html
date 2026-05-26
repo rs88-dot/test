@@ -923,8 +923,8 @@ function parseBody(text) {
   return text.split('\n').map(para => {
     let html = para
       .replace(/\[\[R:(.*?)\]\]/g, '$1')
-      .replace(/\[\[B:(.*?)\]\]/g, '<strong>$1</strong>')
-      .replace(/【(.*?)】/g, '<strong>【$1】</strong>');
+      .replace(/\[\[B:(.*?)\]\]/g, '$1')
+      .replace(/【(.*?)】/g, '【$1】');
     return `<p>${html}</p>`;
   }).join('');
 }

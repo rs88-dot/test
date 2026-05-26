@@ -6,125 +6,131 @@
   <title>重要事項同意書 | Wawasan Global Support Limited</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#eef2f7;color:#1a1a2e;min-height:100vh;font-size:15px;line-height:1.7}
+    body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#e8e8e8;color:#1a1a2e;min-height:100vh;font-size:15px;line-height:1.7}
 
     /* HEADER */
-    header{background:linear-gradient(135deg,#1e3a8a,#1d4ed8);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-    .header-left .logo{font-size:17px;font-weight:bold}
-    .header-left .tagline{font-size:12px;opacity:.75;margin-top:3px}
-    .lang-toggle{display:flex;background:rgba(255,255,255,.15);border-radius:999px;padding:3px;gap:2px}
-    .lang-btn{padding:7px 20px;border-radius:999px;border:none;font-size:13px;font-weight:bold;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.7);background:transparent}
-    .lang-btn.active{background:#fff;color:#1e3a8a}
+    header{background:linear-gradient(135deg,#161f33,#1e2e52);color:#fff;padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+    .header-left .logo{font-size:17px;font-weight:bold;letter-spacing:.5px}
+    .header-left .tagline{font-size:12px;opacity:.65;margin-top:4px;letter-spacing:.3px}
+    .lang-section{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+    .lang-label{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.8px;text-transform:uppercase}
+    .lang-toggle{display:flex;background:#fff;border-radius:8px;padding:4px;gap:2px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+    .lang-btn{padding:9px 24px;border-radius:6px;border:none;font-size:14px;font-weight:bold;cursor:pointer;transition:all .2s;color:#666;background:transparent;letter-spacing:.3px}
+    .lang-btn.active{background:#1e2e52;color:#fff}
+    .lang-btn:not(.active):hover{background:#f0f0f0;color:#333}
 
     /* PROGRESS */
-    .progress-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 24px}
+    .progress-bar{background:#fff;border-bottom:2px solid #ddd;padding:16px 24px}
     .steps{display:flex;align-items:center;max-width:640px;margin:0 auto}
     .step{display:flex;align-items:center;gap:8px;flex:1}
     .step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0}
-    .step-num.done{background:#16a34a;color:#fff}
-    .step-num.active{background:#1e3a8a;color:#fff;box-shadow:0 0 0 4px #bfdbfe}
-    .step-num.pending{background:#e5e7eb;color:#9ca3af}
-    .step-label{font-size:12px;color:#6b7280;font-weight:500}
-    .step-label.active{color:#1e3a8a;font-weight:bold}
-    .step-line{flex:1;height:2px;background:#e5e7eb;margin:0 4px}
-    .step-line.done{background:#16a34a}
+    .step-num.done{background:#1e2e52;color:#fff}
+    .step-num.active{background:#1e2e52;color:#fff;box-shadow:0 0 0 4px #b8c4d8}
+    .step-num.pending{background:#d4d4d4;color:#888}
+    .step-label{font-size:12px;color:#888;font-weight:500}
+    .step-label.active{color:#1e2e52;font-weight:bold}
+    .step-line{flex:1;height:2px;background:#d4d4d4;margin:0 4px}
+    .step-line.done{background:#1e2e52}
 
     /* MAIN */
     main{max-width:780px;margin:28px auto;padding:0 16px 80px}
-    .card{background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(0,0,0,.09);overflow:hidden}
+    .card{background:#fff;border-radius:10px;box-shadow:0 2px 16px rgba(0,0,0,.1);overflow:hidden;border:1px solid #d4d4d4}
 
     /* SECTION HEADERS */
-    .step-header{padding:30px 36px 22px;border-bottom:1px solid #f0f2f5}
-    .step-header h2{font-size:22px;color:#1e3a8a;margin-bottom:8px;font-weight:700}
-    .step-header p{font-size:14px;color:#6b7280;line-height:1.8}
+    .step-header{padding:28px 36px 20px;border-bottom:1px solid #e8e8e8}
+    .step-header h2{font-size:20px;color:#161f33;margin-bottom:8px;font-weight:700}
+    .step-header p{font-size:14px;color:#5a5a6a;line-height:1.8}
 
     /* STEP 1: PRODUCT SELECTION */
-    .product-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:26px 36px 36px}
-    .product-option{border:2px solid #e5e7eb;border-radius:14px;padding:22px 20px;cursor:pointer;transition:all .2s;position:relative}
-    .product-option:hover{border-color:#93c5fd;background:#f0f9ff;transform:translateY(-1px)}
-    .product-option.selected{border-color:#1e3a8a;background:#eff6ff;box-shadow:0 0 0 3px #bfdbfe}
+    .product-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:24px 36px 34px}
+    .product-option{border:2px solid #d4d4d4;border-radius:10px;padding:20px 18px;cursor:pointer;transition:all .2s;position:relative}
+    .product-option:hover{border-color:#7a90b4;background:#f5f7fb;transform:translateY(-1px)}
+    .product-option.selected{border-color:#1e2e52;background:#eef1f8;box-shadow:0 0 0 3px #b8c4d8}
     .product-option input[type=radio]{position:absolute;opacity:0}
-    .product-type-badge{font-size:11px;font-weight:bold;border-radius:5px;padding:3px 10px;display:inline-block;margin-bottom:10px}
-    .badge-evolution{background:#fef3c7;color:#92400e}
-    .badge-sp500{background:#dbeafe;color:#1e40af}
-    .badge-fip{background:#dcfce7;color:#166534}
-    .badge-platinum{background:#f3e8ff;color:#6b21a8}
-    .product-name{font-size:16px;font-weight:bold;color:#1a1a2e;line-height:1.4}
-    .check-icon{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;background:#1e3a8a;color:#fff;display:none;align-items:center;justify-content:center;font-size:14px}
+    .product-type-badge{font-size:11px;font-weight:bold;border-radius:4px;padding:3px 10px;display:inline-block;margin-bottom:10px}
+    .badge-evolution{background:#e8e2d4;color:#4a3820}
+    .badge-sp500{background:#d4dce8;color:#162040}
+    .badge-fip{background:#d4e0d4;color:#183018}
+    .badge-platinum{background:#dcd4e4;color:#281840}
+    .product-name{font-size:15px;font-weight:bold;color:#1a1a2e;line-height:1.4}
+    .check-icon{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;background:#1e2e52;color:#fff;display:none;align-items:center;justify-content:center;font-size:12px}
     .product-option.selected .check-icon{display:flex}
 
     /* CONSENT HEADER */
-    .consent-header{padding:26px 36px 18px;border-bottom:1px solid #f0f2f5}
-    .product-badge{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:7px 14px;font-size:13px;color:#1e40af;font-weight:bold;margin-bottom:14px}
-    .consent-header h2{font-size:18px;color:#1e3a8a;margin-bottom:12px;font-weight:700;line-height:1.5}
-    .preamble{font-size:13px;color:#4b5563;line-height:1.9;background:#f8fafc;border-left:4px solid #3b82f6;padding:14px 18px;border-radius:0 8px 8px 0}
+    .consent-header{padding:24px 36px 16px;border-bottom:1px solid #e8e8e8}
+    .product-badge{display:inline-flex;align-items:center;gap:6px;background:#eef1f8;border:1px solid #b8c4d8;border-radius:6px;padding:7px 14px;font-size:13px;color:#1e2e52;font-weight:bold;margin-bottom:14px}
+    .consent-header h2{font-size:17px;color:#161f33;margin-bottom:12px;font-weight:700;line-height:1.5}
+    .preamble{font-size:13px;color:#4a5068;line-height:1.9;background:#f8f8f8;border-left:4px solid #7a90b4;padding:14px 18px;border-radius:0 6px 6px 0}
 
     /* NOTICE */
-    .notice-box{margin:18px 36px;background:#fff7ed;border:2px solid #fb923c;border-radius:10px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start}
-    .notice-icon{font-size:22px;flex-shrink:0;margin-top:1px}
-    .notice-box p{font-size:13px;color:#9a3412;line-height:1.8;font-weight:500}
+    .notice-box{margin:16px 36px;background:#f2f4f8;border:2px solid #7a90b4;border-radius:8px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start}
+    .notice-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+    .notice-box p{font-size:13px;color:#1e2e52;line-height:1.8;font-weight:500}
 
     /* ARTICLES */
     .articles{padding:6px 36px 8px}
-    .article{border:1.5px solid #e5e7eb;border-radius:12px;margin-bottom:18px;overflow:hidden}
-    .article-title{background:#f1f5f9;padding:14px 18px;font-size:14px;font-weight:700;color:#1e3a8a;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .article{border:1.5px solid #d8d8d8;border-radius:8px;margin-bottom:16px;overflow:hidden}
+    .article-title{background:#f4f5f8;padding:13px 18px;font-size:14px;font-weight:700;color:#161f33;border-bottom:1px solid #d8d8d8;display:flex;justify-content:space-between;align-items:center;gap:12px}
     .article-title-text{flex:1;line-height:1.4}
-    .article-body{padding:16px 18px;font-size:14px;color:#374151;line-height:1.9}
+    .article-body{padding:16px 18px;font-size:14px;color:#333;line-height:1.9}
     .article-body p{margin-bottom:8px}
     .article-body p:last-of-type{margin-bottom:0}
 
     /* INITIAL ROW */
-    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1.5px dashed #d1d5db;flex-wrap:wrap}
-    .initial-label{font-size:13px;color:#374151;font-weight:600;white-space:nowrap}
-    .initial-input{border:2px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:15px;width:110px;text-align:center;letter-spacing:3px;font-weight:bold;transition:border-color .2s}
-    .initial-input:focus{outline:none;border-color:#1e3a8a;box-shadow:0 0 0 3px #bfdbfe}
-    .initial-hint{font-size:12px;color:#6b7280;background:#f3f4f6;padding:4px 10px;border-radius:6px}
-    .initial-check{width:26px;height:26px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:13px;color:#9ca3af;flex-shrink:0;transition:all .2s}
-    .initial-check.filled{background:#16a34a;color:#fff}
+    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1.5px dashed #c8c8c8;flex-wrap:wrap}
+    .initial-label{font-size:13px;color:#333;font-weight:600;white-space:nowrap}
+    .initial-input{border:2px solid #c4c4c4;border-radius:6px;padding:8px 12px;font-size:15px;width:110px;text-align:center;letter-spacing:3px;font-weight:bold;transition:border-color .2s}
+    .initial-input:focus{outline:none;border-color:#1e2e52;box-shadow:0 0 0 3px #b8c4d8}
+    .initial-hint{font-size:12px;color:#666;background:#eeeeee;padding:4px 10px;border-radius:4px}
+    .initial-check{width:24px;height:24px;border-radius:50%;background:#d4d4d4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#888;flex-shrink:0;transition:all .2s}
+    .initial-check.filled{background:#1e2e52;color:#fff}
 
     /* SIGNATURE */
     .signature-section{padding:22px 36px 32px}
     .sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
-    .field-group label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
-    .field-group input{width:100%;border:2px solid #d1d5db;border-radius:10px;padding:12px 14px;font-size:15px;transition:border-color .2s}
-    .field-group input:focus{outline:none;border-color:#1e3a8a;box-shadow:0 0 0 3px #bfdbfe}
+    .field-group label{display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:7px}
+    .field-group input{width:100%;border:2px solid #c4c4c4;border-radius:8px;padding:12px 14px;font-size:15px;transition:border-color .2s}
+    .field-group input:focus{outline:none;border-color:#1e2e52;box-shadow:0 0 0 3px #b8c4d8}
     .field-full{grid-column:1/-1}
-    .confirm-box{background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:12px;padding:18px 20px;margin-bottom:20px}
-    .confirm-box strong{color:#374151;display:block;margin-bottom:10px;font-size:14px}
+    .confirm-box{background:#f8f8f8;border:1.5px solid #d4d4d4;border-radius:8px;padding:18px 20px;margin-bottom:20px}
+    .confirm-box strong{color:#333;display:block;margin-bottom:10px;font-size:14px}
     .confirm-row{display:flex;align-items:baseline;gap:8px;margin-bottom:5px}
-    .confirm-key{font-size:12px;color:#9ca3af;min-width:90px}
-    .confirm-val{font-weight:bold;color:#1e3a8a}
-    .agree-check{display:flex;align-items:flex-start;gap:12px;background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:16px 18px;margin-bottom:24px;cursor:pointer}
-    .agree-check input[type=checkbox]{width:20px;height:20px;flex-shrink:0;margin-top:3px;accent-color:#16a34a;cursor:pointer}
-    .agree-check-text{font-size:13px;color:#166534;line-height:1.8;font-weight:500}
+    .confirm-key{font-size:12px;color:#888;min-width:90px}
+    .confirm-val{font-weight:bold;color:#1e2e52}
+    .agree-check{display:flex;align-items:flex-start;gap:12px;background:#f2f4f8;border:2px solid #7a90b4;border-radius:8px;padding:16px 18px;margin-bottom:24px;cursor:pointer}
+    .agree-check input[type=checkbox]{width:20px;height:20px;flex-shrink:0;margin-top:3px;accent-color:#1e2e52;cursor:pointer}
+    .agree-check-text{font-size:13px;color:#1e2e52;line-height:1.8;font-weight:500}
 
     /* COMPLETE */
-    .complete-section{text-align:center;padding:50px 36px 40px}
-    .complete-icon{width:80px;height:80px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 22px}
-    .complete-section h2{font-size:24px;color:#16a34a;margin-bottom:14px;font-weight:700}
-    .complete-ref{display:inline-block;background:#f3f4f6;border-radius:10px;padding:12px 28px;font-size:18px;color:#374151;font-family:monospace;margin:16px 0;letter-spacing:2px;font-weight:bold}
-    .email-sent-note{font-size:13px;color:#6b7280;margin-bottom:10px}
-    .next-steps-box{background:#fffbeb;border:2px solid #fcd34d;border-radius:12px;padding:18px 22px;margin:24px 0;text-align:left}
-    .next-steps-box strong{color:#92400e;display:block;margin-bottom:8px;font-size:14px}
-    .next-steps-box p{font-size:13px;color:#78350f;line-height:1.8}
-    .done-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:18px 22px;margin-top:0;text-align:left}
-    .done-box strong{color:#374151;display:block;margin-bottom:10px;font-size:14px}
+    .complete-section{text-align:center;padding:44px 36px 40px}
+    .complete-icon{width:72px;height:72px;background:#e8edf4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px}
+    .complete-section h2{font-size:22px;color:#161f33;margin-bottom:14px;font-weight:700}
+    .complete-ref{display:inline-block;background:#f4f4f4;border-radius:8px;padding:12px 28px;font-size:18px;color:#333;font-family:monospace;margin:16px 0;letter-spacing:2px;font-weight:bold;border:1px solid #d4d4d4}
+    .email-sent-note{font-size:13px;color:#666;margin-bottom:10px}
+    .next-steps-box{background:#f8f6f0;border:2px solid #c4b070;border-radius:10px;padding:18px 22px;margin:24px 0 0;text-align:left}
+    .next-steps-box strong{color:#4a3810;display:block;margin-bottom:8px;font-size:14px}
+    .next-steps-box p{font-size:13px;color:#4a3810;line-height:1.8}
+    .return-btn-wrap{margin-top:14px}
+    .return-btn{display:inline-block;padding:13px 32px;background:#1e2e52;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:.3px}
+    .return-btn:hover{background:#263a6a;transform:translateY(-1px);color:#fff}
+    .done-box{background:#f8f8f8;border:1px solid #d4d4d4;border-radius:8px;padding:18px 22px;margin-top:20px;text-align:left}
+    .done-box strong{color:#333;display:block;margin-bottom:10px;font-size:14px}
     .done-row{display:flex;gap:10px;margin-bottom:6px;font-size:13px}
-    .done-key{color:#9ca3af;min-width:80px}
-    .restart-btn{display:inline-block;margin-top:24px;padding:13px 36px;background:#1e3a8a;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;transition:all .2s}
-    .restart-btn:hover{background:#1d4ed8;transform:translateY(-1px)}
+    .done-key{color:#888;min-width:80px}
+    .restart-btn{display:inline-block;margin-top:24px;padding:10px 26px;background:#f0f0f0;color:#444;border:2px solid #ccc;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all .2s}
+    .restart-btn:hover{background:#e4e4e4}
 
     /* BUTTONS */
-    .btn-row{display:flex;gap:12px;padding:20px 36px;border-top:1px solid #f0f2f5}
-    .btn{padding:14px 28px;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;border:none;transition:all .2s}
-    .btn-primary{background:#1e3a8a;color:#fff;flex:1}
-    .btn-primary:hover:not(:disabled){background:#1d4ed8;transform:translateY(-1px)}
-    .btn-primary:disabled{background:#93c5fd;cursor:not-allowed}
-    .btn-secondary{background:#f3f4f6;color:#374151}
-    .btn-secondary:hover{background:#e5e7eb}
-    .btn-success{background:#16a34a;color:#fff;flex:1}
-    .btn-success:hover:not(:disabled){background:#15803d;transform:translateY(-1px)}
-    .btn-success:disabled{background:#86efac;cursor:not-allowed}
+    .btn-row{display:flex;gap:12px;padding:20px 36px;border-top:1px solid #e8e8e8}
+    .btn{padding:13px 26px;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;border:none;transition:all .2s}
+    .btn-primary{background:#1e2e52;color:#fff;flex:1}
+    .btn-primary:hover:not(:disabled){background:#263a6a;transform:translateY(-1px)}
+    .btn-primary:disabled{background:#96a8c4;cursor:not-allowed}
+    .btn-secondary{background:#f0f0f0;color:#444;border:1px solid #c8c8c8}
+    .btn-secondary:hover{background:#e4e4e4}
+    .btn-success{background:#1a2440;color:#fff;flex:1}
+    .btn-success:hover:not(:disabled){background:#1e2e52;transform:translateY(-1px)}
+    .btn-success:disabled{background:#96a8c4;cursor:not-allowed}
 
     .screen{display:none}
     .screen.active{display:block}
@@ -133,8 +139,8 @@
       .product-grid{grid-template-columns:1fr}
       .sig-grid{grid-template-columns:1fr}
       main{padding:0 8px 80px}
-      .step-header,.consent-header,.articles,.signature-section,.btn-row{padding-left:20px;padding-right:20px}
-      .notice-box{margin:16px 20px}
+      .step-header,.consent-header,.articles,.signature-section,.btn-row{padding-left:18px;padding-right:18px}
+      .notice-box{margin:14px 18px}
       header{flex-direction:column;align-items:flex-start}
     }
   </style>
@@ -147,9 +153,12 @@
     <div class="logo">Wawasan Global Support Limited</div>
     <div class="tagline" id="hTagline">重要事項同意書 — オンライン承認システム</div>
   </div>
-  <div class="lang-toggle">
-    <button class="lang-btn active" id="btnJA" onclick="setLang('ja')">日本語</button>
-    <button class="lang-btn" id="btnEN" onclick="setLang('en')">English</button>
+  <div class="lang-section">
+    <span class="lang-label">言語 / Language</span>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnJA" onclick="setLang('ja')">日本語</button>
+      <button class="lang-btn" id="btnEN" onclick="setLang('en')">English</button>
+    </div>
   </div>
 </header>
 
@@ -233,7 +242,7 @@
     </div>
 
     <div class="notice-box">
-      <div class="notice-icon">⚠️</div>
+      <div class="notice-icon">📝</div>
       <p id="noticeText"></p>
     </div>
 
@@ -257,15 +266,15 @@
     <div class="signature-section">
       <div class="sig-grid">
         <div class="field-group">
-          <label id="labelName">お名前（フルネーム）<span style="color:red"> *</span></label>
+          <label id="labelName">お名前（フルネーム）<span style="color:#c0392b"> *</span></label>
           <input type="text" id="sigName" placeholder="Yamada, Taro" oninput="checkStep3()">
         </div>
         <div class="field-group">
-          <label id="labelDate">署名日<span style="color:red"> *</span></label>
+          <label id="labelDate">署名日<span style="color:#c0392b"> *</span></label>
           <input type="date" id="sigDate" oninput="checkStep3()">
         </div>
         <div class="field-group field-full">
-          <label id="labelEmail">メールアドレス（控え送付先）<span style="color:red"> *</span></label>
+          <label id="labelEmail">メールアドレス（控え送付先）<span style="color:#c0392b"> *</span></label>
           <input type="email" id="sigEmail" placeholder="example@email.com" oninput="checkStep3()">
         </div>
       </div>
@@ -310,11 +319,16 @@
       <div class="next-steps-box">
         <strong id="nextStepsTitle">📋 次のステップ</strong>
         <p id="nextStepsText"></p>
+        <div class="return-btn-wrap">
+          <a class="return-btn" href="https://wawasan-ita-form-k.studio.site" target="_blank" id="returnBtn">
+            📝 お申し込みフォームに戻る →
+          </a>
+        </div>
       </div>
 
       <div class="done-box">
         <strong id="doneSummaryTitle">承認済み内容</strong>
-        <div class="done-row"><span class="done-key" id="doneKeyProduct">商品名</span><span id="doneProduct" style="font-weight:bold;color:#1e3a8a"></span></div>
+        <div class="done-row"><span class="done-key" id="doneKeyProduct">商品名</span><span id="doneProduct" style="font-weight:bold;color:#1e2e52"></span></div>
         <div class="done-row"><span class="done-key" id="doneKeyName">お名前</span><span id="doneName"></span></div>
         <div class="done-row"><span class="done-key" id="doneKeyDate">署名日</span><span id="doneDate"></span></div>
         <div class="done-row"><span class="done-key" id="doneKeyRef">受付番号</span><span id="doneRef" style="font-family:monospace;font-weight:bold"></span></div>
@@ -368,7 +382,8 @@ const T = {
   doneMsg1:        { ja:'重要事項同意書へのご同意ありがとうございます。以下の受付番号をお控えください。', en:'Thank you for completing the Important Matters Consent Form. Please save the reference number below.' },
   doneMsg2:        { ja:'※ 確認の控えがメールで届きます（メールが届かない場合は受付番号をスクリーンショットにてお控えください）。', en:'※ A confirmation copy will be sent to your email address (if not received, please screenshot the reference number above).' },
   nextStepsTitle:  { ja:'📋 次のステップ', en:'📋 Next Steps' },
-  nextStepsText:   { ja:'この画面を閉じ、お申し込みフォームに戻ってご入力をお続けください。ご不明な点は担当者までお問い合わせください。', en:'Please close this window and return to the application form to continue. If you have any questions, please contact your representative.' },
+  nextStepsText:   { ja:'この画面を閉じ、お申し込みフォームに戻ってご入力をお続けください。ご不明な点は担当者までお問い合わせください。', en:'Please return to the application form to continue. If you have any questions, please contact your representative.' },
+  returnBtn:       { ja:'📝 お申し込みフォームに戻る →', en:'📝 Return to Application Form →' },
   doneSummaryTitle:{ ja:'承認済み内容', en:'Approved Details' },
   doneKeyProduct:  { ja:'商品名', en:'Product' },
   doneKeyName:     { ja:'お名前', en:'Name' },
@@ -387,6 +402,8 @@ function applyLang() {
     if (!el) return;
     const val = T[id][lang];
     if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') {
+      el.textContent = val;
+    } else if (el.tagName === 'A') {
       el.textContent = val;
     } else {
       el.innerHTML = val;
@@ -411,7 +428,7 @@ function setLang(l) {
 /* =====================================================
    PRODUCT DATA
    ===================================================== */
-/* [[R:text]] = plain text (no emphasis)  [[B:text]] = bold only */
+/* [[R:text]] = plain text  [[B:text]] = bold only */
 const products = {
   evolution: {
     key: 'evolution',
@@ -451,8 +468,8 @@ const products = {
         num:   { ja:'第4条', en:'Article 4' },
         title: { ja:'一部解約に関する規定', en:'Regulations on Partial Cancellation' },
         body:  {
-          ja:'[[R:初期ユニット期間に積み立てた金額からの一部解約は不可能です。]]一部解約は、プラン内に最低 [[B:1,200 USD]] の純現金価値を維持できる場合のみ申請可能です。\n手続きに伴う送金手数料（現時点で [[B:50 USD]]）および受取銀行の為替手数料は [[B:お客様負担]] となります。',
-          en:'[[R:Partial cancellation from amounts accumulated during the initial unit period is not possible.]] Partial cancellation may only be requested if a minimum net cash value of [[B:USD 1,200]] can be maintained in the plan.\nWire transfer fees (currently [[B:USD 50]]) and exchange fees charged by receiving banks are [[B:borne by the customer.]]'
+          ja:'[[R:初期ユニット期間に積み立てた金額からの一部解約は不可能です。]]一部解約は、プラン内に最低 [[B:1,200 USD]] の純現金価値を維持できる場合のみ申請可能です。\n手続きに伴う送金手数料（現時点で [[B:25 USD]]）および受取銀行の為替手数料は [[B:お客様負担]] となります。',
+          en:'[[R:Partial cancellation from amounts accumulated during the initial unit period is not possible.]] Partial cancellation may only be requested if a minimum net cash value of [[B:USD 1,200]] can be maintained in the plan.\nWire transfer fees (currently [[B:USD 25]]) and exchange fees charged by receiving banks are [[B:borne by the customer.]]'
         }
       },
       {
@@ -544,8 +561,8 @@ const products = {
         num:   { ja:'第5条', en:'Article 5' },
         title: { ja:'一部解約に関する規定', en:'Regulations on Partial Cancellation' },
         body:  {
-          ja:'[[R:初期ユニット期間に積み立てた資産枠からの引き出しはできません。]]一部解約は、プラン内に最低 [[B:2,400 USD]] の純現金価値を維持できる範囲でのみ申請可能です。\n海外送金手数料（現行 [[B:50 USD]]）および受取先金融機関の為替手数料は [[B:お客様負担]] となります。',
-          en:'[[R:Withdrawals from assets accumulated during the initial unit period are not permitted.]] Partial cancellation is only available if a minimum net cash value of [[B:USD 2,400]] can be maintained.\nOverseas wire transfer fees (currently [[B:USD 50]]) and exchange fees set by receiving institutions are [[B:borne by the customer.]]'
+          ja:'[[R:初期ユニット期間に積み立てた資産枠からの引き出しはできません。]]一部解約は、プラン内に最低 [[B:2,400 USD]] の純現金価値を維持できる範囲でのみ申請可能です。\n海外送金手数料（現行 [[B:25 USD]]）および受取先金融機関の為替手数料は [[B:お客様負担]] となります。',
+          en:'[[R:Withdrawals from assets accumulated during the initial unit period are not permitted.]] Partial cancellation is only available if a minimum net cash value of [[B:USD 2,400]] can be maintained.\nOverseas wire transfer fees (currently [[B:USD 25]]) and exchange fees set by receiving institutions are [[B:borne by the customer.]]'
         }
       },
       {
@@ -629,8 +646,8 @@ const products = {
         num:   { ja:'第6条', en:'Article 6' },
         title: { ja:'費用および各種手数料', en:'Costs and Fees' },
         body:  {
-          ja:'本プランの費用として [[B:月額プラン手数料 7 USD]] がかかります。\n出金手続き時は [[B:送金手数料 50 USD]]（将来改定の可能性あり）および各受取銀行の為替手数料が [[B:お客様負担]] となります。\nクレジットカードでの海外送金（入金時）は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由の海外送金は各行所定の手数料が [[B:お客様負担]] となります。',
-          en:'This plan charges a [[B:monthly plan fee of USD 7.]]\nFor withdrawals, a [[B:wire transfer fee of USD 50]] (subject to future revision) and exchange fees of receiving banks are [[B:borne by the customer.]]\nFor overseas wire transfers by credit card, [[B:a 3.5% fee]] plus the credit card company fee applies. For transfers via domestic banks or internet banking, the bank\'s respective fees are [[B:borne by the customer.]]'
+          ja:'本プランの費用として [[B:月額プラン手数料 7 USD]] がかかります。\n出金手続き時は [[B:送金手数料 25 USD]]（将来改定の可能性あり）および各受取銀行の為替手数料が [[B:お客様負担]] となります。\nクレジットカードでの海外送金（入金時）は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由の海外送金は各行所定の手数料が [[B:お客様負担]] となります。',
+          en:'This plan charges a [[B:monthly plan fee of USD 7.]]\nFor withdrawals, a [[B:wire transfer fee of USD 25]] (subject to future revision) and exchange fees of receiving banks are [[B:borne by the customer.]]\nFor overseas wire transfers by credit card, [[B:a 3.5% fee]] plus the credit card company fee applies. For transfers via domestic banks or internet banking, the bank\'s respective fees are [[B:borne by the customer.]]'
         }
       },
       {
@@ -706,8 +723,8 @@ const products = {
         num:   { ja:'第5条', en:'Article 5' },
         title: { ja:'解約手数料および送金に関する規定', en:'Cancellation Fees and Wire Transfer Regulations' },
         body:  {
-          ja:'【解約手数料】[[R:契約開始後12か月以内の解約には1.5%の手数料がかかります。]]\n【送金手数料（出金時）】1回あたり [[B:50 USD]] の送金手数料がかかります。\n【海外送金手数料（入金時）】クレジットカードでの海外送金は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由では各行所定の手数料が [[B:お客様負担]] となります。',
-          en:'[Cancellation Fee] [[R:A cancellation fee of 1.5% applies for cancellations within 12 months of contract commencement.]]\n[Wire Transfer Fee (Withdrawal)] A wire transfer fee of [[B:USD 50]] applies per transaction.\n[Overseas Wire Transfer Fee (Deposit)] For credit card overseas transfers, [[B:a 3.5% fee]] plus the credit card company\'s fee applies. For transfers via domestic banks or internet banking, the bank\'s fees are [[B:borne by the customer.]]'
+          ja:'【解約手数料】[[R:契約開始後12か月以内の解約には1.5%の手数料がかかります。]]\n【送金手数料（出金時）】1回あたり [[B:25 USD]] の送金手数料がかかります。\n【海外送金手数料（入金時）】クレジットカードでの海外送金は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由では各行所定の手数料が [[B:お客様負担]] となります。',
+          en:'[Cancellation Fee] [[R:A cancellation fee of 1.5% applies for cancellations within 12 months of contract commencement.]]\n[Wire Transfer Fee (Withdrawal)] A wire transfer fee of [[B:USD 25]] applies per transaction.\n[Overseas Wire Transfer Fee (Deposit)] For credit card overseas transfers, [[B:a 3.5% fee]] plus the credit card company\'s fee applies. For transfers via domestic banks or internet banking, the bank\'s fees are [[B:borne by the customer.]]'
         }
       },
       {
@@ -835,7 +852,7 @@ function goToStep(step) {
     document.getElementById('sigDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('finalAgree').checked = false;
     document.getElementById('btn3Submit').disabled = true;
-    applyLang(); // ensure labels are translated
+    applyLang();
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -857,13 +874,11 @@ function submitForm() {
   const email    = document.getElementById('sigEmail').value.trim();
   const product  = p.name[lang];
 
-  // Collect initials
   const initials = p.articles.map((art, i) => {
     const v = document.getElementById('initial-' + i) ? document.getElementById('initial-' + i).value : '';
     return `${art.num[lang]}: ${v}`;
   }).join('\n');
 
-  // Send confirmation email via mailto
   const subject = encodeURIComponent(
     lang === 'ja'
       ? `【重要事項同意書 承認完了】受付番号: ${refNum}`
@@ -876,7 +891,6 @@ function submitForm() {
   );
   window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
 
-  // Show completion screen
   document.getElementById('refNumber').textContent = refNum;
   document.getElementById('doneProduct').textContent = product;
   document.getElementById('doneName').textContent = name;
@@ -923,7 +937,6 @@ function updateProgress(step) {
   }
 }
 
-// Initial lang render
 applyLang();
 </script>
 </body>

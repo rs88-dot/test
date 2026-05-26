@@ -4,128 +4,150 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>重要事項同意書 | Wawasan Global Support Limited</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#eef2f7;color:#1a1a2e;min-height:100vh;font-size:15px;line-height:1.7}
+    body{font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;background:#e8e8e8;color:#1a1a2e;min-height:100vh;font-size:15px;line-height:1.7}
 
     /* HEADER */
-    header{background:linear-gradient(135deg,#1e3a8a,#1d4ed8);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
-    .header-left .logo{font-size:17px;font-weight:bold}
-    .header-left .tagline{font-size:12px;opacity:.75;margin-top:3px}
-    .lang-toggle{display:flex;background:rgba(255,255,255,.15);border-radius:999px;padding:3px;gap:2px}
-    .lang-btn{padding:7px 20px;border-radius:999px;border:none;font-size:13px;font-weight:bold;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.7);background:transparent}
-    .lang-btn.active{background:#fff;color:#1e3a8a}
+    header{background:linear-gradient(135deg,#161f33,#1e2e52);color:#fff;padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+    .header-left .logo{font-size:17px;font-weight:bold;letter-spacing:.5px}
+    .header-left .tagline{font-size:12px;opacity:.65;margin-top:4px;letter-spacing:.3px}
+    .lang-section{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+    .lang-label{font-size:11px;color:rgba(255,255,255,.55);letter-spacing:.8px;text-transform:uppercase}
+    .lang-toggle{display:flex;background:#fff;border-radius:8px;padding:4px;gap:2px;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+    .lang-btn{padding:9px 24px;border-radius:6px;border:none;font-size:14px;font-weight:bold;cursor:pointer;transition:all .2s;color:#666;background:transparent;letter-spacing:.3px}
+    .lang-btn.active{background:#1e2e52;color:#fff}
+    .lang-btn:not(.active):hover{background:#f0f0f0;color:#333}
 
     /* PROGRESS */
-    .progress-bar{background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 24px}
+    .progress-bar{background:#fff;border-bottom:2px solid #ddd;padding:16px 24px}
     .steps{display:flex;align-items:center;max-width:640px;margin:0 auto}
     .step{display:flex;align-items:center;gap:8px;flex:1}
     .step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0}
-    .step-num.done{background:#16a34a;color:#fff}
-    .step-num.active{background:#1e3a8a;color:#fff;box-shadow:0 0 0 4px #bfdbfe}
-    .step-num.pending{background:#e5e7eb;color:#9ca3af}
-    .step-label{font-size:12px;color:#6b7280;font-weight:500}
-    .step-label.active{color:#1e3a8a;font-weight:bold}
-    .step-line{flex:1;height:2px;background:#e5e7eb;margin:0 4px}
-    .step-line.done{background:#16a34a}
+    .step-num.done{background:#1e2e52;color:#fff}
+    .step-num.active{background:#1e2e52;color:#fff;box-shadow:0 0 0 4px #b8c4d8}
+    .step-num.pending{background:#d4d4d4;color:#888}
+    .step-label{font-size:12px;color:#888;font-weight:500}
+    .step-label.active{color:#1e2e52;font-weight:bold}
+    .step-line{flex:1;height:2px;background:#d4d4d4;margin:0 4px}
+    .step-line.done{background:#1e2e52}
 
     /* MAIN */
     main{max-width:780px;margin:28px auto;padding:0 16px 80px}
-    .card{background:#fff;border-radius:18px;box-shadow:0 4px 24px rgba(0,0,0,.09);overflow:hidden}
+    .card{background:#fff;border-radius:10px;box-shadow:0 2px 16px rgba(0,0,0,.1);overflow:hidden;border:1px solid #d4d4d4}
 
     /* SECTION HEADERS */
-    .step-header{padding:30px 36px 22px;border-bottom:1px solid #f0f2f5}
-    .step-header h2{font-size:22px;color:#1e3a8a;margin-bottom:8px;font-weight:700}
-    .step-header p{font-size:14px;color:#6b7280;line-height:1.8}
+    .step-header{padding:28px 36px 20px;border-bottom:1px solid #e8e8e8}
+    .step-header h2{font-size:20px;color:#161f33;margin-bottom:8px;font-weight:700}
+    .step-header p{font-size:14px;color:#5a5a6a;line-height:1.8}
 
     /* STEP 1: PRODUCT SELECTION */
-    .product-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:26px 36px 36px}
-    .product-option{border:2px solid #e5e7eb;border-radius:14px;padding:22px 20px;cursor:pointer;transition:all .2s;position:relative}
-    .product-option:hover{border-color:#93c5fd;background:#f0f9ff;transform:translateY(-1px)}
-    .product-option.selected{border-color:#1e3a8a;background:#eff6ff;box-shadow:0 0 0 3px #bfdbfe}
+    .product-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:24px 36px 34px}
+    .product-option{border:2px solid #d4d4d4;border-radius:10px;padding:20px 18px;cursor:pointer;transition:all .2s;position:relative}
+    .product-option:hover{border-color:#7a90b4;background:#f5f7fb;transform:translateY(-1px)}
+    .product-option.selected{border-color:#1e2e52;background:#eef1f8;box-shadow:0 0 0 3px #b8c4d8}
     .product-option input[type=radio]{position:absolute;opacity:0}
-    .product-type-badge{font-size:11px;font-weight:bold;border-radius:5px;padding:3px 10px;display:inline-block;margin-bottom:10px}
-    .badge-evolution{background:#fef3c7;color:#92400e}
-    .badge-sp500{background:#dbeafe;color:#1e40af}
-    .badge-fip{background:#dcfce7;color:#166534}
-    .badge-platinum{background:#f3e8ff;color:#6b21a8}
-    .product-name{font-size:16px;font-weight:bold;color:#1a1a2e;line-height:1.4}
-    .check-icon{position:absolute;top:14px;right:14px;width:26px;height:26px;border-radius:50%;background:#1e3a8a;color:#fff;display:none;align-items:center;justify-content:center;font-size:14px}
+    .product-type-badge{font-size:11px;font-weight:bold;border-radius:4px;padding:3px 10px;display:inline-block;margin-bottom:10px}
+    .badge-evolution{background:#e8e2d4;color:#4a3820}
+    .badge-sp500{background:#d4dce8;color:#162040}
+    .badge-fip{background:#d4e0d4;color:#183018}
+    .badge-platinum{background:#dcd4e4;color:#281840}
+    .product-name{font-size:15px;font-weight:bold;color:#1a1a2e;line-height:1.4}
+    .check-icon{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;background:#1e2e52;color:#fff;display:none;align-items:center;justify-content:center;font-size:12px}
     .product-option.selected .check-icon{display:flex}
 
     /* CONSENT HEADER */
-    .consent-header{padding:26px 36px 18px;border-bottom:1px solid #f0f2f5}
-    .product-badge{display:inline-flex;align-items:center;gap:6px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:7px 14px;font-size:13px;color:#1e40af;font-weight:bold;margin-bottom:14px}
-    .consent-header h2{font-size:18px;color:#1e3a8a;margin-bottom:12px;font-weight:700;line-height:1.5}
-    .preamble{font-size:13px;color:#4b5563;line-height:1.9;background:#f8fafc;border-left:4px solid #3b82f6;padding:14px 18px;border-radius:0 8px 8px 0}
+    .consent-header{padding:24px 36px 16px;border-bottom:1px solid #e8e8e8}
+    .product-badge{display:inline-flex;align-items:center;gap:6px;background:#eef1f8;border:1px solid #b8c4d8;border-radius:6px;padding:7px 14px;font-size:13px;color:#1e2e52;font-weight:bold;margin-bottom:14px}
+    .consent-header h2{font-size:17px;color:#161f33;margin-bottom:12px;font-weight:700;line-height:1.5}
+    .preamble{font-size:13px;color:#4a5068;line-height:1.9;background:#f8f8f8;border-left:4px solid #7a90b4;padding:14px 18px;border-radius:0 6px 6px 0}
 
     /* NOTICE */
-    .notice-box{margin:18px 36px;background:#fff7ed;border:2px solid #fb923c;border-radius:10px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start}
-    .notice-icon{font-size:22px;flex-shrink:0;margin-top:1px}
-    .notice-box p{font-size:13px;color:#9a3412;line-height:1.8;font-weight:500}
+    .notice-box{margin:16px 36px;background:#f2f4f8;border:2px solid #7a90b4;border-radius:8px;padding:14px 18px;display:flex;gap:12px;align-items:flex-start}
+    .notice-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+    .notice-box p{font-size:13px;color:#1e2e52;line-height:1.8;font-weight:500}
 
     /* ARTICLES */
     .articles{padding:6px 36px 8px}
-    .article{border:1.5px solid #e5e7eb;border-radius:12px;margin-bottom:18px;overflow:hidden}
-    .article-title{background:#f1f5f9;padding:14px 18px;font-size:14px;font-weight:700;color:#1e3a8a;border-bottom:1px solid #e5e7eb;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .article{border:1.5px solid #d8d8d8;border-radius:8px;margin-bottom:16px;overflow:hidden}
+    .article-title{background:#f4f5f8;padding:13px 18px;font-size:14px;font-weight:700;color:#161f33;border-bottom:1px solid #d8d8d8;display:flex;justify-content:space-between;align-items:center;gap:12px}
     .article-title-text{flex:1;line-height:1.4}
-    .article-body{padding:16px 18px;font-size:14px;color:#374151;line-height:1.9}
+    .article-body{padding:16px 18px;font-size:14px;color:#333;line-height:1.9}
     .article-body p{margin-bottom:8px}
     .article-body p:last-of-type{margin-bottom:0}
-    .risk{color:#dc2626;font-weight:700}
 
     /* INITIAL ROW */
-    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1.5px dashed #d1d5db;flex-wrap:wrap}
-    .initial-label{font-size:13px;color:#374151;font-weight:600;white-space:nowrap}
-    .initial-input{border:2px solid #d1d5db;border-radius:8px;padding:8px 12px;font-size:15px;width:110px;text-align:center;letter-spacing:3px;font-weight:bold;transition:border-color .2s}
-    .initial-input:focus{outline:none;border-color:#1e3a8a;box-shadow:0 0 0 3px #bfdbfe}
-    .initial-hint{font-size:12px;color:#6b7280;background:#f3f4f6;padding:4px 10px;border-radius:6px}
-    .initial-check{width:26px;height:26px;border-radius:50%;background:#e5e7eb;display:flex;align-items:center;justify-content:center;font-size:13px;color:#9ca3af;flex-shrink:0;transition:all .2s}
-    .initial-check.filled{background:#16a34a;color:#fff}
+    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px 14px;border-radius:6px;background:#fff59d;border:2px solid #f9a825;flex-wrap:wrap}
+    .initial-label{font-size:13px;color:#333;font-weight:600;white-space:nowrap}
+    .initial-input{border:2px solid #c4c4c4;border-radius:6px;padding:8px 12px;font-size:15px;width:110px;text-align:center;letter-spacing:3px;font-weight:bold;transition:border-color .2s}
+    .initial-input:focus{outline:none;border-color:#1e2e52;box-shadow:0 0 0 3px #b8c4d8}
+    .initial-hint{font-size:12px;color:#666;background:#eeeeee;padding:4px 10px;border-radius:4px}
+    .initial-check{width:24px;height:24px;border-radius:50%;background:#d4d4d4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#888;flex-shrink:0;transition:all .2s}
+    .initial-check.filled{background:#1e2e52;color:#fff}
 
     /* SIGNATURE */
     .signature-section{padding:22px 36px 32px}
     .sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
-    .field-group label{display:block;font-size:13px;font-weight:700;color:#374151;margin-bottom:7px}
-    .field-group input{width:100%;border:2px solid #d1d5db;border-radius:10px;padding:12px 14px;font-size:15px;transition:border-color .2s}
-    .field-group input:focus{outline:none;border-color:#1e3a8a;box-shadow:0 0 0 3px #bfdbfe}
+    .field-group label{display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:7px}
+    .field-group input{width:100%;border:2px solid #c4c4c4;border-radius:8px;padding:12px 14px;font-size:15px;transition:border-color .2s}
+    .field-group input:focus{outline:none;border-color:#1e2e52;box-shadow:0 0 0 3px #b8c4d8}
     .field-full{grid-column:1/-1}
-    .confirm-box{background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:12px;padding:18px 20px;margin-bottom:20px}
-    .confirm-box strong{color:#374151;display:block;margin-bottom:10px;font-size:14px}
+    .confirm-box{background:#f8f8f8;border:1.5px solid #d4d4d4;border-radius:8px;padding:18px 20px;margin-bottom:20px}
+    .confirm-box strong{color:#333;display:block;margin-bottom:10px;font-size:14px}
     .confirm-row{display:flex;align-items:baseline;gap:8px;margin-bottom:5px}
-    .confirm-key{font-size:12px;color:#9ca3af;min-width:90px}
-    .confirm-val{font-weight:bold;color:#1e3a8a}
-    .agree-check{display:flex;align-items:flex-start;gap:12px;background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:16px 18px;margin-bottom:24px;cursor:pointer}
-    .agree-check input[type=checkbox]{width:20px;height:20px;flex-shrink:0;margin-top:3px;accent-color:#16a34a;cursor:pointer}
-    .agree-check-text{font-size:13px;color:#166534;line-height:1.8;font-weight:500}
+    .confirm-key{font-size:12px;color:#888;min-width:90px}
+    .confirm-val{font-weight:bold;color:#1e2e52}
+    .agree-check{display:flex;align-items:flex-start;gap:12px;background:#f2f4f8;border:2px solid #7a90b4;border-radius:8px;padding:16px 18px;margin-bottom:24px;cursor:pointer}
+    .agree-check input[type=checkbox]{width:20px;height:20px;flex-shrink:0;margin-top:3px;accent-color:#1e2e52;cursor:pointer}
+    .agree-check-text{font-size:13px;color:#1e2e52;line-height:1.8;font-weight:500}
 
     /* COMPLETE */
-    .complete-section{text-align:center;padding:50px 36px 40px}
-    .complete-icon{width:80px;height:80px;background:#dcfce7;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;margin:0 auto 22px}
-    .complete-section h2{font-size:24px;color:#16a34a;margin-bottom:14px;font-weight:700}
-    .complete-ref{display:inline-block;background:#f3f4f6;border-radius:10px;padding:12px 28px;font-size:18px;color:#374151;font-family:monospace;margin:16px 0;letter-spacing:2px;font-weight:bold}
-    .email-sent-note{font-size:13px;color:#6b7280;margin-bottom:10px}
-    .next-steps-box{background:#fffbeb;border:2px solid #fcd34d;border-radius:12px;padding:18px 22px;margin:24px 0;text-align:left}
-    .next-steps-box strong{color:#92400e;display:block;margin-bottom:8px;font-size:14px}
-    .next-steps-box p{font-size:13px;color:#78350f;line-height:1.8}
-    .done-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:18px 22px;margin-top:0;text-align:left}
-    .done-box strong{color:#374151;display:block;margin-bottom:10px;font-size:14px}
+    .complete-section{text-align:center;padding:44px 36px 40px}
+    .complete-icon{width:72px;height:72px;background:#e8edf4;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 20px}
+    .complete-section h2{font-size:22px;color:#161f33;margin-bottom:14px;font-weight:700}
+    .complete-ref{display:inline-block;background:#f4f4f4;border-radius:8px;padding:12px 28px;font-size:18px;color:#333;font-family:monospace;margin:16px 0;letter-spacing:2px;font-weight:bold;border:1px solid #d4d4d4}
+    .email-sent-note{font-size:13px;color:#666;margin-bottom:10px}
+    .next-steps-box{background:#f8f6f0;border:2px solid #c4b070;border-radius:10px;padding:18px 22px;margin:24px 0 0;text-align:left}
+    .next-steps-box strong{color:#4a3810;display:block;margin-bottom:8px;font-size:14px}
+    .next-steps-box p{font-size:13px;color:#4a3810;line-height:1.8}
+    .return-btn-wrap{margin-top:14px}
+    .return-btn{display:inline-block;padding:13px 32px;background:#1e2e52;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:.3px}
+    .return-btn:hover{background:#263a6a;transform:translateY(-1px);color:#fff}
+    .done-box{background:#f8f8f8;border:1px solid #d4d4d4;border-radius:8px;padding:18px 22px;margin-top:20px;text-align:left}
+    .done-box strong{color:#333;display:block;margin-bottom:10px;font-size:14px}
     .done-row{display:flex;gap:10px;margin-bottom:6px;font-size:13px}
-    .done-key{color:#9ca3af;min-width:80px}
-    .restart-btn{display:inline-block;margin-top:24px;padding:13px 36px;background:#1e3a8a;color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;transition:all .2s}
-    .restart-btn:hover{background:#1d4ed8;transform:translateY(-1px)}
+    .done-key{color:#888;min-width:80px}
+    .pdf-btn{display:inline-block;margin-top:16px;padding:13px 32px;background:#fff;color:#1e2e52;border:2px solid #1e2e52;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+    .pdf-btn:hover{background:#eef1f8;transform:translateY(-1px)}
+    .pdf-warning{margin-top:10px;background:#fffbcc;border:1.5px solid #e8d800;border-radius:7px;padding:10px 14px;font-size:12px;color:#5a4a00;line-height:1.7;text-align:left}
+    .restart-btn{display:inline-block;margin-top:14px;padding:10px 26px;background:#f0f0f0;color:#444;border:2px solid #ccc;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all .2s}
+    .restart-btn:hover{background:#e4e4e4}
+
+    /* SIGNATURE PAD */
+    .sig-pad-section{margin-bottom:24px}
+    .sig-pad-section label{display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:7px}
+    .sig-pad-wrap{position:relative;border:2px solid #c4c4c4;border-radius:8px;overflow:hidden;background:#fafafa;transition:border-color .2s}
+    .sig-pad-wrap.active{border-color:#1e2e52}
+    .sig-canvas{display:block;width:100%;height:160px;cursor:crosshair;touch-action:none}
+    .sig-pad-actions{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f4f4f4;border-top:1px solid #ddd}
+    .sig-clear-btn{padding:5px 14px;font-size:12px;background:#fff;border:1.5px solid #ccc;border-radius:5px;cursor:pointer;color:#555;font-weight:600}
+    .sig-clear-btn:hover{background:#eee}
+    .sig-status{font-size:11px;color:#888}
+    .sig-status.done{color:#1e2e52;font-weight:bold}
+    .sig-pad-hint{font-size:11px;color:#888;margin-top:5px}
 
     /* BUTTONS */
-    .btn-row{display:flex;gap:12px;padding:20px 36px;border-top:1px solid #f0f2f5}
-    .btn{padding:14px 28px;border-radius:10px;font-size:15px;font-weight:bold;cursor:pointer;border:none;transition:all .2s}
-    .btn-primary{background:#1e3a8a;color:#fff;flex:1}
-    .btn-primary:hover:not(:disabled){background:#1d4ed8;transform:translateY(-1px)}
-    .btn-primary:disabled{background:#93c5fd;cursor:not-allowed}
-    .btn-secondary{background:#f3f4f6;color:#374151}
-    .btn-secondary:hover{background:#e5e7eb}
-    .btn-success{background:#16a34a;color:#fff;flex:1}
-    .btn-success:hover:not(:disabled){background:#15803d;transform:translateY(-1px)}
-    .btn-success:disabled{background:#86efac;cursor:not-allowed}
+    .btn-row{display:flex;gap:12px;padding:20px 36px;border-top:1px solid #e8e8e8}
+    .btn{padding:13px 26px;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;border:none;transition:all .2s}
+    .btn-primary{background:#1e2e52;color:#fff;flex:1}
+    .btn-primary:hover:not(:disabled){background:#263a6a;transform:translateY(-1px)}
+    .btn-primary:disabled{background:#96a8c4;cursor:not-allowed}
+    .btn-secondary{background:#f0f0f0;color:#444;border:1px solid #c8c8c8}
+    .btn-secondary:hover{background:#e4e4e4}
+    .btn-success{background:#1a2440;color:#fff;flex:1}
+    .btn-success:hover:not(:disabled){background:#1e2e52;transform:translateY(-1px)}
+    .btn-success:disabled{background:#96a8c4;cursor:not-allowed}
 
     .screen{display:none}
     .screen.active{display:block}
@@ -134,8 +156,8 @@
       .product-grid{grid-template-columns:1fr}
       .sig-grid{grid-template-columns:1fr}
       main{padding:0 8px 80px}
-      .step-header,.consent-header,.articles,.signature-section,.btn-row{padding-left:20px;padding-right:20px}
-      .notice-box{margin:16px 20px}
+      .step-header,.consent-header,.articles,.signature-section,.btn-row{padding-left:18px;padding-right:18px}
+      .notice-box{margin:14px 18px}
       header{flex-direction:column;align-items:flex-start}
     }
   </style>
@@ -148,9 +170,12 @@
     <div class="logo">Wawasan Global Support Limited</div>
     <div class="tagline" id="hTagline">重要事項同意書 — オンライン承認システム</div>
   </div>
-  <div class="lang-toggle">
-    <button class="lang-btn active" id="btnJA" onclick="setLang('ja')">日本語</button>
-    <button class="lang-btn" id="btnEN" onclick="setLang('en')">English</button>
+  <div class="lang-section">
+    <span class="lang-label">言語 / Language</span>
+    <div class="lang-toggle">
+      <button class="lang-btn active" id="btnJA" onclick="setLang('ja')">日本語</button>
+      <button class="lang-btn" id="btnEN" onclick="setLang('en')">English</button>
+    </div>
   </div>
 </header>
 
@@ -234,7 +259,7 @@
     </div>
 
     <div class="notice-box">
-      <div class="notice-icon">⚠️</div>
+      <div class="notice-icon">📝</div>
       <p id="noticeText"></p>
     </div>
 
@@ -258,15 +283,15 @@
     <div class="signature-section">
       <div class="sig-grid">
         <div class="field-group">
-          <label id="labelName">お名前（フルネーム）<span style="color:red"> *</span></label>
+          <label id="labelName">お名前（フルネーム）<span style="color:#c0392b"> *</span></label>
           <input type="text" id="sigName" placeholder="Yamada, Taro" oninput="checkStep3()">
         </div>
         <div class="field-group">
-          <label id="labelDate">署名日<span style="color:red"> *</span></label>
+          <label id="labelDate">署名日<span style="color:#c0392b"> *</span></label>
           <input type="date" id="sigDate" oninput="checkStep3()">
         </div>
         <div class="field-group field-full">
-          <label id="labelEmail">メールアドレス（控え送付先）<span style="color:red"> *</span></label>
+          <label id="labelEmail">メールアドレス（控え送付先）<span style="color:#c0392b"> *</span></label>
           <input type="email" id="sigEmail" placeholder="example@email.com" oninput="checkStep3()">
         </div>
       </div>
@@ -289,6 +314,18 @@
           上記の重要事項をすべて確認・理解し、自己の自由な意思に基づき本プランの申し込みを行うことに同意します。また、投資に伴うリスクを十分に理解した上で申し込みを行うことを確認します。
         </div>
       </label>
+
+      <div class="sig-pad-section">
+        <label id="labelSig">手書きサイン <span style="color:#c0392b"> *</span></label>
+        <div class="sig-pad-wrap" id="sigPadWrap">
+          <canvas id="sigCanvas" class="sig-canvas"></canvas>
+          <div class="sig-pad-actions">
+            <button type="button" class="sig-clear-btn" id="sigClearBtn" onclick="clearSignature()">クリア / Clear</button>
+            <span class="sig-status" id="sigStatus">未記入</span>
+          </div>
+        </div>
+        <div class="sig-pad-hint" id="sigPadHint">※ iPad・スマートフォンは指で、PCはマウスでサインしてください</div>
+      </div>
     </div>
 
     <div class="btn-row">
@@ -306,16 +343,25 @@
       <h2 id="doneTitle">承認が完了しました</h2>
       <p id="doneMsg1" style="font-size:15px;color:#374151;margin-bottom:6px;"></p>
       <div class="complete-ref" id="refNumber"></div>
-      <p class="email-sent-note" id="doneMsg2"></p>
+
+      <div class="pdf-warning" id="doneMsg2">
+        回答の控えは下記より必ずダウンロードください。<br>一度画面を閉じますとダウンロードできなくなります。
+      </div>
+      <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">📄 PDFをダウンロード</button>
 
       <div class="next-steps-box">
         <strong id="nextStepsTitle">📋 次のステップ</strong>
         <p id="nextStepsText"></p>
+        <div class="return-btn-wrap">
+          <a class="return-btn" href="https://wawasan-ita-form-k.studio.site" target="_blank" id="returnBtn">
+            📝 お申し込みフォームに戻る →
+          </a>
+        </div>
       </div>
 
       <div class="done-box">
         <strong id="doneSummaryTitle">承認済み内容</strong>
-        <div class="done-row"><span class="done-key" id="doneKeyProduct">商品名</span><span id="doneProduct" style="font-weight:bold;color:#1e3a8a"></span></div>
+        <div class="done-row"><span class="done-key" id="doneKeyProduct">商品名</span><span id="doneProduct" style="font-weight:bold;color:#1e2e52"></span></div>
         <div class="done-row"><span class="done-key" id="doneKeyName">お名前</span><span id="doneName"></span></div>
         <div class="done-row"><span class="done-key" id="doneKeyDate">署名日</span><span id="doneDate"></span></div>
         <div class="done-row"><span class="done-key" id="doneKeyRef">受付番号</span><span id="doneRef" style="font-family:monospace;font-weight:bold"></span></div>
@@ -367,15 +413,23 @@ const T = {
   btn3Text:        { ja:'✓ 同意して承認する', en:'✓ Agree & Approve' },
   doneTitle:       { ja:'承認が完了しました', en:'Approval Complete' },
   doneMsg1:        { ja:'重要事項同意書へのご同意ありがとうございます。以下の受付番号をお控えください。', en:'Thank you for completing the Important Matters Consent Form. Please save the reference number below.' },
-  doneMsg2:        { ja:'※ 確認の控えがメールで届きます（メールが届かない場合は受付番号をスクリーンショットにてお控えください）。', en:'※ A confirmation copy will be sent to your email address (if not received, please screenshot the reference number above).' },
+  doneMsg2:        { ja:'回答の控えは下記より必ずダウンロードください。<br>一度画面を閉じますとダウンロードできなくなります。', en:'Please download your copy using the button below.<br>Once this page is closed, the PDF will no longer be available.' },
   nextStepsTitle:  { ja:'📋 次のステップ', en:'📋 Next Steps' },
-  nextStepsText:   { ja:'この画面を閉じ、お申し込みフォームに戻ってご入力をお続けください。ご不明な点は担当者までお問い合わせください。', en:'Please close this window and return to the application form to continue. If you have any questions, please contact your representative.' },
+  nextStepsText:   { ja:'お申し込みフォームに戻ってご入力をお続けください。ご不明な点は担当者までお問い合わせください。', en:'Please return to the application form to continue. If you have any questions, please contact your representative.' },
+  returnBtn:       { ja:'📝 お申し込みフォームに戻る →', en:'📝 Return to Application Form →' },
   doneSummaryTitle:{ ja:'承認済み内容', en:'Approved Details' },
   doneKeyProduct:  { ja:'商品名', en:'Product' },
   doneKeyName:     { ja:'お名前', en:'Name' },
   doneKeyDate:     { ja:'署名日', en:'Date' },
   doneKeyRef:      { ja:'受付番号', en:'Reference No.' },
   restartBtn:      { ja:'最初からやり直す', en:'Start Over' },
+  pdfBtn:          { ja:'📄 PDFをダウンロード', en:'📄 Download PDF' },
+  pdfWarning:      { ja:'⚠️ 書類で保管を希望される場合は、この画面を閉じる前に必ずダウンロードしてください。<br>この画面を閉じるとダウンロードができなくなります。', en:'⚠️ If you wish to keep a copy, please download before closing this screen.<br>The PDF will not be available after this page is closed.' },
+  labelSig:        { ja:'手書きサイン', en:'Handwritten Signature' },
+  sigClearBtn:     { ja:'クリア / Clear', en:'Clear' },
+  sigStatusEmpty:  { ja:'未記入', en:'Not signed' },
+  sigStatusDone:   { ja:'✓ 署名済み', en:'✓ Signed' },
+  sigPadHint:      { ja:'※ iPad・スマートフォンは指で、PCはマウスでサインしてください', en:'※ Sign with your finger on iPad/smartphone, or mouse on PC' },
   noticeText:      { ja:'各条項をよくお読みいただき、ご理解・ご同意いただけた場合に、各条項の入力欄にローマ字でイニシャルをご記入ください。<strong>すべての条項へのご記入が必要です。</strong>',
                      en:'Please read each article carefully. If you understand and agree, enter your initials in Roman letters in the box provided. <strong>All articles must be initialed before proceeding.</strong>' },
 };
@@ -388,6 +442,8 @@ function applyLang() {
     if (!el) return;
     const val = T[id][lang];
     if (el.tagName === 'INPUT' || el.tagName === 'BUTTON') {
+      el.textContent = val;
+    } else if (el.tagName === 'A') {
       el.textContent = val;
     } else {
       el.innerHTML = val;
@@ -410,9 +466,99 @@ function setLang(l) {
 }
 
 /* =====================================================
+   SIGNATURE PAD
+   ===================================================== */
+let signatureData = null;
+let _isDrawing = false;
+let _lastX = 0;
+let _lastY = 0;
+
+function initSignaturePad() {
+  const canvas = document.getElementById('sigCanvas');
+  const wrap = document.getElementById('sigPadWrap');
+  canvas.width = canvas.offsetWidth || 600;
+  canvas.height = 160;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = '#1e2e52';
+  ctx.lineWidth = 2.5;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  signatureData = null;
+  updateSigStatus(false);
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    if (e.touches) {
+      return [(e.touches[0].clientX - rect.left) * scaleX, (e.touches[0].clientY - rect.top) * scaleY];
+    }
+    return [(e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY];
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    _isDrawing = true;
+    [_lastX, _lastY] = getPos(e);
+    wrap.classList.add('active');
+  }
+  function draw(e) {
+    if (!_isDrawing) return;
+    e.preventDefault();
+    const [x, y] = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(_lastX, _lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+    [_lastX, _lastY] = [x, y];
+    signatureData = canvas.toDataURL('image/png');
+    updateSigStatus(true);
+    checkStep3();
+  }
+  function endDraw() { _isDrawing = false; }
+
+  canvas.removeEventListener('mousedown', canvas._startDraw);
+  canvas.removeEventListener('mousemove', canvas._draw);
+  canvas.removeEventListener('mouseup', canvas._endDraw);
+  canvas.removeEventListener('touchstart', canvas._startDraw);
+  canvas.removeEventListener('touchmove', canvas._draw);
+  canvas.removeEventListener('touchend', canvas._endDraw);
+
+  canvas._startDraw = startDraw;
+  canvas._draw = draw;
+  canvas._endDraw = endDraw;
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', draw);
+  canvas.addEventListener('mouseup', endDraw);
+  canvas.addEventListener('mouseleave', endDraw);
+  canvas.addEventListener('touchstart', startDraw, { passive: false });
+  canvas.addEventListener('touchmove', draw, { passive: false });
+  canvas.addEventListener('touchend', endDraw);
+}
+
+function updateSigStatus(signed) {
+  const el = document.getElementById('sigStatus');
+  if (!el) return;
+  el.textContent = signed ? T.sigStatusDone[lang] : T.sigStatusEmpty[lang];
+  el.className = 'sig-status' + (signed ? ' done' : '');
+}
+
+function clearSignature() {
+  const canvas = document.getElementById('sigCanvas');
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  signatureData = null;
+  document.getElementById('sigPadWrap').classList.remove('active');
+  updateSigStatus(false);
+  checkStep3();
+}
+
+/* =====================================================
    PRODUCT DATA
    ===================================================== */
-/* [[R:text]] = red bold (risk)  [[B:text]] = bold only */
+/* [[R:text]] = plain text  [[B:text]] = bold only */
 const products = {
   evolution: {
     key: 'evolution',
@@ -444,16 +590,16 @@ const products = {
         num:   { ja:'第3条', en:'Article 3' },
         title: { ja:'初期積立期間の制限と途中解約のリスク', en:'Initial Period Restrictions and Early Cancellation Risk' },
         body:  {
-          ja:'【初期期間（イニシャルユニット期間）の制限】\n[[R:この期間中は、積立金額の減額・一部解約・一時停止を行うことは一切認められません。この期間中に解約・失効させた場合、解約返戻金が完全に「ゼロ」となります。]]\n【満期前の早期解約リスク】\n初期期間経過後は減額や一部引き出しが可能ですが、[[R:満期を待たずに解約した場合、返戻金が著しく減少またはゼロとなる危険性があります。]]',
-          en:'[Initial Unit Period Restrictions]\n[[R:During this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. If the plan is cancelled or lapses during this period, the surrender value will become completely ZERO due to cancellation fees.]]\n[Early Cancellation Risk Before Maturity]\nAfter the initial period, reductions and partial withdrawals become possible, but [[R:if cancelled before maturity, there is a serious risk that the refund amount will be significantly reduced or become zero.]]'
+          ja:'【初期期間（イニシャルユニット期間）の制限】\nこの期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。またこの期間中に解約を希望された場合、解約返戻金が完全に「ゼロ」となるため、解約手続きはできません。未納を [[B:90日以上]] 続けることでプランステータスを「失効」させる方法のみとなります。\n※ 失効は解約と同等の扱いとなります。\n※ 解約手続きは解約返戻金額が [[B:一定金額以上]] ある場合のみ手続き可能です。\n【満期前の早期解約リスク】\n解約返戻金額は、イニシャルユニット期間（初期口座）の積立を終えた後、それ以降 [[B:アキュムレーションユニット（貯蓄口座）]] に積み立てた分が解約返戻金として積み上がっていきます。そのため、初期期間経過後であっても、満期前に解約した場合、運用状況と各種手数料の影響により、[[R:解約返戻金が著しく減少またはゼロとなる危険性があります。]]本プランは [[B:満期まで継続することを大前提]] としてお申し込みください。',
+          en:'[Initial Unit Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]].\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to investment performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
         }
       },
       {
         num:   { ja:'第4条', en:'Article 4' },
         title: { ja:'一部解約に関する規定', en:'Regulations on Partial Cancellation' },
         body:  {
-          ja:'[[R:初期ユニット期間に積み立てた金額からの一部解約は不可能です。]]一部解約は、プラン内に最低 [[B:1,200 USD]] の純現金価値を維持できる場合のみ申請可能です。\n手続きに伴う送金手数料（現時点で [[B:50 USD]]）および受取銀行の為替手数料は [[B:お客様負担]] となります。',
-          en:'[[R:Partial cancellation from amounts accumulated during the initial unit period is not possible.]] Partial cancellation may only be requested if a minimum net cash value of [[B:USD 1,200]] can be maintained in the plan.\nWire transfer fees (currently [[B:USD 50]]) and exchange fees charged by receiving banks are [[B:borne by the customer.]]'
+          ja:'[[R:初期ユニット期間に積み立てた金額からの一部解約は不可能です。]]一部解約は、プラン内に最低 [[B:1,200 USD]] の純現金価値を維持できる場合のみ申請可能です。\n手続きに伴う送金手数料（現時点で [[B:25 USD]]）および受取銀行の為替手数料は [[B:お客様負担]] となります。',
+          en:'[[R:Partial cancellation from amounts accumulated during the initial unit period is not possible.]] Partial cancellation may only be requested if a minimum net cash value of [[B:USD 1,200]] can be maintained in the plan.\nWire transfer fees (currently [[B:USD 25]]) and exchange fees charged by receiving banks are [[B:borne by the customer.]]'
         }
       },
       {
@@ -537,16 +683,16 @@ const products = {
         num:   { ja:'第4条', en:'Article 4' },
         title: { ja:'初期積立期間の制限と途中解約のリスク', en:'Initial Period Restrictions and Early Cancellation Risk' },
         body:  {
-          ja:'【初期期間の制限】\n[[R:この期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。解約・失効した場合、解約返戻金が完全に「ゼロ」となります。]]\n【満期前の早期解約リスク】\n初期期間経過後でも、[[R:満期前に解約した場合、S&P500の運用状況と各種手数料の影響により、返戻金が著しく減少またはゼロとなる危険性があります。]]',
-          en:'[Initial Period Restrictions]\n[[R:During this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted. If cancelled or lapsed, the surrender value will become completely ZERO.]]\n[Early Cancellation Risk Before Maturity]\nEven after the initial period, [[R:if cancelled before maturity, the refund amount may be significantly reduced or become zero due to S&P500 performance and accumulated fees.]]'
+          ja:'【初期期間の制限】\nこの期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。またこの期間中に解約を希望された場合、解約返戻金が完全に「ゼロ」となるため、解約手続きはできません。未納を [[B:90日以上]] 続けることでプランステータスを「失効」させる方法のみとなります。\n※ 失効は解約と同等の扱いとなります。\n※ 解約手続きは解約返戻金額が [[B:一定金額以上]] ある場合のみ手続き可能です。\n【満期前の早期解約リスク】\n解約返戻金額は、イニシャルユニット期間（初期口座）の積立を終えた後、それ以降 [[B:アキュムレーションユニット（貯蓄口座）]] に積み立てた分が解約返戻金として積み上がっていきます。そのため、初期期間経過後であっても、満期前に解約した場合、S&P500の運用状況と各種手数料の影響により、[[R:解約返戻金が著しく減少またはゼロとなる危険性があります。]]本プランは [[B:満期まで継続することを大前提]] としてお申し込みください。',
+          en:'[Initial Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]].\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to S&P500 performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
         }
       },
       {
         num:   { ja:'第5条', en:'Article 5' },
         title: { ja:'一部解約に関する規定', en:'Regulations on Partial Cancellation' },
         body:  {
-          ja:'[[R:初期ユニット期間に積み立てた資産枠からの引き出しはできません。]]一部解約は、プラン内に最低 [[B:2,400 USD]] の純現金価値を維持できる範囲でのみ申請可能です。\n海外送金手数料（現行 [[B:50 USD]]）および受取先金融機関の為替手数料は [[B:お客様負担]] となります。',
-          en:'[[R:Withdrawals from assets accumulated during the initial unit period are not permitted.]] Partial cancellation is only available if a minimum net cash value of [[B:USD 2,400]] can be maintained.\nOverseas wire transfer fees (currently [[B:USD 50]]) and exchange fees set by receiving institutions are [[B:borne by the customer.]]'
+          ja:'[[R:初期ユニット期間に積み立てた資産枠からの引き出しはできません。]]一部解約は、プラン内に最低 [[B:2,400 USD]] の純現金価値を維持できる範囲でのみ申請可能です。\n海外送金手数料（現行 [[B:25 USD]]）および受取先金融機関の為替手数料は [[B:お客様負担]] となります。',
+          en:'[[R:Withdrawals from assets accumulated during the initial unit period are not permitted.]] Partial cancellation is only available if a minimum net cash value of [[B:USD 2,400]] can be maintained.\nOverseas wire transfer fees (currently [[B:USD 25]]) and exchange fees set by receiving institutions are [[B:borne by the customer.]]'
         }
       },
       {
@@ -630,8 +776,8 @@ const products = {
         num:   { ja:'第6条', en:'Article 6' },
         title: { ja:'費用および各種手数料', en:'Costs and Fees' },
         body:  {
-          ja:'本プランの費用として [[B:月額プラン手数料 7 USD]] がかかります。\n出金手続き時は [[B:送金手数料 50 USD]]（将来改定の可能性あり）および各受取銀行の為替手数料が [[B:お客様負担]] となります。\nクレジットカードでの海外送金（入金時）は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由の海外送金は各行所定の手数料が [[B:お客様負担]] となります。',
-          en:'This plan charges a [[B:monthly plan fee of USD 7.]]\nFor withdrawals, a [[B:wire transfer fee of USD 50]] (subject to future revision) and exchange fees of receiving banks are [[B:borne by the customer.]]\nFor overseas wire transfers by credit card, [[B:a 3.5% fee]] plus the credit card company fee applies. For transfers via domestic banks or internet banking, the bank\'s respective fees are [[B:borne by the customer.]]'
+          ja:'本プランの費用として [[B:月額プラン手数料 7 USD]] がかかります。\n出金手続き時は [[B:送金手数料 25 USD]]（将来改定の可能性あり）および各受取銀行の為替手数料が [[B:お客様負担]] となります。\nクレジットカードでの海外送金（入金時）は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由の海外送金は各行所定の手数料が [[B:お客様負担]] となります。',
+          en:'This plan charges a [[B:monthly plan fee of USD 7.]]\nFor withdrawals, a [[B:wire transfer fee of USD 25]] (subject to future revision) and exchange fees of receiving banks are [[B:borne by the customer.]]\nFor overseas wire transfers by credit card, [[B:a 3.5% fee]] plus the credit card company fee applies. For transfers via domestic banks or internet banking, the bank\'s respective fees are [[B:borne by the customer.]]'
         }
       },
       {
@@ -707,8 +853,8 @@ const products = {
         num:   { ja:'第5条', en:'Article 5' },
         title: { ja:'解約手数料および送金に関する規定', en:'Cancellation Fees and Wire Transfer Regulations' },
         body:  {
-          ja:'【解約手数料】[[R:契約開始後12か月以内の解約には1.5%の手数料がかかります。]]\n【送金手数料（出金時）】1回あたり [[B:50 USD]] の送金手数料がかかります。\n【海外送金手数料（入金時）】クレジットカードでの海外送金は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由では各行所定の手数料が [[B:お客様負担]] となります。',
-          en:'[Cancellation Fee] [[R:A cancellation fee of 1.5% applies for cancellations within 12 months of contract commencement.]]\n[Wire Transfer Fee (Withdrawal)] A wire transfer fee of [[B:USD 50]] applies per transaction.\n[Overseas Wire Transfer Fee (Deposit)] For credit card overseas transfers, [[B:a 3.5% fee]] plus the credit card company\'s fee applies. For transfers via domestic banks or internet banking, the bank\'s fees are [[B:borne by the customer.]]'
+          ja:'【解約手数料】[[R:契約開始後12か月以内の解約には1.5%の手数料がかかります。]]\n【送金手数料（出金時）】1回あたり [[B:25 USD]] の送金手数料がかかります。\n【海外送金手数料（入金時）】クレジットカードでの海外送金は [[B:3.5%の手数料]] およびカード会社所定の手数料がかかります。国内銀行・ネットバンク経由では各行所定の手数料が [[B:お客様負担]] となります。',
+          en:'[Cancellation Fee] [[R:A cancellation fee of 1.5% applies for cancellations within 12 months of contract commencement.]]\n[Wire Transfer Fee (Withdrawal)] A wire transfer fee of [[B:USD 25]] applies per transaction.\n[Overseas Wire Transfer Fee (Deposit)] For credit card overseas transfers, [[B:a 3.5% fee]] plus the credit card company\'s fee applies. For transfers via domestic banks or internet banking, the bank\'s fees are [[B:borne by the customer.]]'
         }
       },
       {
@@ -746,7 +892,7 @@ function selectProduct(key) {
 function parseBody(text) {
   return text.split('\n').map(para => {
     let html = para
-      .replace(/\[\[R:(.*?)\]\]/g, '<strong class="risk">$1</strong>')
+      .replace(/\[\[R:(.*?)\]\]/g, '$1')
       .replace(/\[\[B:(.*?)\]\]/g, '<strong>$1</strong>')
       .replace(/【(.*?)】/g, '<strong>【$1】</strong>');
     return `<p>${html}</p>`;
@@ -836,7 +982,8 @@ function goToStep(step) {
     document.getElementById('sigDate').value = new Date().toISOString().split('T')[0];
     document.getElementById('finalAgree').checked = false;
     document.getElementById('btn3Submit').disabled = true;
-    applyLang(); // ensure labels are translated
+    applyLang();
+    setTimeout(initSignaturePad, 60);
   }
 
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -846,7 +993,8 @@ function checkStep3() {
   const ok = document.getElementById('sigName').value.trim() &&
              document.getElementById('sigDate').value &&
              document.getElementById('sigEmail').value.trim() &&
-             document.getElementById('finalAgree').checked;
+             document.getElementById('finalAgree').checked &&
+             signatureData !== null;
   document.getElementById('btn3Submit').disabled = !ok;
 }
 
@@ -858,13 +1006,11 @@ function submitForm() {
   const email    = document.getElementById('sigEmail').value.trim();
   const product  = p.name[lang];
 
-  // Collect initials
   const initials = p.articles.map((art, i) => {
     const v = document.getElementById('initial-' + i) ? document.getElementById('initial-' + i).value : '';
     return `${art.num[lang]}: ${v}`;
   }).join('\n');
 
-  // Send confirmation email via mailto
   const subject = encodeURIComponent(
     lang === 'ja'
       ? `【重要事項同意書 承認完了】受付番号: ${refNum}`
@@ -877,7 +1023,6 @@ function submitForm() {
   );
   window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
 
-  // Show completion screen
   document.getElementById('refNumber').textContent = refNum;
   document.getElementById('doneProduct').textContent = product;
   document.getElementById('doneName').textContent = name;
@@ -898,6 +1043,7 @@ function restartForm() {
   document.getElementById('sigName').value = '';
   document.getElementById('sigEmail').value = '';
   document.getElementById('finalAgree').checked = false;
+  signatureData = null;
   goToStep(1);
 }
 
@@ -924,7 +1070,118 @@ function updateProgress(step) {
   }
 }
 
-// Initial lang render
+function generatePDF() {
+  const p      = products[selectedProduct];
+  const name   = document.getElementById('sigName').value.trim();
+  const date   = document.getElementById('sigDate').value;
+  const refNum = document.getElementById('doneRef').textContent;
+  const isJa   = lang === 'ja';
+
+  // Build articles — one <div> per article, no page-break-inside to avoid cutoff
+  let articlesHtml = '';
+  p.articles.forEach((art, i) => {
+    const initial  = (document.getElementById('initial-' + i) || {}).value || '';
+    const bodyHtml = parseBody(art.body[lang]);
+    articlesHtml += `
+      <div style="margin-bottom:12px;border:1px solid #c0c4cc;border-radius:4px;overflow:hidden">
+        <div style="background:#eef1f8;padding:7px 12px;font-weight:bold;font-size:11px;color:#1e2e52;border-bottom:1px solid #c0c4cc;display:flex;justify-content:space-between;align-items:center">
+          <span>${art.num[lang]}　${art.title[lang]}</span>
+        </div>
+        <div style="padding:10px 12px;font-size:10.5px;line-height:1.8;color:#222">
+          ${bodyHtml}
+          <div style="margin-top:8px;padding-top:6px;border-top:1px dashed #ccc;display:flex;align-items:center;gap:8px">
+            <span style="font-size:10.5px;font-weight:600;color:#444">${isJa ? 'イニシャル：' : 'Initials:'}</span>
+            <span style="border:2px solid #1e2e52;border-radius:3px;padding:2px 12px;font-weight:bold;letter-spacing:3px;font-size:12px;min-width:50px;display:inline-block;text-align:center;color:#1e2e52">${initial}</span>
+            ${initial ? '<span style="color:#1e2e52;font-weight:bold">✓</span>' : ''}
+          </div>
+        </div>
+      </div>`;
+  });
+
+  const sigImg = signatureData
+    ? `<img src="${signatureData}" style="max-height:80px;max-width:320px;display:block;margin-top:6px;border:1px solid #ddd;border-radius:4px;padding:4px;background:#fff" />`
+    : `<div style="height:60px;border:1px solid #ccc;border-radius:4px;background:#fafafa;margin-top:6px"></div>`;
+
+  const html = `
+    <div style="font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;width:680px;padding:22px 28px 20px;color:#1a1a2e;font-size:11px">
+      <!-- HEADER -->
+      <div style="text-align:center;border-bottom:2.5px solid #1e2e52;padding-bottom:12px;margin-bottom:14px">
+        <div style="font-size:11px;color:#666;letter-spacing:.5px;margin-bottom:3px">Wawasan Global Support Limited</div>
+        <div style="font-size:18px;font-weight:bold;color:#1e2e52;letter-spacing:.5px">${isJa ? '重要事項同意書' : 'Important Matters Consent Form'}</div>
+      </div>
+      <!-- META -->
+      <div style="display:flex;gap:0;border:1px solid #c0c4cc;border-radius:4px;margin-bottom:14px;overflow:hidden;font-size:10.5px">
+        <div style="flex:2;padding:8px 12px;border-right:1px solid #c0c4cc;background:#f4f5f8">
+          <div style="color:#888;margin-bottom:2px">${isJa ? '商品名' : 'Product'}</div>
+          <div style="font-weight:bold;color:#1e2e52;font-size:11.5px">${p.name[lang]}</div>
+        </div>
+        <div style="flex:1;padding:8px 12px;border-right:1px solid #c0c4cc;background:#f4f5f8">
+          <div style="color:#888;margin-bottom:2px">${isJa ? '受付番号' : 'Ref. No.'}</div>
+          <div style="font-weight:bold;font-family:monospace;font-size:11px">${refNum}</div>
+        </div>
+        <div style="flex:1;padding:8px 12px;background:#f4f5f8">
+          <div style="color:#888;margin-bottom:2px">${isJa ? '署名日' : 'Date'}</div>
+          <div style="font-weight:bold;font-size:11px">${date}</div>
+        </div>
+      </div>
+      <!-- PREAMBLE -->
+      <div style="font-size:10px;color:#4a5068;line-height:1.8;background:#f8f8f8;border-left:3px solid #7a90b4;padding:9px 12px;border-radius:0 4px 4px 0;margin-bottom:14px">
+        ${p.preamble[lang]}
+      </div>
+      <!-- ARTICLES -->
+      ${articlesHtml}
+      <!-- SIGNATURE SECTION -->
+      <div style="margin-top:16px;border:2px solid #1e2e52;border-radius:5px;padding:14px 16px">
+        <div style="font-size:12px;font-weight:bold;color:#1e2e52;border-bottom:1px solid #ddd;padding-bottom:8px;margin-bottom:12px">
+          ${isJa ? '署名・承認' : 'Signature & Approval'}
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:10.5px;margin-bottom:12px">
+          <tr><td style="padding:4px 0;color:#666;width:100px">${isJa ? 'お名前' : 'Full Name'}</td><td style="padding:4px 0;font-weight:bold">${name}</td></tr>
+          <tr><td style="padding:4px 0;color:#666">${isJa ? '署名日' : 'Date'}</td><td style="padding:4px 0">${date}</td></tr>
+          <tr><td style="padding:4px 0;color:#666">${isJa ? '受付番号' : 'Ref. No.'}</td><td style="padding:4px 0;font-family:monospace;font-weight:bold">${refNum}</td></tr>
+        </table>
+        <div>
+          <div style="font-size:10px;color:#666;margin-bottom:4px">${isJa ? '手書きサイン / Signature' : 'Handwritten Signature'}</div>
+          ${sigImg}
+        </div>
+      </div>
+      <!-- FOOTER -->
+      <div style="margin-top:14px;text-align:center;font-size:9.5px;color:#aaa;border-top:1px solid #eee;padding-top:10px">
+        Wawasan Global Support Limited — ${isJa ? '重要事項同意書' : 'Important Matters Consent Form'} — ${refNum}
+      </div>
+    </div>`;
+
+  // Loading overlay hides the render element from the user while keeping opacity:1
+  // so html2canvas can capture it correctly (opacity<1 causes blank output)
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:10000;display:flex;align-items:center;justify-content:center';
+  overlay.innerHTML = '<div style="background:#fff;border-radius:10px;padding:28px 36px;text-align:center;font-family:sans-serif"><div style="font-size:18px;margin-bottom:8px">📄</div><div style="font-size:15px;font-weight:bold;color:#1e2e52">PDFを生成中...</div><div style="font-size:12px;color:#666;margin-top:6px">Generating PDF...</div></div>';
+  document.body.appendChild(overlay);
+
+  const el = document.createElement('div');
+  el.style.cssText = 'position:fixed;left:0;top:0;width:720px;background:#fff;z-index:9998;pointer-events:none;overflow:visible';
+  el.innerHTML = html;
+  document.body.appendChild(el);
+
+  // Small delay ensures the DOM has painted before html2canvas captures
+  setTimeout(() => {
+    html2pdf().set({
+      margin:      [8, 8, 8, 8],
+      filename:    `WGS_重要事項同意書_${refNum}.pdf`,
+      image:       { type: 'jpeg', quality: 0.95 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+      jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:   { mode: ['css', 'legacy'] }
+    }).from(el).save().then(() => {
+      document.body.removeChild(el);
+      document.body.removeChild(overlay);
+    }).catch(() => {
+      document.body.removeChild(el);
+      document.body.removeChild(overlay);
+    });
+  }, 100);
+}
+
 applyLang();
 </script>
 </body>

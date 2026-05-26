@@ -911,13 +911,9 @@ const products = {
    FORM LOGIC
    ===================================================== */
 let selectedProduct = null;
+let lastBuiltProduct = null; // tracks which product the current articles belong to
 
 function selectProduct(key) {
-  if (selectedProduct !== key) {
-    // Clear old initials so they don't carry over to a different product
-    document.getElementById('articlesContainer').innerHTML = '';
-    document.getElementById('btn2Next').disabled = true;
-  }
   selectedProduct = key;
   document.querySelectorAll('.product-option').forEach(el => el.classList.remove('selected'));
   document.getElementById('opt-' + key).classList.add('selected');
@@ -937,10 +933,15 @@ function parseBody(text) {
 function buildArticles(product) {
   const container = document.getElementById('articlesContainer');
   const saved = {};
-  product.articles.forEach((_, i) => {
-    const el = document.getElementById('initial-' + i);
-    if (el) saved[i] = el.value;
-  });
+  // Only preserve initials when rebuilding the EXACT same product (e.g. language toggle).
+  // If the product changed, lastBuiltProduct differs → saved stays empty → fresh start.
+  if (lastBuiltProduct === selectedProduct) {
+    product.articles.forEach((_, i) => {
+      const el = document.getElementById('initial-' + i);
+      if (el) saved[i] = el.value;
+    });
+  }
+  lastBuiltProduct = selectedProduct;
 
   container.innerHTML = '';
   const initialLabel = lang === 'ja' ? 'イニシャルをご記入：' : 'Enter your initials:';

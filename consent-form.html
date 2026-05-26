@@ -78,10 +78,10 @@
     .article-body p:last-of-type{margin-bottom:0}
 
     /* INITIAL ROW */
-    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:12px 14px;border-radius:6px;background:#fff59d;border:2px solid #f9a825;flex-wrap:wrap}
+    .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 14px;border-radius:6px;background:#f9f9f9;border:1.5px dashed #bbb;flex-wrap:wrap}
     .initial-label{font-size:13px;color:#333;font-weight:600;white-space:nowrap}
-    .initial-input{border:2px solid #c4c4c4;border-radius:6px;padding:8px 12px;font-size:15px;width:110px;text-align:center;letter-spacing:3px;font-weight:bold;transition:border-color .2s}
-    .initial-input:focus{outline:none;border-color:#1e2e52;box-shadow:0 0 0 3px #b8c4d8}
+    .initial-input{border:2px solid #f9a825;border-radius:6px;padding:8px 12px;font-size:15px;width:110px;text-align:center;letter-spacing:3px;font-weight:bold;transition:border-color .2s;background:#fff59d}
+    .initial-input:focus{outline:none;border-color:#e67e00;box-shadow:0 0 0 3px #fde68a;background:#ffee00}
     .initial-hint{font-size:12px;color:#666;background:#eeeeee;padding:4px 10px;border-radius:4px}
     .initial-check{width:24px;height:24px;border-radius:50%;background:#d4d4d4;display:flex;align-items:center;justify-content:center;font-size:12px;color:#888;flex-shrink:0;transition:all .2s}
     .initial-check.filled{background:#1e2e52;color:#fff}
@@ -120,7 +120,7 @@
     .done-key{color:#888;min-width:80px}
     .pdf-btn{display:inline-block;margin-top:16px;padding:13px 32px;background:#fff;color:#1e2e52;border:2px solid #1e2e52;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;transition:all .2s;letter-spacing:.3px}
     .pdf-btn:hover{background:#eef1f8;transform:translateY(-1px)}
-    .pdf-warning{margin-top:10px;background:#fffbcc;border:1.5px solid #e8d800;border-radius:7px;padding:10px 14px;font-size:12px;color:#5a4a00;line-height:1.7;text-align:left}
+    .pdf-warning{margin-top:10px;background:#fff3cd;border:3px solid #ff6b00;border-radius:8px;padding:14px 18px;font-size:14px;font-weight:bold;color:#7d1a00;line-height:1.8;text-align:left}
     .restart-btn{display:inline-block;margin-top:14px;padding:10px 26px;background:#f0f0f0;color:#444;border:2px solid #ccc;border-radius:8px;font-size:14px;font-weight:bold;cursor:pointer;transition:all .2s}
     .restart-btn:hover{background:#e4e4e4}
 
@@ -1151,35 +1151,38 @@ function generatePDF() {
       </div>
     </div>`;
 
-  // Loading overlay hides the render element from the user while keeping opacity:1
-  // so html2canvas can capture it correctly (opacity<1 causes blank output)
+  // White overlay covers screen so user doesn't see content flash
   const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.65);z-index:10000;display:flex;align-items:center;justify-content:center';
-  overlay.innerHTML = '<div style="background:#fff;border-radius:10px;padding:28px 36px;text-align:center;font-family:sans-serif"><div style="font-size:18px;margin-bottom:8px">📄</div><div style="font-size:15px;font-weight:bold;color:#1e2e52">PDFを生成中...</div><div style="font-size:12px;color:#666;margin-top:6px">Generating PDF...</div></div>';
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.97);z-index:10000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px';
+  overlay.innerHTML = '<div style="font-size:36px">📄</div><div style="font-size:16px;font-weight:bold;color:#1e2e52">PDFを生成中...</div><div style="font-size:12px;color:#888">Generating PDF...</div>';
   document.body.appendChild(overlay);
 
-  const el = document.createElement('div');
-  el.style.cssText = 'position:fixed;left:0;top:0;width:720px;background:#fff;z-index:9998;pointer-events:none;overflow:visible';
-  el.innerHTML = html;
-  document.body.appendChild(el);
+  const savedScrollY = window.pageYOffset;
+  window.scrollTo(0, 0);
 
-  // Small delay ensures the DOM has painted before html2canvas captures
+  // position:relative (not fixed) — html2canvas can't reliably capture position:fixed elements
+  const el = document.createElement('div');
+  el.style.cssText = 'width:720px;background:#ffffff;position:relative;z-index:1;margin:0;padding:0;';
+  el.innerHTML = html;
+  document.body.prepend(el);
+
+  const cleanup = () => {
+    el.remove();
+    overlay.remove();
+    window.scrollTo(0, savedScrollY);
+  };
+
+  // 300ms delay ensures fonts and layout are fully rendered before capture
   setTimeout(() => {
     html2pdf().set({
-      margin:      [8, 8, 8, 8],
+      margin:      [10, 10, 10, 10],
       filename:    `WGS_重要事項同意書_${refNum}.pdf`,
-      image:       { type: 'jpeg', quality: 0.95 },
-      html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0 },
+      image:       { type: 'jpeg', quality: 0.92 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
       jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak:   { mode: ['css', 'legacy'] }
-    }).from(el).save().then(() => {
-      document.body.removeChild(el);
-      document.body.removeChild(overlay);
-    }).catch(() => {
-      document.body.removeChild(el);
-      document.body.removeChild(overlay);
-    });
-  }, 100);
+    }).from(el).save().then(cleanup).catch(cleanup);
+  }, 300);
 }
 
 applyLang();

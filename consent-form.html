@@ -666,7 +666,7 @@ const products = {
         title: { ja:'初期積立期間の制限と途中解約のリスク', en:'Initial Period Restrictions and Early Cancellation Risk' },
         body:  {
           ja:'【初期期間（イニシャルユニット期間）の制限】\nこの期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。またこの期間中に解約を希望された場合、解約返戻金が完全に「ゼロ」となるため、解約手続きはできません。未納を [[B:90日以上]] 続けることでプランステータスを「失効」させる方法のみとなります。\n※ 失効は解約と同等の扱いとなります。\n※ 解約手続きは解約返戻金額が [[B:一定金額以上]] ある場合のみ手続き可能です。\n【満期前の早期解約リスク】\n解約返戻金額は、イニシャルユニット期間（初期口座）の積立を終えた後、それ以降 [[B:アキュムレーションユニット（貯蓄口座）]] に積み立てた分が解約返戻金として積み上がっていきます。そのため、初期期間経過後であっても、満期前に解約した場合、運用状況と各種手数料の影響により、[[R:解約返戻金が著しく減少またはゼロとなる危険性があります。]]本プランは [[B:満期まで継続することを大前提]] としてお申し込みください。',
-          en:'[Initial Unit Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]]\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to investment performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
+          en:'[Initial Unit Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]]..\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to investment performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
         }
       },
       {
@@ -751,7 +751,7 @@ const products = {
         title: { ja:'初期積立期間の制限と途中解約のリスク', en:'Initial Period Restrictions and Early Cancellation Risk' },
         body:  {
           ja:'【初期期間の制限】\nこの期間中は、積立金額の減額・一部解約・一時停止を一切行うことができません。またこの期間中に解約を希望された場合、解約返戻金が完全に「ゼロ」となるため、解約手続きはできません。未納を [[B:90日以上]] 続けることでプランステータスを「失効」させる方法のみとなります。\n※ 失効は解約と同等の扱いとなります。\n※ 解約手続きは解約返戻金額が [[B:一定金額以上]] ある場合のみ手続き可能です。\n【満期前の早期解約リスク】\n解約返戻金額は、イニシャルユニット期間（初期口座）の積立を終えた後、それ以降 [[B:アキュムレーションユニット（貯蓄口座）]] に積み立てた分が解約返戻金として積み上がっていきます。そのため、初期期間経過後であっても、満期前に解約した場合、S&P500の運用状況と各種手数料の影響により、[[R:解約返戻金が著しく減少またはゼロとなる危険性があります。]]本プランは [[B:満期まで継続することを大前提]] としてお申し込みください。',
-          en:'[Initial Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]]\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to S&P500 performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
+          en:'[Initial Period Restrictions]\nDuring this period, no reduction of savings amount, partial cancellation, or temporary suspension is permitted under any circumstances. Furthermore, if you wish to cancel during this period, the surrender value will be completely ZERO, making a formal cancellation procedure impossible. The only option is to stop payments for [[B:90 or more days]] to allow the plan to lapse.\n※ A lapsed plan is treated as equivalent to cancellation.\n※ Cancellation procedures are only possible when the surrender value has accumulated above a [[B:certain minimum threshold.]]..\n[Early Cancellation Risk Before Maturity]\nThe surrender value accumulates after the Initial Unit Period (initial account) is completed. Contributions made thereafter go into the [[B:Accumulation Unit (savings account)]], which builds up as the surrender value. Therefore, even after the initial period ends, if cancelled before maturity, [[R:the refund amount may be significantly reduced or become zero]] due to S&P500 performance and accumulated fees. Please apply for this plan only with the [[B:clear intention of continuing until maturity.]]'
         }
       },
       {
@@ -974,6 +974,18 @@ const products = {
 };
 
 /* =====================================================
+   GOOGLE SHEETS INTEGRATION
+   ===================================================== */
+const GAS_URL = 'YOUR_SCRIPT_URL_HERE'; // ← Google Apps Script のウェブアプリURLをここに貼り付け
+
+function sendToSheet(data) {
+  if (!GAS_URL || GAS_URL === 'YOUR_SCRIPT_URL_HERE') return;
+  const params = new URLSearchParams();
+  params.append('d', JSON.stringify(data));
+  fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: params }).catch(() => {});
+}
+
+/* =====================================================
    FORM LOGIC
    ===================================================== */
 let selectedProduct = null;
@@ -1124,6 +1136,16 @@ function submitForm() {
       : `Your Important Matters Consent Form has been approved.\n\nReference No.: ${refNum}\nProduct: ${product}\nName: ${name}\nDate: ${date}\n\n--- Initialed Articles ---\n${initials}\n\nYour representative will contact you shortly.\nWawasan Global Support Limited`
   );
   window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
+
+  sendToSheet({
+    refNum,
+    product,
+    name,
+    email,
+    date,
+    timestamp: new Date().toLocaleString('ja-JP'),
+    initials: initials.replace(/\n/g, ' | ')
+  });
 
   document.getElementById('refNumber').textContent = refNum;
   document.getElementById('doneProduct').textContent = product;
@@ -1286,6 +1308,8 @@ function generatePDF() {
     }).from(el).save().then(cleanup).catch(cleanup);
   }, 300);
 }
+
+applyLang();
 </script>
 </body>
 </html>

@@ -1305,7 +1305,32 @@ function generatePDF() {
       html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
       jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak:   { mode: ['css', 'legacy'] }
-    }).from(el).save().then(cleanup).catch(cleanup);
+    }).from(el).output('blob').then(blob => {
+      // Trigger customer download
+      const dlUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = dlUrl;
+      a.download = `WGS_重要事項同意書_${refNum}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(dlUrl), 3000);
+
+      // Send same PDF to GAS → Google Drive
+      if (GAS_URL && GAS_URL !== 'YOUR_SCRIPT_URL_HERE') {
+        const reader = new FileReader();
+        reader.onload = function() {
+          const base64 = reader.result.split(',')[1];
+          const params = new URLSearchParams();
+          params.append('type', 'pdf');
+          params.append('d', JSON.stringify({ pdf: base64, filename: `WGS_重要事項同意書_${refNum}.pdf` }));
+          fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: params }).catch(() => {});
+        };
+        reader.readAsDataURL(blob);
+      }
+
+      cleanup();
+    }).catch(cleanup);
   }, 300);
 }
 

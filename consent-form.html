@@ -1136,16 +1136,6 @@ function submitForm() {
   );
   window.location.href = `mailto:${encodeURIComponent(email)}?subject=${subject}&body=${body}`;
 
-  sendToSheet({
-    refNum,
-    product,
-    name,
-    email,
-    date,
-    timestamp: new Date().toLocaleString('ja-JP'),
-    initials: initials.replace(/\n/g, ' | ')
-  });
-
   document.getElementById('refNumber').textContent = refNum;
   document.getElementById('doneProduct').textContent = product;
   document.getElementById('doneName').textContent = name;
@@ -1158,8 +1148,8 @@ function submitForm() {
   goToStep(4);
   applyLang();
 
-  // Auto-generate PDF in background → email to customer + save to Drive
-  setTimeout(() => autoGenerateAndSend(refNum, name, email, date, p, initialsArr, savedSigData), 1000);
+  // Auto-generate PDF → email to customer + save to Drive + record in Sheets
+  setTimeout(() => autoGenerateAndSend(refNum, name, email, date, p, initialsArr, savedSigData), 400);
 }
 
 function restartForm() {
@@ -1326,10 +1316,22 @@ function autoGenerateAndSend(refNum, name, email, date, p, initialsArr, sigData)
   const filename = `WGS_重要事項同意書_${refNum}.pdf`;
   const html = buildPdfHtml(p, refNum, name, date, isJa, initialsArr, sigData);
 
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.97);z-index:10000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px';
+  overlay.innerHTML = '<div style="font-size:36px">📧</div><div style="font-size:16px;font-weight:bold;color:#1e2e52">PDFを生成中...</div><div style="font-size:12px;color:#888">メールとドライブに自動保存しています</div>';
+  document.body.appendChild(overlay);
+
+  const savedScrollY = window.pageYOffset;
+  window.scrollTo(0, 0);
+
   const el = document.createElement('div');
-  el.style.cssText = 'width:720px;background:#ffffff;position:absolute;top:0;left:0;z-index:-1;pointer-events:none;';
+  el.style.cssText = 'width:720px;background:#ffffff;position:relative;z-index:1;margin:0;padding:0;';
   el.innerHTML = html;
   document.body.prepend(el);
+
+  const cleanup = () => { el.remove(); overlay.remove(); window.scrollTo(0, savedScrollY); };
+
+  const initials = initialsArr.map((v, i) => `${p.articles[i].num[isJa ? 'ja' : 'en']}: ${v}`).join(' | ');
 
   setTimeout(() => {
     html2pdf().set({
@@ -1340,18 +1342,24 @@ function autoGenerateAndSend(refNum, name, email, date, p, initialsArr, sigData)
       jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
       pagebreak:   { mode: ['css', 'legacy'] }
     }).from(el).output('blob').then(blob => {
-      el.remove();
+      cleanup();
       const reader = new FileReader();
       reader.onload = function() {
         const base64 = reader.result.split(',')[1];
         const params = new URLSearchParams();
         params.append('type', 'auto');
-        params.append('d', JSON.stringify({ pdf: base64, filename, email, name, refNum }));
+        params.append('d', JSON.stringify({
+          pdf: base64, filename, email, name, refNum,
+          product: p.name[isJa ? 'ja' : 'en'],
+          date,
+          timestamp: new Date().toLocaleString('ja-JP'),
+          initials
+        }));
         fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: params }).catch(() => {});
       };
       reader.readAsDataURL(blob);
-    }).catch(() => el.remove());
-  }, 800);
+    }).catch(cleanup);
+  }, 300);
 }
 
 applyLang();

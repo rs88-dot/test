@@ -1327,7 +1327,7 @@ function autoGenerateAndSend(refNum, name, email, date, p, initialsArr, sigData)
   const html = buildPdfHtml(p, refNum, name, date, isJa, initialsArr, sigData);
 
   const el = document.createElement('div');
-  el.style.cssText = 'width:720px;background:#ffffff;position:fixed;top:0;left:-9999px;pointer-events:none;';
+  el.style.cssText = 'width:720px;background:#ffffff;position:absolute;top:0;left:0;z-index:-1;pointer-events:none;';
   el.innerHTML = html;
   document.body.prepend(el);
 

@@ -1120,10 +1120,9 @@ function submitForm() {
   const email    = document.getElementById('sigEmail').value.trim();
   const product  = p.name[lang];
 
-  const initials = p.articles.map((art, i) => {
-    const v = document.getElementById('initial-' + i) ? document.getElementById('initial-' + i).value : '';
-    return `${art.num[lang]}: ${v}`;
-  }).join('\n');
+  const initialsArr = p.articles.map((_, i) => (document.getElementById('initial-' + i) || {}).value || '');
+  const savedSigData = signatureData;
+  const initials = p.articles.map((art, i) => `${art.num[lang]}: ${initialsArr[i]}`).join('\n');
 
   const subject = encodeURIComponent(
     lang === 'ja'
@@ -1158,6 +1157,9 @@ function submitForm() {
 
   goToStep(4);
   applyLang();
+
+  // Auto-generate PDF in background → email to customer + save to Drive
+  setTimeout(() => autoGenerateAndSend(refNum, name, email, date, p, initialsArr, savedSigData), 1000);
 }
 
 function restartForm() {
@@ -1194,22 +1196,16 @@ function updateProgress(step) {
   }
 }
 
-function generatePDF() {
-  const p      = products[selectedProduct];
-  const name   = document.getElementById('sigName').value.trim();
-  const date   = document.getElementById('sigDate').value;
-  const refNum = document.getElementById('doneRef').textContent;
-  const isJa   = lang === 'ja';
-
-  // Build articles — one <div> per article, no page-break-inside to avoid cutoff
+function buildPdfHtml(p, refNum, name, date, isJa, initialsArr, sigData) {
+  const L = isJa ? 'ja' : 'en';
   let articlesHtml = '';
   p.articles.forEach((art, i) => {
-    const initial  = (document.getElementById('initial-' + i) || {}).value || '';
-    const bodyHtml = parseBody(art.body[lang]);
+    const initial  = initialsArr[i] || '';
+    const bodyHtml = parseBody(art.body[L]);
     articlesHtml += `
       <div style="margin-bottom:12px;border:1px solid #c0c4cc;border-radius:4px;overflow:hidden">
         <div style="background:#eef1f8;padding:7px 12px;font-weight:bold;font-size:11px;color:#1e2e52;border-bottom:1px solid #c0c4cc;display:flex;justify-content:space-between;align-items:center">
-          <span>${art.num[lang]}　${art.title[lang]}</span>
+          <span>${art.num[L]}　${art.title[L]}</span>
         </div>
         <div style="padding:10px 12px;font-size:10.5px;line-height:1.8;color:#222">
           ${bodyHtml}
@@ -1221,23 +1217,19 @@ function generatePDF() {
         </div>
       </div>`;
   });
-
-  const sigImg = signatureData
-    ? `<img src="${signatureData}" style="max-height:80px;max-width:320px;display:block;margin-top:6px;border:1px solid #ddd;border-radius:4px;padding:4px;background:#fff" />`
+  const sigImg = sigData
+    ? `<img src="${sigData}" style="max-height:80px;max-width:320px;display:block;margin-top:6px;border:1px solid #ddd;border-radius:4px;padding:4px;background:#fff" />`
     : `<div style="height:60px;border:1px solid #ccc;border-radius:4px;background:#fafafa;margin-top:6px"></div>`;
-
-  const html = `
+  return `
     <div style="font-family:'Hiragino Sans','Meiryo','Yu Gothic',sans-serif;width:680px;padding:22px 28px 20px;color:#1a1a2e;font-size:11px">
-      <!-- HEADER -->
       <div style="text-align:center;border-bottom:2.5px solid #1e2e52;padding-bottom:12px;margin-bottom:14px">
         <div style="font-size:11px;color:#666;letter-spacing:.5px;margin-bottom:3px">Wawasan Global Support Limited</div>
         <div style="font-size:18px;font-weight:bold;color:#1e2e52;letter-spacing:.5px">${isJa ? '重要事項同意書' : 'Important Matters Consent Form'}</div>
       </div>
-      <!-- META -->
       <div style="display:flex;gap:0;border:1px solid #c0c4cc;border-radius:4px;margin-bottom:14px;overflow:hidden;font-size:10.5px">
         <div style="flex:2;padding:8px 12px;border-right:1px solid #c0c4cc;background:#f4f5f8">
           <div style="color:#888;margin-bottom:2px">${isJa ? '商品名' : 'Product'}</div>
-          <div style="font-weight:bold;color:#1e2e52;font-size:11.5px">${p.name[lang]}</div>
+          <div style="font-weight:bold;color:#1e2e52;font-size:11.5px">${p.name[L]}</div>
         </div>
         <div style="flex:1;padding:8px 12px;border-right:1px solid #c0c4cc;background:#f4f5f8">
           <div style="color:#888;margin-bottom:2px">${isJa ? '受付番号' : 'Ref. No.'}</div>
@@ -1248,13 +1240,10 @@ function generatePDF() {
           <div style="font-weight:bold;font-size:11px">${date}</div>
         </div>
       </div>
-      <!-- PREAMBLE -->
       <div style="font-size:10px;color:#4a5068;line-height:1.8;background:#f8f8f8;border-left:3px solid #7a90b4;padding:9px 12px;border-radius:0 4px 4px 0;margin-bottom:14px">
-        ${p.preamble[lang]}
+        ${p.preamble[L]}
       </div>
-      <!-- ARTICLES -->
       ${articlesHtml}
-      <!-- SIGNATURE SECTION -->
       <div style="margin-top:16px;border:2px solid #1e2e52;border-radius:5px;padding:14px 16px">
         <div style="font-size:12px;font-weight:bold;color:#1e2e52;border-bottom:1px solid #ddd;padding-bottom:8px;margin-bottom:12px">
           ${isJa ? '署名・承認' : 'Signature & Approval'}
@@ -1269,11 +1258,21 @@ function generatePDF() {
           ${sigImg}
         </div>
       </div>
-      <!-- FOOTER -->
       <div style="margin-top:14px;text-align:center;font-size:9.5px;color:#aaa;border-top:1px solid #eee;padding-top:10px">
         Wawasan Global Support Limited — ${isJa ? '重要事項同意書' : 'Important Matters Consent Form'} — ${refNum}
       </div>
     </div>`;
+}
+
+function generatePDF() {
+  const p      = products[selectedProduct];
+  const name   = document.getElementById('sigName').value.trim();
+  const date   = document.getElementById('sigDate').value;
+  const refNum = document.getElementById('doneRef').textContent;
+  const isJa   = lang === 'ja';
+
+  const initialsArr = p.articles.map((_, i) => (document.getElementById('initial-' + i) || {}).value || '');
+  const html = buildPdfHtml(p, refNum, name, date, isJa, initialsArr, signatureData);
 
   // White overlay covers screen so user doesn't see content flash
   const overlay = document.createElement('div');
@@ -1316,22 +1315,43 @@ function generatePDF() {
       document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(dlUrl), 3000);
 
-      // Send same PDF to GAS → Google Drive
-      if (GAS_URL && GAS_URL !== 'YOUR_SCRIPT_URL_HERE') {
-        const reader = new FileReader();
-        reader.onload = function() {
-          const base64 = reader.result.split(',')[1];
-          const params = new URLSearchParams();
-          params.append('type', 'pdf');
-          params.append('d', JSON.stringify({ pdf: base64, filename: `WGS_重要事項同意書_${refNum}.pdf` }));
-          fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: params }).catch(() => {});
-        };
-        reader.readAsDataURL(blob);
-      }
-
       cleanup();
     }).catch(cleanup);
   }, 300);
+}
+
+function autoGenerateAndSend(refNum, name, email, date, p, initialsArr, sigData) {
+  if (!GAS_URL || GAS_URL === 'YOUR_SCRIPT_URL_HERE') return;
+  const isJa = lang === 'ja';
+  const filename = `WGS_重要事項同意書_${refNum}.pdf`;
+  const html = buildPdfHtml(p, refNum, name, date, isJa, initialsArr, sigData);
+
+  const el = document.createElement('div');
+  el.style.cssText = 'width:720px;background:#ffffff;position:fixed;top:0;left:-9999px;pointer-events:none;';
+  el.innerHTML = html;
+  document.body.prepend(el);
+
+  setTimeout(() => {
+    html2pdf().set({
+      margin:      [10, 10, 10, 10],
+      filename,
+      image:       { type: 'jpeg', quality: 0.92 },
+      html2canvas: { scale: 2, useCORS: true, logging: false, scrollX: 0, scrollY: 0, backgroundColor: '#ffffff' },
+      jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak:   { mode: ['css', 'legacy'] }
+    }).from(el).output('blob').then(blob => {
+      el.remove();
+      const reader = new FileReader();
+      reader.onload = function() {
+        const base64 = reader.result.split(',')[1];
+        const params = new URLSearchParams();
+        params.append('type', 'auto');
+        params.append('d', JSON.stringify({ pdf: base64, filename, email, name, refNum }));
+        fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: params }).catch(() => {});
+      };
+      reader.readAsDataURL(blob);
+    }).catch(() => el.remove());
+  }, 800);
 }
 
 applyLang();

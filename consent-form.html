@@ -112,11 +112,11 @@
     .complete-section h2{font-size:22px;color:#161f33;margin-bottom:14px;font-weight:700}
     .complete-ref{display:inline-block;background:#f4f4f4;border-radius:8px;padding:12px 28px;font-size:18px;color:#333;font-family:monospace;margin:16px 0;letter-spacing:2px;font-weight:bold;border:1px solid #d4d4d4}
     .email-sent-note{font-size:13px;color:#666;margin-bottom:10px}
-    .next-steps-box{background:#f8f6f0;border:2px solid #c4b070;border-radius:10px;padding:20px 24px;margin:24px 0 0;text-align:center}
-    .next-steps-box strong{color:#4a3810;display:block;margin-bottom:10px;font-size:16px}
-    .next-steps-box p{font-size:15px;color:#4a3810;line-height:1.9}
-    .return-btn-wrap{margin-top:14px}
-    .return-btn{display:inline-block;padding:13px 32px;background:#1e2e52;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:bold;cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:.3px}
+    .next-steps-box{background:#fff8e1;border:4px solid #e6a000;border-radius:14px;padding:36px 32px;margin:28px 0 0;text-align:center;box-shadow:0 4px 20px rgba(230,160,0,.15)}
+    .next-steps-box strong{color:#7d4500;display:block;margin-bottom:16px;font-size:24px;letter-spacing:.3px}
+    .next-steps-box p{font-size:20px;color:#5a3000;line-height:1.9;font-weight:600}
+    .return-btn-wrap{margin-top:20px}
+    .return-btn{display:inline-block;padding:18px 48px;background:#1e2e52;color:#fff;border:none;border-radius:10px;font-size:18px;font-weight:bold;cursor:pointer;text-decoration:none;transition:all .2s;letter-spacing:.3px}
     .return-btn:hover{background:#263a6a;transform:translateY(-1px);color:#fff}
     .done-box{background:#f8f8f8;border:1px solid #d4d4d4;border-radius:8px;padding:18px 22px;margin-top:20px;text-align:left}
     .done-box strong{color:#333;display:block;margin-bottom:10px;font-size:14px}
@@ -215,10 +215,10 @@
       .complete-ref{font-size:15px;padding:10px 18px;letter-spacing:1px}
       .pdf-warning{font-size:14px;padding:12px 14px}
       .pdf-btn{width:100%;font-size:14px;padding:12px 20px}
-      .next-steps-box{padding:16px 14px}
-      .next-steps-box strong{font-size:14px}
-      .next-steps-box p{font-size:14px}
-      .return-btn{width:100%;display:block;text-align:center;padding:12px 16px;font-size:14px;box-sizing:border-box}
+      .next-steps-box{padding:24px 16px}
+      .next-steps-box strong{font-size:20px}
+      .next-steps-box p{font-size:17px}
+      .return-btn{width:100%;display:block;text-align:center;padding:16px 16px;font-size:16px;box-sizing:border-box}
       .done-box{padding:12px 12px}
       .done-row{flex-direction:column;gap:2px;margin-bottom:10px}
       .done-key{min-width:unset;font-size:12px}
@@ -418,7 +418,7 @@
       <div class="complete-ref" id="refNumber"></div>
 
       <div class="pdf-warning" id="doneMsg2">
-        回答の控えは下記より必ずダウンロードください。<br>一度画面を閉じますとダウンロードできなくなります。
+        ご指定のメールアドレスに回答の控えが届いておりますのでご確認ください
       </div>
       <button class="pdf-btn" id="pdfBtn" onclick="generatePDF()">📄 PDFをダウンロード</button>
 
@@ -488,7 +488,7 @@ const T = {
   btn3Text:        { ja:'✓ 同意して承認する', en:'✓ Agree & Approve' },
   doneTitle:       { ja:'承認が完了しました', en:'Approval Complete' },
   doneMsg1:        { ja:'重要事項同意書へのご同意ありがとうございます。以下の受付番号をお控えください。', en:'Thank you for completing the Important Matters Consent Form. Please save the reference number below.' },
-  doneMsg2:        { ja:'回答の控えは下記より必ずダウンロードください。<br>一度画面を閉じますとダウンロードできなくなります。', en:'Please download your copy using the button below.<br>Once this page is closed, the PDF will no longer be available.' },
+  doneMsg2:        { ja:'ご指定のメールアドレスに回答の控えが届いておりますのでご確認ください', en:'A copy of your consent form has been sent to your email address. Please check your inbox.' },
   nextStepsTitle:  { ja:'📋 次のステップ', en:'📋 Next Steps' },
   nextStepsText:   { ja:'お申し込みフォームに戻ってご入力をお続けください。ご不明な点は担当者までお問い合わせください。', en:'Please return to the application form to continue. If you have any questions, please contact your representative.' },
   returnBtn:       { ja:'📝 お申し込みフォームに戻る →', en:'📝 Return to Application Form →' },

@@ -131,14 +131,15 @@
     /* SIGNATURE PAD */
     .sig-pad-section{margin-bottom:24px}
     .sig-pad-section label{display:block;font-size:13px;font-weight:700;color:#333;margin-bottom:7px}
-    .sig-pad-wrap{position:relative;border:2px solid #c4c4c4;border-radius:8px;overflow:hidden;background:#fafafa;transition:border-color .2s}
-    .sig-pad-wrap.active{border-color:#1e2e52}
+    .sig-pad-wrap{position:relative;border:2px solid #e53e3e;border-radius:8px;overflow:hidden;background:#fff8f8;transition:border-color .2s,background .2s}
+    .sig-pad-wrap.active{border-color:#1e2e52;background:#fafafa}
+    .sig-pad-wrap.signed{border-color:#1e7d52;background:#f0fff4}
     .sig-canvas{display:block;width:100%;height:160px;cursor:crosshair;touch-action:none}
     .sig-pad-actions{display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:#f4f4f4;border-top:1px solid #ddd}
     .sig-clear-btn{padding:5px 14px;font-size:12px;background:#fff;border:1.5px solid #ccc;border-radius:5px;cursor:pointer;color:#555;font-weight:600}
     .sig-clear-btn:hover{background:#eee}
-    .sig-status{font-size:11px;color:#888}
-    .sig-status.done{color:#1e2e52;font-weight:bold}
+    .sig-status{font-size:12px;color:#c0392b;font-weight:600}
+    .sig-status.done{color:#1e7d52;font-weight:bold}
     .sig-pad-hint{font-size:11px;color:#888;margin-top:5px}
 
     /* BUTTONS */
@@ -502,7 +503,7 @@ const T = {
   pdfWarning:      { ja:'⚠️ 書類で保管を希望される場合は、この画面を閉じる前に必ずダウンロードしてください。<br>この画面を閉じるとダウンロードができなくなります。', en:'⚠️ If you wish to keep a copy, please download before closing this screen.<br>The PDF will not be available after this page is closed.' },
   labelSig:        { ja:'手書きサイン', en:'Handwritten Signature' },
   sigClearBtn:     { ja:'クリア / Clear', en:'Clear' },
-  sigStatusEmpty:  { ja:'未記入', en:'Not signed' },
+  sigStatusEmpty:  { ja:'✏ 未記入（必須）', en:'✏ Required — not signed' },
   sigStatusDone:   { ja:'✓ 署名済み', en:'✓ Signed' },
   sigPadHint:      { ja:'※ iPad・スマートフォンは指で、PCはマウスでサインしてください', en:'※ Sign with your finger on iPad/smartphone, or mouse on PC' },
   noticeText:      { ja:'各条項をよくお読みいただき、ご理解・ご同意いただけた場合に、各条項の入力欄にローマ字でイニシャルをご記入ください。<strong>すべての条項へのご記入が必要です。</strong>',
@@ -615,9 +616,11 @@ function initSignaturePad() {
 
 function updateSigStatus(signed) {
   const el = document.getElementById('sigStatus');
+  const wrap = document.getElementById('sigPadWrap');
   if (!el) return;
   el.textContent = signed ? T.sigStatusDone[lang] : T.sigStatusEmpty[lang];
   el.className = 'sig-status' + (signed ? ' done' : '');
+  if (wrap) wrap.classList.toggle('signed', signed);
 }
 
 function clearSignature() {

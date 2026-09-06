@@ -57,7 +57,7 @@
     .badge-fip{background:#d4e0d4;color:#183018}
     .badge-platinum{background:#dcd4e4;color:#281840}
     .badge-platinumselect{background:#e8dcc8;color:#3d2b0a}
-    .badge-sp500evo{background:#d4e4e0;color:#0f3d2e}
+    .badge-ridercombo{background:#d4e4e0;color:#0f3d2e}
     .product-name{font-size:15px;font-weight:bold;color:#1a1a2e;line-height:1.4}
     .check-icon{position:absolute;top:14px;right:14px;width:24px;height:24px;border-radius:50%;background:#1e2e52;color:#fff;display:none;align-items:center;justify-content:center;font-size:12px}
     .product-option.selected .check-icon{display:flex}
@@ -317,11 +317,11 @@
         <div class="product-name" id="name-platinumselect">プラチナセレクト（一括変動型）</div>
       </label>
 
-      <label class="product-option" id="opt-sp500evo" onclick="selectProduct('sp500evo')">
-        <input type="radio" name="product" value="sp500evo">
+      <label class="product-option" id="opt-ridercombo" onclick="selectProduct('ridercombo')">
+        <input type="radio" name="product" value="ridercombo">
         <div class="check-icon">✓</div>
-        <div class="product-type-badge badge-sp500evo" id="tag-sp500evo">追加確認書</div>
-        <div class="product-name" id="name-sp500evo">S&amp;P500＋Evolution（組み合わせ追加確認書）</div>
+        <div class="product-type-badge badge-ridercombo" id="tag-ridercombo">追加確認書</div>
+        <div class="product-name" id="name-ridercombo">基本契約＋ライダー契約（組み合わせ追加確認書）</div>
       </label>
     </div>
 
@@ -480,8 +480,8 @@ const T = {
   'name-fip':           { ja:'確定利回りポートフォリオ（一括確定型）', en:'Fixed Yield Portfolio (Lump-sum Fixed Type)' },
   'name-platinum':      { ja:'プラチナプラス（一括変動型）',   en:'Platinum Plus (Lump-sum Variable Type)' },
   'name-platinumselect':{ ja:'プラチナセレクト（一括変動型）', en:'Platinum Select (Lump-sum Variable Type)' },
-  'tag-sp500evo':       { ja:'追加確認書',    en:'Additional Confirmation' },
-  'name-sp500evo':      { ja:'S&P500＋Evolution（組み合わせ追加確認書）', en:'S&P500 + Evolution (Combined Confirmation)' },
+  'tag-ridercombo':     { ja:'追加確認書',    en:'Additional Confirmation' },
+  'name-ridercombo':    { ja:'基本契約＋ライダー契約（組み合わせ追加確認書）', en:'Base Contract + Rider Contract (Combined Confirmation)' },
   btn1Text:        { ja:'次へ：重要事項を確認する →', en:'Next: Review Important Matters →' },
   btn2Back:        { ja:'← 商品を選び直す', en:'← Change Product' },
   btn2Text:        { ja:'次へ：署名・承認へ →', en:'Next: Sign & Approve →' },
@@ -985,54 +985,54 @@ const products = {
     ]
   },
 
-  sp500evo: {
-    key: 'sp500evo',
-    name:  { ja:'S&P500＋Evolution（組み合わせ追加確認書）', en:'S&P500 + Evolution (Combined Confirmation)' },
-    label: { ja:'組み合わせ契約 — S&P500 + Evolution', en:'Combined Contract — S&P500 + Evolution' },
-    title: { ja:'基本ベース契約 S&P500インデックス＋ライダー契約Evolutionに関する追加確認書', en:'Additional Confirmation — S&P500 Index (Base Contract) + Evolution (Rider Contract)' },
+  ridercombo: {
+    key: 'ridercombo',
+    name:  { ja:'基本契約＋ライダー契約（組み合わせ追加確認書）', en:'Base Contract + Rider Contract (Combined Confirmation)' },
+    label: { ja:'組み合わせ契約 — 基本契約＋ライダー契約', en:'Combined Contract — Base + Rider' },
+    title: { ja:'基本ベース契約商品＋ライダー契約商品に関する追加確認書', en:'Additional Confirmation — Base Contract Product + Rider Contract Product' },
     preamble: {
-      ja:'本確認書は、Investors Trustの基本ベース契約「S&P500インデックス」とライダー契約「Evolution」を組み合わせてお申し込みいただく際に、両契約の関係性および制限事項を明確にお伝えするための追加の重要事項確認書です。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。なお、申込手続をレポートするために閲覧・取得するお客様個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',
-      en:'This is an additional Important Matters Confirmation Form clarifying the relationship between, and restrictions applicable to, the Investors Trust base contract "S&P500 Index" and the rider contract "Evolution" when applied for together. Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article. Any customer personal information viewed or obtained to report on this application process will not be used for any purpose other than the application process itself and guidance on similar products.'
+      ja:'本確認書は、積立型商品全般において、基本ベース契約商品とライダー契約商品を組み合わせてお申し込みいただく際に、両契約の関係性および制限事項を明確にお伝えするための追加の重要事項確認書です。各条項の入力欄にローマ字でご自身のイニシャル（例：山田 太郎さんの場合は T.Y）をご記入ください。なお、申込手続をレポートするために閲覧・取得するお客様個人情報は、当該申込手続ならびに類似商品のご案内以外で使用することは一切致しません。',
+      en:'This is an additional Important Matters Confirmation Form that applies generally to savings-type products, clarifying the relationship between, and restrictions applicable to, a base contract product and a rider contract product when applied for together. Please enter your initials in Roman letters (e.g. T.Y for Taro Yamada) in the box for each article. Any customer personal information viewed or obtained to report on this application process will not be used for any purpose other than the application process itself and guidance on similar products.'
     },
     articles: [
       {
         num:   { ja:'第1条', en:'Article 1' },
         title: { ja:'サポートの範囲および自己責任の原則', en:'Scope of Support / Principle of Self-Responsibility' },
         body:  {
-          ja:'貴社（Wawasan Global Support Limited）は、私が求める情報の提供と事務サポート、事務代行のみを行うサービス会社であることを理解しております。[[R:上記を十分理解して自らの意思に基づき申込を行い、投資が自己責任であることを理解し、その上で取組いたします。]]',
-          en:'I understand that your company (Wawasan Global Support Limited) is a service company that only provides the information and administrative support / agency services I request. [[R:Having fully understood the above, I apply based on my own free will, understand that the investment is my own responsibility, and proceed on that basis.]]'
+          ja:'貴社は、私が求める情報の提供と事務サポート、事務代行のみを行うサービス会社であることを理解しております。[[R:上記を十分理解して自らの意思に基づき申込を行い、投資が自己責任であることを理解し、その上で取組いたします。]]',
+          en:'I understand that your company is a service company that only provides the information and administrative support / agency services I request. [[R:Having fully understood the above, I apply based on my own free will, understand that the investment is my own responsibility, and proceed on that basis.]]'
         }
       },
       {
         num:   { ja:'第2条', en:'Article 2' },
-        title: { ja:'基本ベース契約とライダー契約の内容理解', en:'Understanding of the Base Contract and the Rider Contract' },
+        title: { ja:'基本ベース契約商品とライダー契約商品の内容理解', en:'Understanding of the Base Contract Product and the Rider Contract Product' },
         body:  {
-          ja:'［Investors Trust　基本ベース契約 S&P500インデックス＋ライダー契約 Evolution について］\n私は、別紙 S&P500インデックスと Evolution それぞれの確認書を読み、商品の内容について理解しております。',
-          en:'[Investors Trust: Base Contract S&P500 Index + Rider Contract Evolution]\nI have read the separate confirmation documents for both S&P500 Index and Evolution, and understand the details of each product.'
+          ja:'私は、別紙の基本ベース契約商品およびライダー契約商品それぞれの確認書を読み、商品の内容について理解しております。',
+          en:'I have read the separate confirmation documents for both the base contract product and the rider contract product, and understand the details of each product.'
         }
       },
       {
         num:   { ja:'第3条', en:'Article 3' },
-        title: { ja:'ライダー契約プラン費の免除', en:'Waiver of Rider Contract Plan Fee' },
+        title: { ja:'ライダー契約商品の費用免除', en:'Waiver of Rider Contract Product Fees' },
         body:  {
-          ja:'ライダー契約での Evolution プラン費 [[B:7 USD]] は、基本ベース契約 S&P500インデックスの契約期間中のみ免除されることを理解しております。',
-          en:'I understand that the Evolution plan fee of [[B:USD 7]] under the rider contract is waived only during the contract period of the base contract, S&P500 Index.'
+          ja:'ライダー契約商品にプラン費等の費用が定められている場合、当該費用は、基本ベース契約の契約期間中のみ免除されることを理解しております。',
+          en:'I understand that where the rider contract product carries fees such as a plan fee, such fees are waived only during the contract period of the base contract.'
         }
       },
       {
         num:   { ja:'第4条', en:'Article 4' },
         title: { ja:'基本ベース契約とライダー契約の一体性に関する規定', en:'Regulations on the Linkage Between the Base and Rider Contracts' },
         body:  {
-          ja:'ライダー契約は、商品以外は基本ベース契約の情報と一致していることが前提になります為、以下を理解しております。\n・年払い、月払い、カードの種類など、支払い方法を分けることができないことを理解しております。\n・[[R:片方だけの譲渡は不可能であることを理解しております。]]\n・[[R:片方のみ積立を一時停止することはできないことを十分理解しております。]]',
-          en:'Since the rider contract is premised on all information other than the product itself matching that of the base contract, I understand the following:\n・Payment methods (annual/monthly payment, card type, etc.) cannot be set differently between the two contracts.\n・[[R:Transferring only one of the two contracts is not possible.]]\n・[[R:Suspending contributions for only one of the two contracts is not possible.]]'
+          ja:'ライダー契約は、商品以外は基本ベース契約の情報と一致していることが前提になります為、以下を理解しております。\n・年払い、月払い、カードの種類など、ベースとライダーで支払い方法を分けることができないことを理解しております。\n・[[R:ベースとライダーの片方だけの譲渡は不可能であることを理解しております。]]\n・[[R:ベースとライダーの片方のみ積立を一時停止することはできないことを十分理解しております。]]',
+          en:'Since the rider contract is premised on all information other than the product itself matching that of the base contract, I understand the following:\n・Payment methods (annual/monthly payment, card type, etc.) cannot be set differently between the base and the rider.\n・[[R:Transferring only one of the base or the rider is not possible.]]\n・[[R:Suspending contributions for only one of the base or the rider is not possible.]]'
         }
       },
       {
         num:   { ja:'第5条', en:'Article 5' },
         title: { ja:'解約・減額に関する規定', en:'Regulations on Cancellation and Reduction' },
         body:  {
-          ja:'基本ベース契約、ライダー契約は、それぞれイニシャルユニット期間終了後、かつ解約返戻金額がある場合、単独で完全解約、一部引出（一部解約）が可能です。また、イニシャルユニット期間が終了すれば、それぞれ単独で積立金額の減額も可能です。[[R:但し、契約期間中は、減額や一部引出し（一部解約）などをせずに、契約時に決めた積立金額で積立期間満了まで積立を継続することが最善だと理解しております。]]\n※いずれか一方のみがイニシャルユニット期間終了などの条件を満たしていても、もう一方には適用されません。\n※一部引出し（一部解約）の条件については、別紙 S&P500インデックスと Evolution それぞれの確認書を読み、理解しております。',
-          en:'Each of the base contract and the rider contract may independently be fully cancelled or partially withdrawn (partially cancelled) after its own Initial Unit Period ends and provided a surrender value exists. Once the Initial Unit Period ends, the contribution amount for each may also independently be reduced. [[R:However, I understand that it is best to continue contributions at the amount decided at contract inception, without reduction or partial withdrawal (partial cancellation), until the end of the savings period.]]\n※ Even if only one of the two contracts satisfies conditions such as the end of the Initial Unit Period, this does not apply to the other contract.\n※ Regarding the conditions for partial withdrawal (partial cancellation), I have read and understood the separate confirmation documents for both S&P500 Index and Evolution.'
+          ja:'基本ベース契約、ライダー契約は、それぞれイニシャルユニット期間終了後、かつ解約返戻金額がある場合、単独で完全解約、一部引出（一部解約）が可能です。また、イニシャルユニット期間が終了すれば、それぞれ単独で積立金額の減額も可能です。[[R:但し、契約期間中は、減額や一部引出し（一部解約）などをせずに、契約時に決めた積立金額で積立期間満了まで積立を継続することが最善だと理解しております。]]\n※いずれか一方のみがイニシャルユニット期間終了などの条件を満たしていても、もう一方には適用されません。\n※一部引出し（一部解約）の条件については、別紙　基本ベース契約商品およびライダー契約商品それぞれの確認書を読み、理解しております。',
+          en:'Each of the base contract and the rider contract may independently be fully cancelled or partially withdrawn (partially cancelled) after its own Initial Unit Period ends and provided a surrender value exists. Once the Initial Unit Period ends, the contribution amount for each may also independently be reduced. [[R:However, I understand that it is best to continue contributions at the amount decided at contract inception, without reduction or partial withdrawal (partial cancellation), until the end of the savings period.]]\n※ Even if only one of the two contracts satisfies conditions such as the end of the Initial Unit Period, this does not apply to the other contract.\n※ Regarding the conditions for partial withdrawal (partial cancellation), I have read and understood the separate confirmation documents for both the base contract product and the rider contract product.'
         }
       }
     ]

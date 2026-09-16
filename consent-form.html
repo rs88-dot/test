@@ -82,6 +82,9 @@
     .article-body{padding:16px 18px;font-size:14px;color:#333;line-height:1.9}
     .article-body p{margin-bottom:8px}
     .article-body p:last-of-type{margin-bottom:0}
+    .article-diagram{margin:14px 0 8px;padding:14px 14px 12px;background:#fafafa;border:1px solid #e0e0e0;border-radius:8px}
+    .article-diagram-title{font-size:12px;font-weight:700;color:#555;margin-bottom:8px}
+    .article-diagram svg{display:block;width:100%;height:auto;max-width:600px;margin:0 auto}
 
     /* INITIAL ROW */
     .initial-row{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 14px;border-radius:6px;background:#f9f9f9;border:1.5px dashed #bbb;flex-wrap:wrap}
@@ -1036,6 +1039,62 @@ const products = {
         body:  {
           ja:'ライダー契約を追加する場合、[[R:ベース契約とライダー契約のお支払い時期をそろえる必要があります。]]\nそのため、ライダー契約のお申込み時期によっては、[[R:ライダー契約分だけでなく、ベース契約分を含めた金額や、次回支払日までの残り期間分をまとめてお支払いいただく場合があります。]]\n\n＜毎月払いの例＞\nベース契約：月額200USD\nライダー契約：月額200USD\nライダー契約成立時に、お支払い時期をそろえるため、200USD＋200USD＝合計400USDが請求される場合があります。\n\n＜年間払いの例＞\nベース契約：月額200USDを1年分先払い済み\nライダー契約：月額300USDを追加\nベース契約の次回支払日まで11か月ある場合、300USD×11か月＝3,300USDをまとめてお支払いいただく場合があります。\n\n[[R:私は、ライダー契約の追加時に、お支払い時期をそろえるため、申込時に表示された金額とは異なる金額や、複数月分をまとめた金額が請求される場合があることを確認し、同意します。]]',
           en:'When adding a rider contract, [[R:the payment timing of the base contract and the rider contract must be aligned.]]\nAs a result, depending on when you apply for the rider contract, [[R:you may be required to pay not only the rider contract amount but also an amount that includes the base contract, or a combined amount covering the remaining period until the next payment due date.]]\n\n<Example: Monthly Payment>\nBase contract: USD 200/month\nRider contract: USD 200/month\nWhen the rider contract is established, to align the payment timing, you may be billed USD 200 + USD 200 = USD 400 in total.\n\n<Example: Annual Payment>\nBase contract: USD 200/month, one year already prepaid\nRider contract: USD 300/month added\nIf there are 11 months remaining until the base contract\'s next payment due date, you may be billed USD 300 × 11 months = USD 3,300 in a single combined payment.\n\n[[R:I confirm and agree that, when adding a rider contract, in order to align the payment timing, an amount different from the amount displayed at application, or a combined amount covering multiple months, may be charged.]]'
+        },
+        diagram: {
+          ja: `<div class="article-diagram">
+            <div class="article-diagram-title">図：お支払い日をそろえるイメージ（毎月払いの例）</div>
+            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="お支払い日をそろえるイメージ図">
+              <defs>
+                <marker id="wgsArrowJa" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
+                </marker>
+              </defs>
+              <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
+              <text x="80" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">ベース契約</text>
+              <text x="80" y="42" text-anchor="middle" font-size="10.5" fill="#888">毎月1日・200USD</text>
+              <circle cx="80" cy="95" r="9" fill="#1e2e52"/>
+              <text x="80" y="118" text-anchor="middle" font-size="10.5" fill="#555">1日</text>
+              <text x="300" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">ライダー契約 加入</text>
+              <text x="300" y="42" text-anchor="middle" font-size="10.5" fill="#888">本来なら15日・200USD</text>
+              <circle cx="300" cy="95" r="9" fill="#fff" stroke="#0f3d2e" stroke-width="2" stroke-dasharray="3,2"/>
+              <text x="300" y="118" text-anchor="middle" font-size="10.5" fill="#888">（15日）</text>
+              <path d="M306,103 Q410,150 512,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowJa)"/>
+              <text x="410" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">お支払い日をそろえる</text>
+              <text x="530" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">次回お支払い日</text>
+              <text x="530" y="42" text-anchor="middle" font-size="10.5" fill="#888">1日にそろえて請求</text>
+              <circle cx="530" cy="95" r="11" fill="#1e2e52"/>
+              <text x="530" y="118" text-anchor="middle" font-size="10.5" fill="#555">1日</text>
+              <rect x="488" y="128" width="84" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
+              <text x="530" y="144" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">合計400USD</text>
+            </svg>
+          </div>`,
+          en: `<div class="article-diagram">
+            <div class="article-diagram-title">Diagram: Aligning Payment Dates (Monthly Payment Example)</div>
+            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram of aligning payment dates">
+              <defs>
+                <marker id="wgsArrowEn" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
+                </marker>
+              </defs>
+              <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
+              <text x="90" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Base Contract</text>
+              <text x="90" y="42" text-anchor="middle" font-size="10.5" fill="#888">1st of month, USD 200</text>
+              <circle cx="90" cy="95" r="9" fill="#1e2e52"/>
+              <text x="90" y="118" text-anchor="middle" font-size="10.5" fill="#555">1st</text>
+              <text x="300" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">Rider Contract Joins</text>
+              <text x="300" y="42" text-anchor="middle" font-size="10.5" fill="#888">Would be 15th, USD 200</text>
+              <circle cx="300" cy="95" r="9" fill="#fff" stroke="#0f3d2e" stroke-width="2" stroke-dasharray="3,2"/>
+              <text x="300" y="118" text-anchor="middle" font-size="10.5" fill="#888">(15th)</text>
+              <path d="M306,103 Q410,150 512,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowEn)"/>
+              <text x="410" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">Align payment date</text>
+              <text x="530" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Next Payment Date</text>
+              <text x="530" y="42" text-anchor="middle" font-size="10.5" fill="#888">Billed together on the 1st</text>
+              <circle cx="530" cy="95" r="11" fill="#1e2e52"/>
+              <text x="530" y="118" text-anchor="middle" font-size="10.5" fill="#555">1st</text>
+              <rect x="486" y="128" width="88" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
+              <text x="530" y="144" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">USD 400 total</text>
+            </svg>
+          </div>`
         }
       },
       {
@@ -1127,6 +1186,7 @@ function buildArticles(product) {
       </div>
       <div class="article-body">
         ${parseBody(art.body[lang])}
+        ${art.diagram ? art.diagram[lang] : ''}
         <div class="initial-row">
           <span class="initial-label">${initialLabel}</span>
           <input class="initial-input" type="text" maxlength="6" placeholder="T.Y"

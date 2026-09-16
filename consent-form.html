@@ -1037,106 +1037,120 @@ const products = {
         num:   { ja:'第5条', en:'Article 5' },
         title: { ja:'お支払い時期の調整について', en:'Alignment of Payment Timing' },
         body:  {
-          ja:'ライダー契約を追加する場合、[[R:ベース契約とライダー契約のお支払い時期をそろえる必要があります。]]\nライダー契約が成立した時点で、ベース契約の次回お支払い日をまだ迎えていない場合は、[[R:その時点でベース契約分とライダー契約分を合算してお支払いいただき、それ以降はベース契約のもともとのお支払い日に合算してご請求します（パターンA）。]]\n一方、ライダー契約が成立した時点で、ベース契約の直近のお支払いがすでに完了している場合は、[[R:ライダー契約分のみをその時点でお支払いいただき、ベース契約の次回お支払い日から合算してご請求します（パターンB）。]]\n\n＜例1：同月に続けてベース＆ライダーお申込み（パターンB）＞\nベース契約：4月10日に成立、200USD決済\nライダー契約：4月20日に成立、200USD決済\n→ 翌月5月10日に、合算した400USDが決済されます\n\n＜例2：月をまたいで続けてベース＆ライダーお申込み（パターンA）＞\nベース契約：3月25日に成立、200USD決済\nライダー契約：4月11日に成立、ライダー契約分200USDとベース契約分200USDを合わせた400USDが決済されます（4月はこれ以降の課金はありません）\n→ 翌月5月25日に、合算した400USDが決済されます\n\n＜例3：期間をあけてベース＆ライダーお申込み・ベースの支払日が先に到来する場合（パターンB）＞\nベース契約：3月5日に成立、200USD決済\n→ 翌月4月5日に200USDが決済されます\nライダー契約：4月10日に成立、200USD決済\n→ 翌月5月5日に、合算した400USDが決済されます\n\n＜例4：期間をあけてベース＆ライダーお申込み・ライダー成立時点でベースの次回支払日が未到来の場合（パターンA）＞\nベース契約：3月10日に成立、200USD決済\nライダー契約：4月5日に成立、ライダー契約分200USDとベース契約分200USDを合わせた400USDが決済されます（4月はこれ以降の課金はありません）\n→ 翌月5月10日に、合算した400USDが決済されます\n\n[[R:私は、ライダー契約の追加時に、お支払い時期をそろえるため、上記のとおりライダー契約成立時点でのベース契約のお支払い状況に応じて、申込時に表示された金額とは異なる金額や、複数月分をまとめた金額が請求される場合があることを確認し、同意します。]]',
-          en:'When adding a rider contract, [[R:the payment timing of the base contract and the rider contract must be aligned.]]\nIf the base contract\'s next payment due date has not yet arrived at the time the rider contract is established, [[R:the base contract amount and the rider contract amount are combined and charged at that time, and from then on the combined amount is billed on the base contract\'s original payment date (Pattern A).]]\nOn the other hand, if the base contract\'s most recent payment has already been completed at the time the rider contract is established, [[R:only the rider contract amount is charged at that time, and the combined amount is billed starting from the base contract\'s next payment due date (Pattern B).]]\n\n<Example 1: Base and rider applied for in succession within the same month (Pattern B)>\nBase contract: established April 10, USD 200 charged\nRider contract: established April 20, USD 200 charged\n→ The following month, on May 10, a combined USD 400 is charged\n\n<Example 2: Base and rider applied for in succession across a month boundary (Pattern A)>\nBase contract: established March 25, USD 200 charged\nRider contract: established April 11 — USD 200 (rider) plus USD 200 (base) is charged together as USD 400 (no further charge occurs in April)\n→ The following month, on May 25, a combined USD 400 is charged\n\n<Example 3: Base and rider applied for apart, base\'s payment date arrives first (Pattern B)>\nBase contract: established March 5, USD 200 charged\n→ The following month, on April 5, USD 200 is charged\nRider contract: established April 10, USD 200 charged\n→ The following month, on May 5, a combined USD 400 is charged\n\n<Example 4: Base and rider applied for apart, the base\'s next payment date has not yet arrived when the rider is established (Pattern A)>\nBase contract: established March 10, USD 200 charged\nRider contract: established April 5 — USD 200 (rider) plus USD 200 (base) is charged together as USD 400 (no further charge occurs in April)\n→ The following month, on May 10, a combined USD 400 is charged\n\n[[R:I confirm and agree that, when adding a rider contract, in order to align the payment timing, an amount different from the amount displayed at application, or a combined amount covering multiple months, may be charged, depending on the base contract\'s payment status at the time the rider contract is established, as described above.]]'
+          ja:'ライダー契約を追加する場合、[[R:ベース契約とライダー契約のお支払い時期をそろえる必要があります。]]\nそのため、ライダー契約を追加するタイミングによっては、[[R:ライダー契約分だけでなく、ベース契約分を含めた金額をまとめてお支払いいただく場合があります。]]\n\n＜毎月払いの例＞\nベース契約：4月10日に成立、200USD決済\nライダー契約：4月20日に成立、200USD決済\n→ 翌月5月10日に、合算した400USDが決済されます\n\n＜年払いの例＞\nベース契約：1月15日に成立、2,400USD決済\nライダー契約：6月1日に成立、ライダー契約分2,400USDとベース契約分2,400USDを合わせた4,800USDが決済されます（この年はこれ以降の課金はありません）\n→ 次回のベース契約のお支払い日に、合算した4,800USDが決済されます\n\n[[R:私は、ライダー契約の追加時に、お支払い時期をそろえるため、申込時に表示された金額とは異なる金額や、複数期間分をまとめた金額が請求される場合があることを確認し、同意します。]]',
+          en:'When adding a rider contract, [[R:the payment timing of the base contract and the rider contract must be aligned.]]\nAs a result, depending on the timing of adding a rider contract, [[R:you may be required to pay an amount that includes the base contract, not just the rider contract amount.]]\n\n<Monthly Payment Example>\nBase contract: established April 10, USD 200 charged\nRider contract: established April 20, USD 200 charged\n→ The following month, on May 10, a combined USD 400 is charged\n\n<Annual Payment Example>\nBase contract: established January 15, USD 2,400 charged\nRider contract: established June 1 — USD 2,400 (rider) plus USD 2,400 (base) is charged together as USD 4,800 (no further charge occurs that year)\n→ At the base contract\'s next payment date, a combined USD 4,800 is charged\n\n[[R:I confirm and agree that, when adding a rider contract, in order to align the payment timing, an amount different from the amount displayed at application, or a combined amount covering multiple periods, may be charged.]]'
         },
         diagram: {
           ja: `<div class="article-diagram">
-            <div class="article-diagram-title">図：パターンA — ライダー契約が、ベースの次回お支払い日より前に成立する場合（例2・例4）</div>
-            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="パターンAのイメージ図">
+            <div class="article-diagram-title">図：毎月払いの例</div>
+            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="毎月払いの例のイメージ図">
               <defs>
-                <marker id="wgsArrowJaA" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <marker id="wgsArrowJaM" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                   <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
                 </marker>
               </defs>
               <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
-              <text x="120" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">ライダー契約 成立</text>
-              <text x="120" y="42" text-anchor="middle" font-size="10.5" fill="#888">この時点で合算</text>
-              <circle cx="120" cy="95" r="10" fill="#1e2e52" stroke="#0f3d2e" stroke-width="2.5"/>
-              <rect x="76" y="106" width="88" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
-              <text x="120" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">合算400USD</text>
-              <circle cx="330" cy="95" r="8" fill="#fff" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="3,2"/>
-              <text x="330" y="26" text-anchor="middle" font-size="11.5" fill="#999">（本来のベース支払日）</text>
-              <text x="330" y="42" text-anchor="middle" font-size="10.5" fill="#999">スキップ</text>
-              <path d="M324,101 Q220,150 128,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowJaA)"/>
-              <text x="220" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">繰り上げて合算</text>
-              <text x="530" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">翌月・ベースの元の支払日</text>
-              <circle cx="530" cy="95" r="10" fill="#1e2e52"/>
-              <rect x="486" y="106" width="88" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
-              <text x="530" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">合算400USD</text>
-            </svg>
-          </div>
-          <div class="article-diagram">
-            <div class="article-diagram-title">図：パターンB — ライダー契約が、ベースの直近お支払い日より後に成立する場合（例1・例3）</div>
-            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="パターンBのイメージ図">
-              <defs>
-                <marker id="wgsArrowJaB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                  <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
-                </marker>
-              </defs>
-              <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
-              <text x="90" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">ベース契約 直近支払日</text>
+              <text x="90" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">ベース契約 成立</text>
+              <text x="90" y="42" text-anchor="middle" font-size="10.5" fill="#888">4月10日</text>
               <circle cx="90" cy="95" r="9" fill="#1e2e52"/>
               <text x="90" y="118" text-anchor="middle" font-size="10.5" fill="#555">200USD</text>
               <text x="310" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">ライダー契約 成立</text>
-              <text x="310" y="42" text-anchor="middle" font-size="10.5" fill="#888">この時点ではライダー分のみ</text>
+              <text x="310" y="42" text-anchor="middle" font-size="10.5" fill="#888">4月20日・この時点ではライダー分のみ</text>
               <circle cx="310" cy="95" r="9" fill="#0f3d2e"/>
               <text x="310" y="118" text-anchor="middle" font-size="10.5" fill="#555">200USD</text>
-              <path d="M316,103 Q420,150 522,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowJaB)"/>
+              <path d="M316,103 Q420,150 522,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowJaM)"/>
               <text x="420" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">翌月から合算</text>
-              <text x="530" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">翌月・ベースの支払日</text>
+              <text x="530" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">5月10日</text>
               <circle cx="530" cy="95" r="11" fill="#1e2e52"/>
               <rect x="486" y="108" width="88" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
               <text x="530" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">合算400USD</text>
             </svg>
-          </div>`,
-          en: `<div class="article-diagram">
-            <div class="article-diagram-title">Diagram: Pattern A — the rider is established before the base's next payment due date (Examples 2 &amp; 4)</div>
-            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pattern A diagram">
-              <defs>
-                <marker id="wgsArrowEnA" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-                  <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
-                </marker>
-              </defs>
-              <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
-              <text x="120" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">Rider Established</text>
-              <text x="120" y="42" text-anchor="middle" font-size="10.5" fill="#888">Combined here</text>
-              <circle cx="120" cy="95" r="10" fill="#1e2e52" stroke="#0f3d2e" stroke-width="2.5"/>
-              <rect x="70" y="106" width="100" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
-              <text x="120" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">USD 400 combined</text>
-              <circle cx="330" cy="95" r="8" fill="#fff" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="3,2"/>
-              <text x="330" y="26" text-anchor="middle" font-size="11.5" fill="#999">(Original base due date)</text>
-              <text x="330" y="42" text-anchor="middle" font-size="10.5" fill="#999">Skipped</text>
-              <path d="M324,101 Q220,150 128,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowEnA)"/>
-              <text x="220" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">Pulled forward &amp; combined</text>
-              <text x="530" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Next month, base's original date</text>
-              <circle cx="530" cy="95" r="10" fill="#1e2e52"/>
-              <rect x="480" y="106" width="100" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
-              <text x="530" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">USD 400 combined</text>
-            </svg>
           </div>
           <div class="article-diagram">
-            <div class="article-diagram-title">Diagram: Pattern B — the rider is established after the base's most recent payment date (Examples 1 &amp; 3)</div>
-            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Pattern B diagram">
+            <div class="article-diagram-title">図：年払いの例</div>
+            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="年払いの例のイメージ図">
               <defs>
-                <marker id="wgsArrowEnB" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <marker id="wgsArrowJaY" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
                   <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
                 </marker>
               </defs>
               <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
-              <text x="100" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Base's Most Recent Due Date</text>
-              <circle cx="100" cy="95" r="9" fill="#1e2e52"/>
-              <text x="100" y="118" text-anchor="middle" font-size="10.5" fill="#555">USD 200</text>
-              <text x="320" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">Rider Established</text>
-              <text x="320" y="42" text-anchor="middle" font-size="10.5" fill="#888">Rider amount only, for now</text>
-              <circle cx="320" cy="95" r="9" fill="#0f3d2e"/>
-              <text x="320" y="118" text-anchor="middle" font-size="10.5" fill="#555">USD 200</text>
-              <path d="M326,103 Q425,150 522,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowEnB)"/>
-              <text x="425" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">Combined from next month</text>
-              <text x="530" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Next month, base's due date</text>
+              <text x="75" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">ベース契約 成立</text>
+              <text x="75" y="42" text-anchor="middle" font-size="10.5" fill="#888">1月15日</text>
+              <circle cx="75" cy="95" r="9" fill="#1e2e52"/>
+              <text x="75" y="118" text-anchor="middle" font-size="10.5" fill="#555">2,400USD</text>
+              <text x="245" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">ライダー契約 成立</text>
+              <text x="245" y="42" text-anchor="middle" font-size="10.5" fill="#888">6月1日・この時点で合算</text>
+              <circle cx="245" cy="95" r="10" fill="#1e2e52" stroke="#0f3d2e" stroke-width="2.5"/>
+              <rect x="191" y="106" width="108" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
+              <text x="245" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">合算4,800USD</text>
+              <circle cx="415" cy="95" r="8" fill="#fff" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="3,2"/>
+              <text x="415" y="18" text-anchor="middle" font-size="11.5" fill="#999">本来のベース</text>
+              <text x="415" y="33" text-anchor="middle" font-size="11.5" fill="#999">支払日（スキップ）</text>
+              <path d="M409,101 Q328,150 251,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowJaY)"/>
+              <text x="328" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">繰り上げて合算</text>
+              <text x="540" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">次回のベース</text>
+              <text x="540" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">契約支払日</text>
+              <circle cx="540" cy="95" r="10" fill="#1e2e52"/>
+              <rect x="486" y="106" width="108" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
+              <text x="540" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">合算4,800USD</text>
+            </svg>
+          </div>`,
+          en: `<div class="article-diagram">
+            <div class="article-diagram-title">Diagram: Monthly Payment Example</div>
+            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Monthly payment example diagram">
+              <defs>
+                <marker id="wgsArrowEnM" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
+                </marker>
+              </defs>
+              <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
+              <text x="90" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Base Established</text>
+              <text x="90" y="42" text-anchor="middle" font-size="10.5" fill="#888">April 10</text>
+              <circle cx="90" cy="95" r="9" fill="#1e2e52"/>
+              <text x="90" y="118" text-anchor="middle" font-size="10.5" fill="#555">USD 200</text>
+              <text x="310" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">Rider Established</text>
+              <text x="310" y="42" text-anchor="middle" font-size="10.5" fill="#888">April 20 — rider amount only, for now</text>
+              <circle cx="310" cy="95" r="9" fill="#0f3d2e"/>
+              <text x="310" y="118" text-anchor="middle" font-size="10.5" fill="#555">USD 200</text>
+              <path d="M316,103 Q420,150 522,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowEnM)"/>
+              <text x="420" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">Combined from next month</text>
+              <text x="530" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">May 10</text>
               <circle cx="530" cy="95" r="11" fill="#1e2e52"/>
               <rect x="480" y="108" width="100" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
               <text x="530" y="124" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">USD 400 combined</text>
+            </svg>
+          </div>
+          <div class="article-diagram">
+            <div class="article-diagram-title">Diagram: Annual Payment Example</div>
+            <svg viewBox="0 0 600 175" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Annual payment example diagram">
+              <defs>
+                <marker id="wgsArrowEnY" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                  <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
+                </marker>
+              </defs>
+              <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
+              <text x="75" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Base</text>
+              <text x="75" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Established</text>
+              <text x="75" y="49" text-anchor="middle" font-size="10.5" fill="#888">Jan 15</text>
+              <circle cx="75" cy="95" r="9" fill="#1e2e52"/>
+              <text x="75" y="118" text-anchor="middle" font-size="10.5" fill="#555">USD 2,400</text>
+              <text x="245" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">Rider</text>
+              <text x="245" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">Established</text>
+              <text x="245" y="49" text-anchor="middle" font-size="10.5" fill="#888">Jun 1 — combined here</text>
+              <circle cx="245" cy="95" r="10" fill="#1e2e52" stroke="#0f3d2e" stroke-width="2.5"/>
+              <rect x="205" y="106" width="80" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
+              <text x="245" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">USD 4,800</text>
+              <circle cx="415" cy="95" r="8" fill="#fff" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="3,2"/>
+              <text x="415" y="18" text-anchor="middle" font-size="11.5" fill="#999">Original base</text>
+              <text x="415" y="33" text-anchor="middle" font-size="11.5" fill="#999">due date (skipped)</text>
+              <path d="M409,101 Q328,150 251,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowEnY)"/>
+              <text x="328" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">Pulled forward &amp; combined</text>
+              <text x="540" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Base's Next</text>
+              <text x="540" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Payment Date</text>
+              <circle cx="540" cy="95" r="10" fill="#1e2e52"/>
+              <rect x="500" y="106" width="80" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
+              <text x="540" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">USD 4,800</text>
             </svg>
           </div>`
         }

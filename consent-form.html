@@ -1037,8 +1037,8 @@ const products = {
         num:   { ja:'第5条', en:'Article 5' },
         title: { ja:'お支払い時期の調整について', en:'Alignment of Payment Timing' },
         body:  {
-          ja:'ライダー契約を追加する場合、[[R:ベース契約とライダー契約のお支払い時期をそろえる必要があります。]]\nそのため、ライダー契約を追加するタイミングによっては、[[R:ライダー契約分だけでなく、ベース契約分を含めた金額をまとめてお支払いいただく場合があります。]]\n\n＜毎月払いの例＞\nベース契約：4月10日に成立、200USD決済\nライダー契約：4月20日に成立、200USD決済\n→ 翌月5月10日に、合算した400USDが決済されます\n\n＜年払いの例＞\nベース契約：1月15日に成立、2,400USD決済\nライダー契約：6月1日に成立、ライダー契約分2,400USDとベース契約分2,400USDを合わせた4,800USDが決済されます（この年はこれ以降の課金はありません）\n→ 次回のベース契約のお支払い日に、合算した4,800USDが決済されます\n\n[[R:私は、ライダー契約の追加時に、お支払い時期をそろえるため、申込時に表示された金額とは異なる金額や、複数期間分をまとめた金額が請求される場合があることを確認し、同意します。]]',
-          en:'When adding a rider contract, [[R:the payment timing of the base contract and the rider contract must be aligned.]]\nAs a result, depending on the timing of adding a rider contract, [[R:you may be required to pay an amount that includes the base contract, not just the rider contract amount.]]\n\n<Monthly Payment Example>\nBase contract: established April 10, USD 200 charged\nRider contract: established April 20, USD 200 charged\n→ The following month, on May 10, a combined USD 400 is charged\n\n<Annual Payment Example>\nBase contract: established January 15, USD 2,400 charged\nRider contract: established June 1 — USD 2,400 (rider) plus USD 2,400 (base) is charged together as USD 4,800 (no further charge occurs that year)\n→ At the base contract\'s next payment date, a combined USD 4,800 is charged\n\n[[R:I confirm and agree that, when adding a rider contract, in order to align the payment timing, an amount different from the amount displayed at application, or a combined amount covering multiple periods, may be charged.]]'
+          ja:'ライダー契約を追加する場合、[[R:ベース契約とライダー契約のお支払い時期をそろえる必要があります。]]\nそのため、ライダー契約のお申込み時期によっては、[[R:ライダー契約分だけでなく、ベース契約分を含めた金額や、次回支払日までの残り期間分をまとめてお支払いいただく場合があります。]]\n\n＜毎月払いの例＞\nベース契約：月額200USD\nライダー契約：月額200USD\nライダー契約成立時に、お支払い時期をそろえるため、200USD＋200USD＝合計400USDが請求される場合があります。\n\n＜年間払いの例＞\nベース契約：月額200USDを1年分先払い済み\nライダー契約：月額300USDを追加\nベース契約の次回支払日まで11か月ある場合、300USD×11か月＝3,300USDをまとめてお支払いいただく場合があります。\n\n[[R:私は、ライダー契約の追加時に、お支払い時期をそろえるため、申込時に表示された金額とは異なる金額や、複数月分をまとめた金額が請求される場合があることを確認し、同意します。]]',
+          en:'When adding a rider contract, [[R:the payment timing of the base contract and the rider contract must be aligned.]]\nAs a result, depending on when you apply for the rider contract, [[R:you may be required to pay not only the rider contract amount but also an amount that includes the base contract, or a combined amount covering the remaining period until the next payment due date.]]\n\n<Monthly Payment Example>\nBase contract: USD 200/month\nRider contract: USD 200/month\nWhen the rider contract is established, to align the payment timing, you may be billed USD 200 + USD 200 = USD 400 in total.\n\n<Annual Payment Example>\nBase contract: USD 200/month, one year already prepaid\nRider contract: USD 300/month added\nIf there are 11 months remaining until the base contract\'s next payment due date, you may be billed USD 300 × 11 months = USD 3,300 in a single combined payment.\n\n[[R:I confirm and agree that, when adding a rider contract, in order to align the payment timing, an amount different from the amount displayed at application, or a combined amount covering multiple months, may be charged.]]'
         },
         diagram: {
           ja: `<div class="article-diagram">
@@ -1074,26 +1074,24 @@ const products = {
                   <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
                 </marker>
               </defs>
-              <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
-              <text x="75" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">ベース契約 成立</text>
-              <text x="75" y="42" text-anchor="middle" font-size="10.5" fill="#888">1月15日</text>
-              <circle cx="75" cy="95" r="9" fill="#1e2e52"/>
-              <text x="75" y="118" text-anchor="middle" font-size="10.5" fill="#555">2,400USD</text>
-              <text x="245" y="26" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">ライダー契約 成立</text>
-              <text x="245" y="42" text-anchor="middle" font-size="10.5" fill="#888">6月1日・この時点で合算</text>
-              <circle cx="245" cy="95" r="10" fill="#1e2e52" stroke="#0f3d2e" stroke-width="2.5"/>
-              <rect x="191" y="106" width="108" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
-              <text x="245" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">合算4,800USD</text>
-              <circle cx="415" cy="95" r="8" fill="#fff" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="3,2"/>
-              <text x="415" y="18" text-anchor="middle" font-size="11.5" fill="#999">本来のベース</text>
-              <text x="415" y="33" text-anchor="middle" font-size="11.5" fill="#999">支払日（スキップ）</text>
-              <path d="M409,101 Q328,150 251,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowJaY)"/>
-              <text x="328" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">繰り上げて合算</text>
-              <text x="540" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">次回のベース</text>
-              <text x="540" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">契約支払日</text>
-              <circle cx="540" cy="95" r="10" fill="#1e2e52"/>
-              <rect x="486" y="106" width="108" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
-              <text x="540" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">合算4,800USD</text>
+              <rect x="60" y="90" width="440" height="10" rx="4" fill="#e4e4e4"/>
+              <text x="70" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">ベース契約 成立</text>
+              <text x="70" y="36" text-anchor="middle" font-size="10.5" fill="#888">月額200USDを</text>
+              <text x="70" y="50" text-anchor="middle" font-size="10.5" fill="#888">1年分先払い済み</text>
+              <circle cx="70" cy="95" r="9" fill="#1e2e52"/>
+              <text x="260" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">ライダー契約 成立</text>
+              <text x="260" y="36" text-anchor="middle" font-size="10.5" fill="#888">月額300USDを追加</text>
+              <circle cx="260" cy="95" r="10" fill="#1e2e52" stroke="#0f3d2e" stroke-width="2.5"/>
+              <rect x="200" y="106" width="120" height="30" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
+              <text x="260" y="120" text-anchor="middle" font-size="11" font-weight="700" fill="#7d1a00">300USD×11か月</text>
+              <text x="260" y="133" text-anchor="middle" font-size="11" font-weight="700" fill="#7d1a00">＝3,300USD</text>
+              <path d="M266,103 Q380,155 494,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowJaY)"/>
+              <text x="380" y="163" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">残り11か月分をまとめて支払い</text>
+              <text x="500" y="20" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">ベース契約の</text>
+              <text x="500" y="36" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">次回支払日</text>
+              <circle cx="500" cy="95" r="10" fill="#1e2e52"/>
+              <text x="500" y="120" text-anchor="middle" font-size="10.5" fill="#555">以降は合算</text>
+              <text x="500" y="134" text-anchor="middle" font-size="10.5" fill="#555">して請求</text>
             </svg>
           </div>`,
           en: `<div class="article-diagram">
@@ -1129,28 +1127,27 @@ const products = {
                   <path d="M0,0 L6,3 L0,6 Z" fill="#e6a000"/>
                 </marker>
               </defs>
-              <line x1="50" y1="95" x2="570" y2="95" stroke="#d0d0d0" stroke-width="2"/>
-              <text x="75" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Base</text>
-              <text x="75" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Established</text>
-              <text x="75" y="49" text-anchor="middle" font-size="10.5" fill="#888">Jan 15</text>
-              <circle cx="75" cy="95" r="9" fill="#1e2e52"/>
-              <text x="75" y="118" text-anchor="middle" font-size="10.5" fill="#555">USD 2,400</text>
-              <text x="245" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">Rider</text>
-              <text x="245" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#0f3d2e">Established</text>
-              <text x="245" y="49" text-anchor="middle" font-size="10.5" fill="#888">Jun 1 — combined here</text>
-              <circle cx="245" cy="95" r="10" fill="#1e2e52" stroke="#0f3d2e" stroke-width="2.5"/>
-              <rect x="205" y="106" width="80" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
-              <text x="245" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">USD 4,800</text>
-              <circle cx="415" cy="95" r="8" fill="#fff" stroke="#b0b0b0" stroke-width="2" stroke-dasharray="3,2"/>
-              <text x="415" y="18" text-anchor="middle" font-size="11.5" fill="#999">Original base</text>
-              <text x="415" y="33" text-anchor="middle" font-size="11.5" fill="#999">due date (skipped)</text>
-              <path d="M409,101 Q328,150 251,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowEnY)"/>
-              <text x="328" y="150" text-anchor="middle" font-size="11" font-weight="700" fill="#7d4500">Pulled forward &amp; combined</text>
-              <text x="540" y="18" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Base's Next</text>
-              <text x="540" y="34" text-anchor="middle" font-size="12" font-weight="700" fill="#1e2e52">Payment Date</text>
-              <circle cx="540" cy="95" r="10" fill="#1e2e52"/>
-              <rect x="500" y="106" width="80" height="24" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
-              <text x="540" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#7d1a00">USD 4,800</text>
+              <rect x="60" y="90" width="440" height="10" rx="4" fill="#e4e4e4"/>
+              <text x="70" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e2e52">Base</text>
+              <text x="70" y="30" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e2e52">Established</text>
+              <text x="70" y="45" text-anchor="middle" font-size="10" fill="#888">USD 200/mo,</text>
+              <text x="70" y="58" text-anchor="middle" font-size="10" fill="#888">1 yr prepaid</text>
+              <circle cx="70" cy="95" r="9" fill="#1e2e52"/>
+              <text x="270" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f3d2e">Rider</text>
+              <text x="270" y="30" text-anchor="middle" font-size="11.5" font-weight="700" fill="#0f3d2e">Established</text>
+              <text x="270" y="45" text-anchor="middle" font-size="10" fill="#888">USD 300/mo added</text>
+              <circle cx="270" cy="95" r="10" fill="#1e2e52" stroke="#0f3d2e" stroke-width="2.5"/>
+              <rect x="205" y="106" width="130" height="30" rx="5" fill="#fff3cd" stroke="#e6a000" stroke-width="1.5"/>
+              <text x="270" y="120" text-anchor="middle" font-size="10.5" font-weight="700" fill="#7d1a00">USD 300 x 11 mo.</text>
+              <text x="270" y="133" text-anchor="middle" font-size="10.5" font-weight="700" fill="#7d1a00">= USD 3,300</text>
+              <path d="M276,103 Q385,158 494,103" fill="none" stroke="#e6a000" stroke-width="2" stroke-dasharray="5,4" marker-end="url(#wgsArrowEnY)"/>
+              <text x="385" y="150" text-anchor="middle" font-size="10.5" font-weight="700" fill="#7d4500">Remaining 11 months</text>
+              <text x="385" y="163" text-anchor="middle" font-size="10.5" font-weight="700" fill="#7d4500">paid together</text>
+              <text x="500" y="16" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e2e52">Base's Next</text>
+              <text x="500" y="30" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1e2e52">Payment Date</text>
+              <circle cx="500" cy="95" r="10" fill="#1e2e52"/>
+              <text x="500" y="120" text-anchor="middle" font-size="10" fill="#555">Combined billing</text>
+              <text x="500" y="133" text-anchor="middle" font-size="10" fill="#555">from here on</text>
             </svg>
           </div>`
         }

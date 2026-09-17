@@ -550,6 +550,27 @@ function applyLang() {
   if (selectedProduct && document.getElementById('screen3').classList.contains('active')) {
     refreshStep3();
   }
+  // Refresh step 4 next-steps CTA if visible
+  if (selectedProduct && document.getElementById('screen4').classList.contains('active')) {
+    updateNextStepsCta();
+  }
+}
+
+function updateNextStepsCta() {
+  const textEl = document.getElementById('nextStepsText');
+  const btnEl = document.getElementById('returnBtn');
+  if (!textEl || !btnEl) return;
+  if (selectedProduct === 'ridercombo') {
+    textEl.textContent = lang === 'ja'
+      ? 'ライダー契約のお申し込みへお進みください。ご不明な点は担当者までお問い合わせください。'
+      : 'Please proceed to the rider contract application. If you have any questions, please contact your representative.';
+    btnEl.href = 'https://wawasan-tsuika.studio.site/';
+    btnEl.textContent = lang === 'ja' ? '📝 ライダー申し込みへ進む →' : '📝 Proceed to Rider Application →';
+  } else {
+    textEl.textContent = T.nextStepsText[lang];
+    btnEl.href = 'https://wawasan-ita-form-k.studio.site';
+    btnEl.textContent = T.returnBtn[lang];
+  }
 }
 
 function setLang(l) {
@@ -1358,10 +1379,10 @@ function submitForm() {
   document.getElementById('doneRef').textContent = refNum;
   document.getElementById('doneMsg1').textContent = T.doneMsg1[lang];
   document.getElementById('doneMsg2').textContent = T.doneMsg2[lang];
-  document.getElementById('nextStepsText').textContent = T.nextStepsText[lang];
 
   goToStep(4);
   applyLang();
+  updateNextStepsCta();
 
   // Capture audit trail at moment of submission
   const ts = new Date().toLocaleString('ja-JP', {timeZone:'Asia/Tokyo'});

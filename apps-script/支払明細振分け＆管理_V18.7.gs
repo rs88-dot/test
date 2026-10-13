@@ -7,6 +7,8 @@
  *   → 合計してから1回だけ小数点以下切り捨て。
  * ・計算誤差（1944 → 1943.9999…）で1ドル減る不具合を修正。
  * ・マイナスは従来どおりマイナスのまま表示・繰越（手数料なし）。
+ * ・支払総額が手数料$5以下の少額は、手数料を引かず払出0、
+ *   台帳の対応を「次回繰越」にして翌月へ繰越。
  * ・個別明細の W社／B社／繰越 はセント単位で表示
  *   （足し算が支払総額と一致するように）。
  *
@@ -1645,6 +1647,18 @@ function pay18_recalculateLedger_(sheet, targetIds) {
 
           action = '次回繰越';
 
+        /*
+         * ★V18.7：最新月の総額が手数料（$5）以下なら
+         * 手数料は引かず、払出せずに次回へ繰越す
+         */
+        } else if (
+          !isPast &&
+          gross > 0.000001 &&
+          Math.floor(gross + 0.000001) <= PAYMENT_V18.ADMIN_FEE
+        ) {
+
+          action = '次回繰越';
+
         } else if (!isPast && gross > 0.000001) {
 
           action = '今回支払';
@@ -1842,6 +1856,22 @@ function pay18_calcNotice_(rows) {
     total >= 0
       ? Math.floor(total + 0.000001)
       : Math.ceil(total - 0.000001);
+
+  /*
+   * ★V18.7：支払総額が手数料（$5）以下なら
+   * 手数料は引かず、今回は払出0（全額を次回へ繰越）
+   */
+  if (gross > 0 && gross <= PAYMENT_V18.ADMIN_FEE) {
+    return {
+      latest: latest,
+      w: w,
+      b: b,
+      carry: carry,
+      gross: gross,
+      fee: 0,
+      payout: 0
+    };
+  }
 
   const fee = gross > 0 ? PAYMENT_V18.ADMIN_FEE : 0;
 

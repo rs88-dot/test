@@ -1,5 +1,12 @@
 /*************************************************
- * 支払管理システム V18.7（V18.6修正版）
+ * 支払管理システム V18.8（V18.7修正版）
+ *
+ * ★V18.8の修正点
+ * ・支払月を「表示されている文字」で読む（2026.10 が 2026.1＝1月に化けない）。
+ *   台帳の支払月列・支払いまとめの月見出しも文字として書き込む。
+ * ・みなし二重計上ガード：同じプラン番号＋商品コード＋支払対象者で
+ *   12か月以内に既にみなし年払いした場合、後の月は0（支払対象外）。
+ * ・元データから消えた未精算のAUTO行（誤読の残骸）は台帳に戻さない。
  *
  * ★V18.7の修正点（今回払出額の計算のみ・他はV18.6と同一）
  * ・W社／B社／繰越を「別々に」切り捨ててから合計していたため
@@ -701,7 +708,7 @@ function pay18_fullSync_(forceAll) {
     props.deleteProperty('PAY18_DIRTY');
 
     console.log(
-      'V18.7完了 | OPEN=' + opened +
+      'V18.8完了 | OPEN=' + opened +
       ' / SKIP=' + skipped +
       ' / 共有停止=' + disabled +
       ' / フォルダなし=' + noFolder +
@@ -757,10 +764,20 @@ function pay18_loadContext_() {
   /* ★外部共有はA:R */
   const publicHeader = internalHeader.slice(0, 18);
 
+  /*
+   * ★V18.8：支払月は「表示されている文字」で読む
+   * （2026.10 が数値 2026.1 として保存されていても 10月と判定する）
+   */
+  const monthDisplay = source
+    .getRange(1, PAYMENT_V18.SOURCE_MONTH_COL, lastRow, 1)
+    .getDisplayValues();
+
   const groups = {};
   const aggregate = {};
 
-  all.slice(1).forEach(original => {
+  const rowsInfo = [];
+
+  all.slice(1).forEach((original, index) => {
 
     const row = original.slice(0, 20);
 
@@ -770,9 +787,22 @@ function pay18_loadContext_() {
       return;
     }
 
-    const month = pay18_month_(row[PAYMENT_V18.SOURCE_MONTH_COL - 1]);
+    const month = pay18_month_(monthDisplay[index + 1][0]);
 
     row[PAYMENT_V18.SOURCE_MONTH_COL - 1] = month;
+
+    rowsInfo.push({ row: row, id: id, month: month });
+  });
+
+  pay18_applyMinashiGuard_(rowsInfo);
+
+  rowsInfo.forEach(info => {
+
+    const row = info.row;
+
+    const id = info.id;
+
+    const month = info.month;
 
     const master = masterMap[id];
 
@@ -826,6 +856,79 @@ function pay18_loadContext_() {
     aggregate: aggregate,
     hiddenColumns: hiddenColumns
   };
+}
+
+
+/*************************************************
+ * ★V18.8：みなし二重計上ガード
+ *
+ * 同じ「プラン番号＋商品コード＋支払対象者」で、
+ * すでに過去の月（12か月以内）にみなし年払い（今回支払額>0）が
+ * 計上されている場合、後の月のみなし行は支払対象外（0）にする。
+ * 備考①に「YYYY.Mに支払済（すでに12か月分支払済)」を表示。
+ *************************************************/
+function pay18_applyMinashiGuard_(rowsInfo) {
+
+  const AMOUNT = PAYMENT_V18.SOURCE_AMOUNT_COL - 1;   // N
+  const RATE = AMOUNT - 1;                            // M 支払倍率
+  const KUBUN = 11;                                   // L 支払区分
+  const NOTE = 15;                                    // P 備考①
+
+  const targets = rowsInfo
+    .filter(info =>
+      info.month &&
+      String(info.row[KUBUN] || '').trim() === 'みなし' &&
+      pay18_num_(info.row[AMOUNT]) > 0
+    )
+    .map((info, order) => ({ info: info, order: order }))
+    .sort((a, b) => {
+      const diff = pay18_monthIndex_(a.info.month) - pay18_monthIndex_(b.info.month);
+      return diff !== 0 ? diff : a.order - b.order;
+    });
+
+  const first = {};
+
+  targets.forEach(item => {
+
+    const info = item.info;
+
+    const key = [
+      String(info.row[0] || '').trim(),
+      String(info.row[2] || '').trim(),
+      info.id
+    ].join('||');
+
+    const index = pay18_monthIndex_(info.month);
+
+    const paid = first[key];
+
+    if (paid && index > paid.index && index - paid.index < 12) {
+
+      info.row[RATE] = 0;
+
+      info.row[AMOUNT] = 0;
+
+      info.row[NOTE] = paid.month + 'に支払済（すでに12か月分支払済)';
+
+      return;
+    }
+
+    if (!paid || index - paid.index >= 12) {
+      first[key] = { index: index, month: info.month };
+    }
+  });
+}
+
+
+function pay18_monthIndex_(value) {
+
+  const key = pay18_monthKey_(value);
+
+  if (!key) {
+    return 0;
+  }
+
+  return Math.floor(key / 100) * 12 + (key % 100);
 }
 
 
@@ -1072,11 +1175,18 @@ function pay18_readExistingLedger_(sheet, sourceAggregate) {
     protect: find('手動保護')
   };
 
-  values.slice(1).forEach(row => {
+  /* ★V18.8：支払月は表示文字で読む */
+  const monthDisplay =
+    c.month >= 0
+      ? sheet.getRange(1, c.month + 1, lastRow, 1).getDisplayValues()
+      : [];
+
+  values.slice(1).forEach((row, rowIndex) => {
 
     const get = index => (index >= 0 ? row[index] : '');
 
-    const rawMonth = get(c.month);
+    const rawMonth =
+      c.month >= 0 ? monthDisplay[rowIndex + 1][0] : '';
 
     const normalizedMonth = pay18_month_(rawMonth);
 
@@ -1195,6 +1305,21 @@ function pay18_readExistingLedger_(sheet, sourceAggregate) {
         record
       );
 
+      return;
+    }
+
+    /*********************************************
+     * ★V18.8：元データにもう存在しないAUTO行のうち、
+     * 支払済・支払日・備考・B社支払額のどれもない行は
+     * 自動計算の残骸なので戻さない（例：2026.10が2026.1と誤読された行）。
+     *********************************************/
+    if (
+      record.marker === PAYMENT_V18.AUTO &&
+      !pay18_isSettled_(record.status) &&
+      !record.date &&
+      !String(record.note || '').trim() &&
+      Math.abs(pay18_num_(record.bAmount)) < 0.000001
+    ) {
       return;
     }
 
@@ -1452,6 +1577,9 @@ function pay18_rebuildLedger_(context) {
     sheet.getRange(1, 1, oldLastRow, 20).clearContent();
   }
 
+  /* ★V18.8：支払月の列は文字扱い（2026.10 が 2026.1 に化けないように） */
+  sheet.getRange(1, 1, sheet.getMaxRows(), 1).setNumberFormat('@');
+
   sheet.getRange(1, 1, output.length, 20).setValues(output);
 
   try {
@@ -1522,11 +1650,14 @@ function pay18_recalculateLedger_(sheet, targetIds) {
 
   const values = sheet.getRange(2, 1, lastRow - 1, 19).getValues();
 
+  /* ★V18.8：支払月は表示文字で読む */
+  const monthDisplay = sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues();
+
   let latestMonthKey = 0;
 
-  values.forEach(row => {
+  values.forEach((row, index) => {
 
-    const key = pay18_monthKey_(row[0]);
+    const key = pay18_monthKey_(monthDisplay[index][0]);
 
     if (key > latestMonthKey) {
       latestMonthKey = key;
@@ -1543,7 +1674,7 @@ function pay18_recalculateLedger_(sheet, targetIds) {
 
     const id = pay18_id_(row[1]);
 
-    const month = pay18_month_(row[0]);
+    const month = pay18_month_(monthDisplay[index][0]);
 
     if (!id || !month) {
       return;
@@ -1714,11 +1845,14 @@ function pay18_buildLedgerState_(sheet) {
 
   const rows = sheet.getRange(2, 1, lastRow - 1, 19).getValues();
 
+  /* ★V18.8：支払月は表示文字で読む */
+  const monthDisplay = sheet.getRange(2, 1, lastRow - 1, 1).getDisplayValues();
+
   const monthly = {};
 
-  rows.forEach(row => {
+  rows.forEach((row, index) => {
 
-    const month = pay18_month_(row[0]);
+    const month = pay18_month_(monthDisplay[index][0]);
 
     const id = pay18_id_(row[1]);
 
@@ -1970,6 +2104,13 @@ function pay18_updateMainSummary_(ss, ledgerState, forceWrite) {
       .getRange(1, 1, oldLast, Math.max(header.length, sheet.getLastColumn()))
       .clearContent();
   }
+
+  /* ★V18.8：月の見出しと「最新月」列は文字扱い（2026.10 を 2026.1 にしない） */
+  sheet.getRange(1, 1, 1, header.length).setNumberFormat('@');
+
+  sheet
+    .getRange(1, months.length + 3, Math.max(2, output.length), 1)
+    .setNumberFormat('@');
 
   sheet.getRange(1, 1, output.length, header.length).setValues(output);
 

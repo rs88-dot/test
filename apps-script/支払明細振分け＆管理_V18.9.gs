@@ -1,5 +1,10 @@
 /*************************************************
- * 支払管理システム V18.8（V18.7修正版）
+ * 支払管理システム V18.9（V18.8修正版）
+ *
+ * ★V18.9の修正点
+ * ・AUTO行の支払月が読めないときは台帳を書き換えずに止める
+ *   （支払月が消えて旧行がMANUALとして残り、重複する事故の防止）。
+ * ・repairLedgerDuplicatesV189：今回重複した台帳を元に戻す修復用（1回だけ実行）。
  *
  * ★V18.8の修正点
  * ・支払月を「表示されている文字」で読む（2026.10 が 2026.1＝1月に化けない）。
@@ -175,6 +180,115 @@ function syncPaymentSheetsV18() {
  *************************************************/
 function forceSyncPaymentSheetsV18() {
   pay18_fullSync_(true);
+}
+
+
+/*************************************************
+ * ★V18.9：支払管理台帳の重複修復（1回だけ手動実行）
+ *
+ * 支払月が空欄になってMANUALとして残った旧7〜9月の行（108行）に
+ * 支払月を書き戻し、管理情報の入っていない重複AUTO行を消してから
+ * 全員強制更新する。10月分の行は強制更新で作り直される。
+ * 空欄行の推薦者コードの並びが想定と1つでも違えば、何も変更せずに止まる。
+ *************************************************/
+const PAY18_REPAIR_PLAN_V189 =
+  '2026.7:195 2026.7:1109 2026.7:1379 2026.7:1666 2026.7:1239 2026.7:1596 2026.7:1706 2026.7:1799 2026.7:1801 2026.7:1803 ' +
+  '2026.7:1233 2026.7:1316 2026.7:1714 2026.7:1715 2026.7:1728 2026.7:1291 2026.7:12 2026.7:13 2026.7:1474 2026.7:1551 ' +
+  '2026.8:195 2026.8:1109 2026.8:1379 2026.8:1239 2026.8:1289 2026.8:1596 2026.8:1706 2026.8:1769 2026.8:1799 2026.8:1801 ' +
+  '2026.8:1803 2026.8:1822 2026.8:1233 2026.8:1316 2026.8:1714 2026.8:1715 2026.8:1720 2026.8:1726 2026.8:1728 2026.8:1687 ' +
+  '2026.8:1291 2026.8:12 2026.8:13 2026.8:1205 2026.8:1373 2026.8:1474 2026.8:1547 2026.8:1551 2026.8:1655 ' +
+  '2026.9:195 2026.9:1109 2026.9:1379 2026.9:1239 2026.9:1289 2026.9:1355 2026.9:1460 2026.9:1596 2026.9:1705 2026.9:1706 ' +
+  '2026.9:1769 2026.9:1799 2026.9:1801 2026.9:1803 2026.9:1822 2026.9:1823 2026.9:1233 2026.9:1316 2026.9:1714 2026.9:1715 ' +
+  '2026.9:1717 2026.9:1720 2026.9:1728 2026.9:1687 2026.9:1824 2026.9:1829 2026.9:1830 2026.9:1831 2026.9:1833 2026.9:1834 ' +
+  '2026.9:1835 2026.9:1838 2026.9:122 2026.9:160 2026.9:1291 2026.9:1681 2026.9:1168 2026.9:12 2026.9:13 2026.9:1205 ' +
+  '2026.9:1373 2026.9:1474 2026.9:1547 2026.9:1551 2026.9:1655 2026.9:1790 2026.9:1825 ' +
+  '2026.9:1726:M 2026.9:1713:M 2026.9:1815:M 2026.7:1625:M 2026.8:1713:M 2026.8:1625:M 2026.8:1806:M 2026.8:1815:M ' +
+  '2026.9:1493:M 2026.9:1666:M 2026.9:1806:M 2026.9:1625:M';
+
+function repairLedgerDuplicatesV189() {
+
+  const plan = PAY18_REPAIR_PLAN_V189.split(' ').map(token => {
+    const parts = token.split(':');
+    return { month: parts[0], id: parts[1], manual: parts[2] === 'M' };
+  });
+
+  const lock = LockService.getScriptLock();
+
+  if (!lock.tryLock(60000)) {
+    throw new Error('同期が実行中です。1〜2分待ってからもう一度実行してください。');
+  }
+
+  try {
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    const sheet = ss.getSheetByName(PAYMENT_V18.LEDGER_SHEET);
+
+    const lastRow = sheet.getLastRow();
+
+    const values = sheet.getRange(1, 1, lastRow, 20).getValues();
+
+    const monthDisplay = sheet.getRange(1, 1, lastRow, 1).getDisplayValues();
+
+    const orphans = [];
+
+    for (let i = 1; i < values.length; i++) {
+
+      if (!pay18_id_(values[i][1])) {
+        continue;
+      }
+
+      if (String(monthDisplay[i][0] || '').trim() === '') {
+        orphans.push(values[i]);
+      }
+    }
+
+    if (orphans.length !== plan.length) {
+      throw new Error(
+        '支払月が空欄の行が' + orphans.length + '行あります（想定' + plan.length +
+        '行）。台帳が想定と違うため何も変更していません。'
+      );
+    }
+
+    orphans.forEach((row, index) => {
+
+      if (pay18_id_(row[1]) !== plan[index].id) {
+        throw new Error(
+          '空欄行' + (index + 1) + '番目の推薦者コードが' + pay18_id_(row[1]) +
+          '（想定' + plan[index].id + '）。何も変更していません。'
+        );
+      }
+    });
+
+    const output = [values[0].slice(0, 20)];
+
+    orphans.forEach((row, index) => {
+
+      const next = row.slice(0, 20);
+
+      next[0] = plan[index].month;
+      next[18] = plan[index].manual ? PAYMENT_V18.MANUAL : PAYMENT_V18.AUTO;
+      next[19] = plan[index].manual ? PAYMENT_V18.USER_KEEP : '';
+
+      output.push(next);
+    });
+
+    sheet.getRange(1, 1, lastRow, 20).clearContent();
+
+    sheet.getRange(1, 1, sheet.getMaxRows(), 1).setNumberFormat('@');
+
+    sheet.getRange(1, 1, output.length, 20).setValues(output);
+
+    SpreadsheetApp.flush();
+
+  } finally {
+
+    lock.releaseLock();
+  }
+
+  forceSyncPaymentSheetsV18();
+
+  console.log('V18.9 台帳修復完了');
 }
 
 
@@ -708,7 +822,7 @@ function pay18_fullSync_(forceAll) {
     props.deleteProperty('PAY18_DIRTY');
 
     console.log(
-      'V18.8完了 | OPEN=' + opened +
+      'V18.9完了 | OPEN=' + opened +
       ' / SKIP=' + skipped +
       ' / 共有停止=' + disabled +
       ' / フォルダなし=' + noFolder +
@@ -1266,6 +1380,17 @@ function pay18_readExistingLedger_(sheet, sourceAggregate) {
       });
 
       return;
+    }
+
+    /*********************************************
+     * ★V18.9：AUTO行なのに支払月が読めない場合は、
+     * 台帳を書き換えずに止める（支払月が消えて重複する事故の防止）。
+     *********************************************/
+    if (record.marker === PAYMENT_V18.AUTO && record.id && !normalizedMonth) {
+      throw new Error(
+        '支払管理台帳' + (rowIndex + 2) + '行目（推薦者コード' + record.id +
+        '）の支払月「' + rawMonth + '」が読めません。台帳は変更していません。'
+      );
     }
 
     /*********************************************

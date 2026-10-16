@@ -1622,6 +1622,26 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
     sheet.setFrozenRows(1);
   }
 
+  /*
+   * ★V18.9修正：前の版は紹介料率を1/100で読み、検出月 2026.10 を 2026.1 と保存したため、
+   * 誤った戻入が記録された。1回だけ記録を消して作り直す。
+   */
+  const props = PropertiesService.getScriptProperties();
+
+  if (props.getProperty('PAY18_CLAWBACK_RESET_V2') !== '1') {
+
+    if (sheet.getLastRow() >= 2) {
+      sheet.getRange(2, 1, sheet.getLastRow() - 1, Math.max(15, sheet.getLastColumn())).clearContent();
+    }
+
+    props.setProperty('PAY18_CLAWBACK_RESET_V2', '1');
+  }
+
+  /* 検出月・みなし支払月は文字で保存（2026.10 が 2026.1 にならないように） */
+  sheet.getRange(1, 1, sheet.getMaxRows(), 1).setNumberFormat('@');
+  sheet.getRange(1, 6, sheet.getMaxRows(), 1).setNumberFormat('@');
+  sheet.getRange(1, 8, sheet.getMaxRows(), 1).setNumberFormat('@');
+
   if (String(sheet.getRange(1, 14).getValue() || '') !== '区分') {
     sheet.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight('bold');
   }
@@ -1695,7 +1715,7 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
 
     let paid = pay18_num_(row[AMOUNT]);
 
-    const rate = money(row[9]) / 100;   // J 実質紹介料率
+    const rate = pay18_rate_(row[9]);   // J 実質紹介料率（0.25 でも "25%" でも可）
 
     const product = String(row[2] || '').trim();
 
@@ -1915,6 +1935,25 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
 /*************************************************
  * ★V18.9：戻入・返金の理由を台帳の備考に入れる
  *************************************************/
+/* 紹介料率：0.25（数値）・"25%"・"25.00%" → 0.25 */
+function pay18_rate_(value) {
+
+  if (typeof value === 'number') {
+    return value > 1 ? value / 100 : value;
+  }
+
+  const text = String(value || '').trim();
+
+  const num = pay18_num_(text.replace(/[^0-9.\-]/g, ''));
+
+  if (text.indexOf('%') >= 0) {
+    return num / 100;
+  }
+
+  return num > 1 ? num / 100 : num;
+}
+
+
 function pay18_collectAdjustNotes_(rowsInfo) {
 
   const notes = {};
@@ -1938,6 +1977,17 @@ function pay18_collectAdjustNotes_(rowsInfo) {
   });
 
   return notes;
+}
+
+
+/* 自動で入れた【戻入】【返金】の文を取り除く（毎回作り直すため） */
+function pay18_stripAdjustNote_(note) {
+
+  return String(note || '')
+    .split(' / ')
+    .filter(part => !/^【(戻入|返金)】/.test(part.trim()))
+    .join(' / ')
+    .trim();
 }
 
 
@@ -2646,7 +2696,7 @@ function pay18_readExistingLedger_(sheet, sourceAggregate) {
       record.marker === PAYMENT_V18.AUTO &&
       !pay18_isSettled_(record.status) &&
       !record.date &&
-      !String(record.note || '').trim() &&
+      !pay18_stripAdjustNote_(record.note).trim() &&
       Math.abs(pay18_num_(record.bAmount)) < 0.000001
     ) {
       return;
@@ -2810,7 +2860,7 @@ function pay18_rebuildLedger_(context) {
         invoice: oldRow.invoice || '未',
         status: oldRow.status || '未払い',
         date: oldRow.date || '',
-        note: pay18_mergeAdjustNote_(oldRow.note || '', (context.adjustNotes || {})[source.key]),
+        note: pay18_mergeAdjustNote_(pay18_stripAdjustNote_(oldRow.note || ''), (context.adjustNotes || {})[source.key]),
         marker: PAYMENT_V18.AUTO,
         protect: ''
       };

@@ -1421,6 +1421,10 @@ function pay18_publicNote_(value) {
 
   const text = String(value || '');
 
+  if (text.indexOf('今回支払い対象（一括商品）') === 0) {
+    return '今回支払い対象（一括商品・1回のみ）';
+  }
+
   if (text.indexOf('×12ではなく') >= 0) {
     return '今回支払い対象（みなし年払い・拠出金額が1年分以上のため1年分）';
   }
@@ -1475,7 +1479,9 @@ function pay18_loadPolicyMap_(ss) {
     plan: col('プラン番号'),
     sequence: col('シーケンス'),
     frequency: col('支払頻度'),
-    annual: col('年間拠出金')
+    annual: col('年間拠出金'),
+    lump: col('一括払い'),
+    group: col('商品グループ')
   };
 
   if (c.plan < 0 || c.sequence < 0 || c.annual < 0) {
@@ -1492,7 +1498,9 @@ function pay18_loadPolicyMap_(ss) {
 
     map[plan + '||' + pay18_sequenceKey_(row[c.sequence])] = {
       frequency: c.frequency >= 0 ? String(row[c.frequency] || '').trim() : '',
-      annual: pay18_num_(String(row[c.annual] || '').replace(/[^0-9.\-]/g, ''))
+      annual: pay18_num_(String(row[c.annual] || '').replace(/[^0-9.\-]/g, '')),
+      lump: c.lump >= 0 ? pay18_num_(String(row[c.lump] || '').replace(/[^0-9.\-]/g, '')) : 0,
+      group: c.group >= 0 ? String(row[c.group] || '').trim() : ''
     };
   });
 
@@ -1544,6 +1552,30 @@ function pay18_applyAnnualCap_(rowsInfo, policyMap) {
     }
 
     const policy = policyMap[String(row[0] || '').trim() + '||' + pay18_sequenceKey_(info.sequence)];
+
+    /*
+     * 一括商品（確定利回り FIFR・プラチナ PLAT）は1回きりの紹介料。
+     * ×12にせず×1。プランポリシーで年間拠出金0・一括払いありの契約も同じ。
+     */
+    const product = String(row[2] || '').trim();
+
+    const isLumpProduct =
+      /^(FIFR|PLAT)/i.test(product) ||
+      (policy && policy.annual <= 0 && policy.lump > 0);
+
+    if (isLumpProduct) {
+
+      row[RATE] = 1;
+
+      row[AMOUNT] = commission;
+
+      info.capNote =
+        '今回支払い対象（一括商品）：' + product +
+        (policy && policy.group ? '（' + policy.group + '）' : '') +
+        'は一括払いの商品のため、×12ではなく×1で1回のみ（' + money(commission) + '）を支払';
+
+      return;
+    }
 
     if (!policy || policy.annual <= 0) {
       return;

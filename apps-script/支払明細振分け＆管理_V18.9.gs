@@ -116,6 +116,9 @@ const PAYMENT_V18 = {
   /* ★V18.9：false＝推薦者ファイルはボタンを押したときだけ更新 */
   AUTO_PUBLISH: false,
 
+  /* 外部用明細の書き方を変えたら上げる（全員のファイルが次の反映で書き直される） */
+  PUBLIC_DETAIL_VERSION: 'V18.9-PUBLIC-2',
+
   /* 旧版の保護値。V18.5では移行対象として扱う */
   LEGACY_KEEP: 'KEEP',
 
@@ -2799,11 +2802,14 @@ function pay18_writeDetailValues_(sheet, publicHeader, internalRows) {
 
   const safeHeader = publicHeader.slice(0, 18);
 
-  const safeRows = internalRows.map(row => {
-
-    if (!Array.isArray(row)) {
-      return Array(18).fill('');
-    }
+  const safeRows = internalRows
+    /* ★V18.9：支払倍率も今回支払額も空欄の行（金額のない未完成の行）は外部に出さない */
+    .filter(row =>
+      Array.isArray(row) &&
+      !(String(row[12] === undefined ? '' : row[12]).trim() === '' &&
+        String(row[13] === undefined ? '' : row[13]).trim() === '')
+    )
+    .map(row => {
 
     const out = row.slice(0, 18);
 
@@ -3440,6 +3446,7 @@ function pay18_teamDetailHash_(id, publicHeader, internalRows, hidden) {
 
   return pay18_hash_([
     'TEAM_DETAIL',
+    PAYMENT_V18.PUBLIC_DETAIL_VERSION,
     id,
     publicHeader,
     safeRows,
@@ -3908,6 +3915,7 @@ function pay18_detailHash_(id, master, publicHeader, internalRows, hidden) {
 
   return pay18_hash_([
     'DETAIL',
+    PAYMENT_V18.PUBLIC_DETAIL_VERSION,
     id,
     master.folderId,
     master.name,

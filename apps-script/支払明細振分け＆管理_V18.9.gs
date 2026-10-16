@@ -1439,8 +1439,12 @@ function pay18_publicNote_(value) {
     return '今回支払い対象（みなし年払い・担当者変更のため1年目の残り月数分）';
   }
 
+  if (text.indexOf('再開返金：') === 0) {
+    return '払込再開のため戻入分を返金';
+  }
+
   if (text.indexOf('減額戻入：') === 0) {
-    return text.indexOf('契約が「') >= 0 ? '解約・払込停止のため戻入' : '途中減額のため戻入';
+    return text.indexOf('ため（年間拠出0）') >= 0 ? '解約・払込停止のため戻入' : '途中減額のため戻入';
   }
 
   if (text.indexOf('今回支払い対象（一括商品）') === 0) {
@@ -1505,6 +1509,7 @@ function pay18_loadPolicyMap_(ss) {
     lump: col('一括払い'),
     productName: col('商品名'),
     status: col('状態'),
+    lastPaid: col('最終の支払済日'),
     group: col('商品グループ')
   };
 
@@ -1526,11 +1531,42 @@ function pay18_loadPolicyMap_(ss) {
       lump: c.lump >= 0 ? pay18_num_(String(row[c.lump] || '').replace(/[^0-9.\-]/g, '')) : 0,
       product: c.productName >= 0 ? String(row[c.productName] || '').split(' - ')[0].trim() : '',
       status: c.status >= 0 ? String(row[c.status] || '').trim() : '',
+      lastPaid: c.lastPaid >= 0 ? pay18_parseDate_(row[c.lastPaid]) : null,
       group: c.group >= 0 ? String(row[c.group] || '').trim() : ''
     };
   });
 
+  /* A1 の日付＝プランポリシーを貼り付けた日（無ければ今日） */
+  const asOf = pay18_parseDate_(sheet.getRange(1, 1).getDisplayValue()) || new Date();
+
+  Object.defineProperty(map, '__asOf', { value: asOf, enumerable: false });
+
   return map;
+}
+
+
+/* 2026/10/21・2026-10-21・21/10/2026 を日付に */
+function pay18_parseDate_(value) {
+
+  if (value instanceof Date) {
+    return value;
+  }
+
+  const text = String(value || '').trim();
+
+  let m = text.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/);
+
+  if (m) {
+    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  }
+
+  m = text.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/);
+
+  if (m) {
+    return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+  }
+
+  return null;
 }
 
 
@@ -1540,39 +1576,48 @@ function pay18_sequenceKey_(value) {
 
 
 /*************************************************
- * ★V18.9：途中減額の戻入
+ * ★V18.9：途中減額・解約・払込停止の戻入／再開時の返金
  *
  * みなし年払いは「支払時の年間拠出額 × 実質紹介料率」を前払いしている。
- *   支払時の年間拠出額 ＝ 今回支払額 ÷ 実質紹介料率
- * 支払から12か月以内に、プランポリシーの年間拠出金がそれより下がっていたら、
- *   戻入額 ＝（支払時の年間拠出額 − 今の年間拠出金）× 実質紹介料率 × 残り月数 ÷ 12
- *   残り月数 ＝ 12 −（見つけた月 − みなし支払月）
- * を、見つけた月（元データの最新月）にマイナスの行として計上する。
+ *   支払時の年間拠出額 ＝ 今回支払額 ÷ 実質紹介料率（担当者変更は×12÷残り月数）
+ * 今の年間拠出額（プランポリシー）がそれより下がったら戻入：
+ *   戻入額 ＝（下がる前 − 今）× 実質紹介料率 × 残り月数 ÷ 12
+ *   残り月数 ＝ 対象月数（通常12）−（見つけた月 − みなし支払月）
+ * 今の年間拠出額を0とみなすもの：
+ *   状態が 解約済み・失効済み・払込済み
+ *   状態が 有効（期間経過）で、最終の支払済日から90日を超えたもの
+ * 戻入のあと年間拠出額が戻ったら（払込再開・増額）、戻した分の戻入を返金する。
  *
- * 一度計上した戻入は【自動】減額戻入シートに残し、毎回同じ月に同じ額で計上する
- * （二重に引かない）。さらに減額されたときは、差の分だけ追加で戻入。
- * 一括商品・プランポリシーに無い契約・年間拠出金が0の契約は対象外。
+ * 1件ずつ【自動】減額戻入シートに残し、見つけた月にマイナス（返金はプラス）の行で計上。
+ * 二重には引かない／二重には返さない。一括商品・プランポリシーに無い契約は対象外。
  *************************************************/
 function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
 
   const AMOUNT = PAYMENT_V18.SOURCE_AMOUNT_COL - 1;   // N
 
+  const GRACE_DAYS = 90;
+
   const header = [
     '検出月', '推薦者コード', 'プラン番号', 'シーケンス', '商品コード',
-    'みなし支払月', 'みなし支払額', '実質紹介料率', '支払時の年間拠出額',
-    '減額後の年間拠出金', '残り月数', '戻入額', '理由'
+    'みなし支払月', 'みなし支払額', '実質紹介料率', '変更前の年間拠出額',
+    '変更後の年間拠出額', '残り月数', '金額', '理由', '区分', '対象行'
   ];
 
   let sheet = ss.getSheetByName(PAYMENT_V18.CLAWBACK_SHEET);
 
   if (!sheet) {
     sheet = ss.insertSheet(PAYMENT_V18.CLAWBACK_SHEET);
-    sheet.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight('bold');
     sheet.setFrozenRows(1);
   }
 
-  const records = sheet.getLastRow() >= 2
-    ? sheet.getRange(2, 1, sheet.getLastRow() - 1, header.length).getDisplayValues()
+  if (String(sheet.getRange(1, 14).getValue() || '') !== '区分') {
+    sheet.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight('bold');
+  }
+
+  const lastRow = sheet.getLastRow();
+
+  const records = lastRow >= 2
+    ? sheet.getRange(2, 1, lastRow - 1, header.length).getDisplayValues()
     : [];
 
   const latestMonth = rowsInfo.reduce((latest, info) =>
@@ -1584,21 +1629,35 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
 
   const latestIndex = pay18_monthIndex_(latestMonth);
 
+  const asOf = policyMap.__asOf || new Date();
+
+  const money = value => pay18_num_(String(value).replace(/[^0-9.\-]/g, ''));
+
   const recordKey = (id, plan, sequence, payMonth) =>
-    [id, plan, pay18_sequenceKey_(sequence), pay18_month_(payMonth)].join('||');
+    [pay18_id_(id), String(plan || '').trim(), pay18_sequenceKey_(sequence), pay18_month_(payMonth)].join('||');
 
-  /* これまでに戻入した最低の年間拠出金（追加減額の判定用） */
-  const lowest = {};
+  /* 契約ごとの戻入（層）と返金 */
+  const layersByKey = {};
 
-  records.forEach(record => {
+  const refundedByRow = {};
+
+  records.forEach((record, index) => {
+
+    const rowNumber = index + 2;
+
+    if (record[13] === '再開返金') {
+      refundedByRow[record[14]] = (refundedByRow[record[14]] || 0) + money(record[11]);
+      return;
+    }
 
     const key = recordKey(record[1], record[2], record[3], record[5]);
 
-    const after = pay18_num_(String(record[9]).replace(/[^0-9.\-]/g, ''));
-
-    if (lowest[key] === undefined || after < lowest[key]) {
-      lowest[key] = after;
-    }
+    (layersByKey[key] || (layersByKey[key] = [])).push({
+      rowNumber: String(rowNumber),
+      before: money(record[8]),
+      after: money(record[9]),
+      amount: Math.abs(money(record[11]))
+    });
   });
 
   const additions = [];
@@ -1611,9 +1670,13 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
       return;
     }
 
+    if (info.levelPay || pay18_num_(row[3]) >= 2) {
+      return;   // 平準（2年目以降）は前払いしていないので戻入なし
+    }
+
     const paid = pay18_num_(row[AMOUNT]);
 
-    const rate = pay18_num_(String(row[9] || '').replace(/[^0-9.\-]/g, '')) / 100;   // J 実質紹介料率
+    const rate = money(row[9]) / 100;   // J 実質紹介料率
 
     const product = String(row[2] || '').trim();
 
@@ -1621,10 +1684,14 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
       return;
     }
 
+    const coverMonths = info.coverMonths || 12;
+
     const elapsed = latestIndex - pay18_monthIndex_(info.month);
 
-    if (elapsed <= 0 || elapsed >= 12) {
-      return;   // 同じ月の支払、または12か月を過ぎたものは対象外
+    const remaining = coverMonths - elapsed;
+
+    if (elapsed <= 0 || remaining <= 0) {
+      return;   // 同じ月の支払、または対象期間を過ぎたもの
     }
 
     const plan = String(row[0] || '').trim();
@@ -1633,7 +1700,6 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
 
     if (!policy && !info.sequence) {
 
-      /* シーケンス空欄の古い行：同じプランの同じ商品が1つだけならそれを使う */
       const candidates = Object.keys(policyMap)
         .filter(key => key.indexOf(plan + '||') === 0)
         .map(key => policyMap[key])
@@ -1646,10 +1712,17 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
       return;
     }
 
-    /* 解約・失効・払込停止（払込済み）は今の年間拠出を0として戻入 */
-    const stopped = /解約|失効|払込済/.test(policy.status || '');
+    const status = policy.status || '';
 
-    const currentAnnual = stopped ? 0 : policy.annual;
+    const overdueDays = policy.lastPaid
+      ? Math.floor((asOf - policy.lastPaid) / 86400000)
+      : 0;
+
+    const stopped =
+      /解約|失効|払込済/.test(status) ||
+      (/期間経過/.test(status) && overdueDays > GRACE_DAYS);
+
+    const current = stopped ? 0 : policy.annual;
 
     if (!stopped && policy.annual <= 0) {
       return;
@@ -1657,72 +1730,120 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
 
     const key = recordKey(info.id, plan, info.sequence, info.month);
 
-    if (info.levelPay || pay18_num_(row[3]) >= 2) {
-      return;   // 平準（2年目以降・毎月払い）は前払いしていないので戻入なし
-    }
+    const basis = paid / rate * 12 / coverMonths;
 
-    const coverMonths = info.coverMonths || 12;
+    const layers = layersByKey[key] || [];
 
-    const basisOriginal = paid / rate * 12 / coverMonths;
+    /* 今まだ引いたままの分を差し引いた「今の基準」 */
+    const reducedNow = layers.reduce((sum, layer) => {
+      const refunded = refundedByRow[layer.rowNumber] || 0;
+      const keep = layer.amount > 0 ? 1 - Math.min(1, refunded / layer.amount) : 0;
+      return sum + (layer.before - layer.after) * keep;
+    }, 0);
 
-    const basis = lowest[key] !== undefined ? Math.min(basisOriginal, lowest[key]) : basisOriginal;
+    const effective = basis - reducedNow;
 
-    const remaining = coverMonths - elapsed;
+    const base = [
+      latestMonth, info.id, plan, info.sequence || '', product,
+      info.month, paid, Math.round(rate * 10000) / 100 + '%'
+    ];
 
-    if (remaining <= 0) {
+    const reasonStop = stopped
+      ? (/期間経過/.test(status)
+        ? '払込が' + overdueDays + '日止まっている（最終の支払済日から90日超・有効（期間経過））ため（年間拠出0）'
+        : '契約が「' + status + '」になったため（年間拠出0）')
+      : '';
+
+    /* ① 下がった → 戻入 */
+    if (current < effective * 0.99) {
+
+      const amount = Math.round((effective - current) * rate * remaining / 12 * 100) / 100;
+
+      if (amount >= 1) {
+
+        additions.push(base.concat([
+          Math.round(effective * 100) / 100, current, remaining, -amount,
+          (reasonStop || '年間拠出額が' + Math.round(effective * 100) / 100 + '→' + current + 'に減額。') +
+          'みなし年払い（' + info.month + '支払）の残り' + remaining + 'か月分を戻入',
+          '戻入', ''
+        ]));
+      }
+
       return;
     }
 
-    const clawback = Math.round((basis - currentAnnual) * rate * remaining / 12 * 100) / 100;
+    /* ② 戻った（払込再開・増額）→ 引いた分を返金（新しく引いた順に戻す） */
+    if (current > effective * 1.01 && layers.length > 0) {
 
+      layers
+        .slice()
+        .sort((a, b) => a.after - b.after)
+        .forEach(layer => {
 
-    if (currentAnnual >= basis * 0.99 || clawback < 1) {
-      return;   // 減額なし（端数の誤差は無視）
+          const span = layer.before - layer.after;
+
+          if (span <= 0) {
+            return;
+          }
+
+          const restored = Math.max(0, Math.min(current, layer.before) - layer.after) / span;
+
+          const target = Math.round(layer.amount * Math.min(1, restored) * 100) / 100;
+
+          const already = refundedByRow[layer.rowNumber] || 0;
+
+          const refund = Math.round((target - already) * 100) / 100;
+
+          if (refund < 1) {
+            return;
+          }
+
+          additions.push(base.concat([
+            layer.after, current, '', refund,
+            '払込再開・増額で年間拠出額が' + layer.after + '→' + current +
+            'に戻ったため、' + layer.rowNumber + '行目の戻入のうち' + refund + 'を返金',
+            '再開返金', layer.rowNumber
+          ]));
+
+          refundedByRow[layer.rowNumber] = already + refund;
+        });
     }
-
-    additions.push([
-      latestMonth, info.id, plan, info.sequence || '', product,
-      info.month, paid, Math.round(rate * 10000) / 100 + '%',
-      Math.round(basis * 100) / 100, currentAnnual, remaining, -clawback,
-      (stopped
-        ? '契約が「' + policy.status + '」になったため（年間拠出0）'
-        : '年間拠出額が' + Math.round(basis * 100) / 100 + '→' + currentAnnual + 'に減額。') +
-      'みなし年払い（' + info.month + '支払）の残り' + remaining + 'か月分を戻入'
-    ]);
-
-    lowest[key] = currentAnnual;
   });
 
   if (additions.length > 0) {
     sheet
-      .getRange(sheet.getLastRow() + 1, 1, additions.length, header.length)
+      .getRange(lastRow + 1, 1, additions.length, header.length)
       .setValues(additions);
   }
 
-  /* 記録をすべてマイナス行として計上（検出月に入る） */
+  /* 記録をすべて計上（検出月に入る） */
   records.concat(additions.map(row => row.map(String))).forEach(record => {
 
     const month = pay18_month_(record[0]);
 
     const id = pay18_id_(record[1]);
 
-    const amount = pay18_num_(String(record[11]).replace(/[^0-9.\-]/g, ''));
+    const amount = money(record[11]);
 
     if (!month || !id || !amount) {
       return;
     }
 
+    const isRefund = record[13] === '再開返金';
+
+    const isStop = String(record[12]).indexOf('ため（年間拠出0）') >= 0;
+
     const row = Array(20).fill('');
 
     row[0] = record[2];                 // A プラン番号
-    row[1] = String(record[12]).indexOf('契約が「') === 0 ? '解約・停止戻入' : '減額戻入';   // B 説明
+    row[1] = isRefund ? '再開返金' : (isStop ? '解約・停止戻入' : '減額戻入');   // B 説明
     row[2] = record[4];                 // C 商品コード
     row[5] = id;                        // F 支払対象者ID
     row[9] = record[7];                 // J 実質紹介料率
-    row[11] = '戻入';                    // L 支払区分
-    row[13] = amount;                   // N 今回支払額（マイナス）
+    row[11] = isRefund ? '返金' : '戻入'; // L 支払区分
+    row[13] = amount;                   // N 今回支払額（戻入はマイナス・返金はプラス）
     row[14] = month;                    // O 支払月
-    row[15] = '減額戻入：' + record[12];  // P 備考①
+    row[15] = (isRefund ? '再開返金：' : '減額戻入：') + record[12];   // P 備考①
 
     rowsInfo.push({ row: row, id: id, month: month, sequence: record[3] });
   });

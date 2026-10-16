@@ -129,7 +129,7 @@ const PAYMENT_V18 = {
   AUTO_PUBLISH: false,
 
   /* 外部用明細の書き方を変えたら上げる（全員のファイルが次の反映で書き直される） */
-  PUBLIC_DETAIL_VERSION: 'V18.9-PUBLIC-3',
+  PUBLIC_DETAIL_VERSION: 'V18.9-PUBLIC-4',
 
   /* 旧版の保護値。V18.5では移行対象として扱う */
   LEGACY_KEEP: 'KEEP',
@@ -1444,17 +1444,9 @@ function pay18_publicNote_(value) {
     return '今回支払い対象（みなし年払い・担当者変更のため1年目の残り月数分）';
   }
 
-  /* 戻入・返金は双方で齟齬がないよう、理由をそのまま出す */
-  if (text.indexOf('担当者変更調整：') === 0) {
-    return '【戻入】' + text.slice('担当者変更調整：'.length);
-  }
-
-  if (text.indexOf('再開返金：') === 0) {
-    return '【返金】' + text.slice('再開返金：'.length);
-  }
-
-  if (text.indexOf('減額戻入：') === 0) {
-    return '【戻入】' + text.slice('減額戻入：'.length);
+  /* 戻入・返金は双方で齟齬がないよう、説明文をそのまま出す */
+  if (/^【(戻入|返金)】/.test(text)) {
+    return text;
   }
 
   if (text.indexOf('今回支払い対象（一括商品）') === 0) {
@@ -1896,6 +1888,16 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
       .setValues(additions);
   }
 
+  /* お客様名（説明）：プラン番号 → 名前 */
+  const customerByPlan = {};
+
+  rowsInfo.forEach(info => {
+    const plan = String(info.row[0] || '').trim();
+    if (plan && info.row[1] && !customerByPlan[plan]) {
+      customerByPlan[plan] = String(info.row[1]).trim();
+    }
+  });
+
   /* 記録をすべて計上（検出月に入る） */
   records.concat(additions.map(row => row.map(String))).forEach(record => {
 
@@ -1925,10 +1927,94 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
     row[11] = isRefund ? '返金' : '戻入'; // L 支払区分
     row[13] = amount;                   // N 今回支払額（戻入はマイナス・返金はプラス）
     row[14] = month;                    // O 支払月
-    row[15] = (isRefund ? '再開返金：' : (isTransfer ? '担当者変更調整：' : '減額戻入：')) + record[12];   // P 備考①
+    row[15] = pay18_adjustExplain_(record, customerByPlan[String(record[2]).trim()] || '');   // P 備考①（推薦者にもそのまま見せる説明）
 
     rowsInfo.push({ row: row, id: id, month: month, sequence: record[3] });
   });
+}
+
+
+/*************************************************
+ * ★V18.9：戻入・返金の説明文（推薦者が読んで分かるように、計算式まで書く）
+ *************************************************/
+function pay18_adjustExplain_(record, customer) {
+
+  const num = value => pay18_num_(String(value).replace(/[^0-9.\-]/g, ''));
+
+  const usd = value => '$' + (Math.round(Math.abs(value) * 100) / 100)
+    .toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  const plan = String(record[2] || '').trim();
+
+  const sequence = String(record[3] || '').trim();
+
+  const who = plan + (sequence ? '（' + sequence + '）' : '') + (customer ? '・' + customer + '様' : '');
+
+  const payMonth = pay18_monthLabel_(pay18_month_(record[5]));
+
+  const paid = num(record[6]);
+
+  const ratePercent = String(record[7] || '');
+
+  const before = num(record[8]);
+
+  const after = num(record[9]);
+
+  const months = num(record[10]);
+
+  const amount = num(record[11]);
+
+  const reason = String(record[12] || '');
+
+  const kind = String(record[13] || '');
+
+  if (kind === '担当者変更調整') {
+
+    const perMonth = paid / 12;
+
+    const correct = perMonth * months;
+
+    return '【戻入】' + who + '：' +
+      'このご契約は担当者変更で弊社の担当になったもので、1年目12か月のうち' + (12 - months) +
+      'か月分は前の担当で支払済みのため、弊社からお支払いできるのは残り' + months + 'か月分です。' +
+      payMonth + 'に12か月分（' + usd(perMonth) + '×12＝' + usd(paid) + '）をお支払いしましたが、' +
+      '正しくは' + months + 'か月分（' + usd(perMonth) + '×' + months + '＝' + usd(correct) + '）でしたので、' +
+      '差額' + usd(amount) + 'を今回差し引きます。';
+  }
+
+  if (kind === '再開返金') {
+
+    return '【返金】' + who + '：' +
+      'お客様のお支払いが再開された（または積立額が戻った）ため、以前「戻入」として差し引いた分のうち' +
+      usd(amount) + 'をお返しします（年間拠出額 ' + usd(before) + '→' + usd(after) + '）。';
+  }
+
+  const stopped = reason.indexOf('ため（年間拠出0）') >= 0;
+
+  const overdue = reason.indexOf('90日') >= 0;
+
+  const head = '【戻入】' + who + '：';
+
+  const prepaid =
+    'みなし年払いとして、' + payMonth + 'に1年分の紹介料（年間拠出額' + usd(before) +
+    '×紹介料率' + ratePercent + '）を先にお支払いしていました。';
+
+  if (stopped) {
+
+    const cause = overdue
+      ? 'お客様のお支払いが最終支払日から90日以上止まっているため、'
+      : 'お客様のご契約が' + (reason.match(/「(.+?)」/) ? '「' + reason.match(/「(.+?)」/)[1] + '」' : '解約・失効') + 'となったため、';
+
+    return head + prepaid + cause +
+      'まだ積立が行われていない残り' + months + 'か月分（' + usd(before) + '×' + ratePercent +
+      '×' + months + '/12＝' + usd(amount) + '）を今回差し引きます。' +
+      (overdue ? 'お支払いが再開された場合は、差し引いた分をお返しします。' : '');
+  }
+
+  return head + prepaid +
+    'お客様が積立額を減額されたため（年間' + usd(before) + '→' + usd(after) + '）、' +
+    '残り' + months + 'か月分の差額（(' + usd(before) + '−' + usd(after) + ')×' + ratePercent +
+    '×' + months + '/12＝' + usd(amount) + '）を今回差し引きます。';
 }
 
 
@@ -1968,10 +2054,7 @@ function pay18_collectAdjustNotes_(rowsInfo) {
 
     const key = info.month + '||' + info.id;
 
-    const text =
-      (kind === '返金' ? '【返金】' : '【戻入】') +
-      String(info.row[0] || '') + ' ' + pay18_num_(info.row[13]).toFixed(2) + '：' +
-      String(info.row[15] || '').replace(/^(担当者変更調整|再開返金|減額戻入)：/, '');
+    const text = String(info.row[15] || '').replace(/ \/ /g, '／');
 
     (notes[key] || (notes[key] = [])).push(text);
   });

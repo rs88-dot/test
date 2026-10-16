@@ -129,7 +129,7 @@ const PAYMENT_V18 = {
   AUTO_PUBLISH: false,
 
   /* 外部用明細の書き方を変えたら上げる（全員のファイルが次の反映で書き直される） */
-  PUBLIC_DETAIL_VERSION: 'V18.9-PUBLIC-2',
+  PUBLIC_DETAIL_VERSION: 'V18.9-PUBLIC-3',
 
   /* 旧版の保護値。V18.5では移行対象として扱う */
   LEGACY_KEEP: 'KEEP',
@@ -1128,6 +1128,7 @@ function pay18_loadContext_() {
     masterMap: masterMap,
     internalHeader: internalHeader,
     publicHeader: publicHeader,
+    adjustNotes: pay18_collectAdjustNotes_(rowsInfo),
     groups: groups,
     aggregate: aggregate,
     hiddenColumns: hiddenColumns
@@ -1443,16 +1444,17 @@ function pay18_publicNote_(value) {
     return '今回支払い対象（みなし年払い・担当者変更のため1年目の残り月数分）';
   }
 
+  /* 戻入・返金は双方で齟齬がないよう、理由をそのまま出す */
   if (text.indexOf('担当者変更調整：') === 0) {
-    return '担当者変更のため1年目は弊社分の月数のみ（差額を戻入）';
+    return '【戻入】' + text.slice('担当者変更調整：'.length);
   }
 
   if (text.indexOf('再開返金：') === 0) {
-    return '払込再開のため戻入分を返金';
+    return '【返金】' + text.slice('再開返金：'.length);
   }
 
   if (text.indexOf('減額戻入：') === 0) {
-    return text.indexOf('ため（年間拠出0）') >= 0 ? '解約・払込停止のため戻入' : '途中減額のため戻入';
+    return '【戻入】' + text.slice('減額戻入：'.length);
   }
 
   if (text.indexOf('今回支払い対象（一括商品）') === 0) {
@@ -1907,6 +1909,50 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
 
     rowsInfo.push({ row: row, id: id, month: month, sequence: record[3] });
   });
+}
+
+
+/*************************************************
+ * ★V18.9：戻入・返金の理由を台帳の備考に入れる
+ *************************************************/
+function pay18_collectAdjustNotes_(rowsInfo) {
+
+  const notes = {};
+
+  rowsInfo.forEach(info => {
+
+    const kind = String(info.row[11] || '');
+
+    if (!info.month || (kind !== '戻入' && kind !== '返金')) {
+      return;
+    }
+
+    const key = info.month + '||' + info.id;
+
+    const text =
+      (kind === '返金' ? '【返金】' : '【戻入】') +
+      String(info.row[0] || '') + ' ' + pay18_num_(info.row[13]).toFixed(2) + '：' +
+      String(info.row[15] || '').replace(/^(担当者変更調整|再開返金|減額戻入)：/, '');
+
+    (notes[key] || (notes[key] = [])).push(text);
+  });
+
+  return notes;
+}
+
+
+function pay18_mergeAdjustNote_(note, adjust) {
+
+  let result = String(note || '').trim();
+
+  (adjust || []).forEach(text => {
+
+    if (result.indexOf(text) < 0) {
+      result = result ? result + ' / ' + text : text;
+    }
+  });
+
+  return result;
 }
 
 
@@ -2764,7 +2810,7 @@ function pay18_rebuildLedger_(context) {
         invoice: oldRow.invoice || '未',
         status: oldRow.status || '未払い',
         date: oldRow.date || '',
-        note: oldRow.note || '',
+        note: pay18_mergeAdjustNote_(oldRow.note || '', (context.adjustNotes || {})[source.key]),
         marker: PAYMENT_V18.AUTO,
         protect: ''
       };

@@ -1251,7 +1251,13 @@ function pay18_writeJudgeColumn_(source, all, rowsInfo, lastRow) {
   const header = source.getRange(1, column);
 
   if (header.getValue() !== '支払判定（自動）') {
+
     header.setValue('支払判定（自動）');
+
+    /* P列に表示されるので、AA列は隠しておく */
+    try {
+      source.hideColumns(column);
+    } catch (error) {}
   }
 
   if (output.length === 0) {

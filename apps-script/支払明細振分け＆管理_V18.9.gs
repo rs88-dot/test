@@ -201,18 +201,34 @@ function forceSyncPaymentSheetsV18() {
  *************************************************/
 function publishPaymentFilesV18() {
 
-  pay18_fullSync_(false, true);
+  const result = pay18_fullSync_(false, true);
 
-  pay18_alert_('推薦者ファイルへの反映が終わりました。');
+  pay18_alert_('推薦者ファイルへの反映が終わりました。\n' + pay18_publishSummary_(result));
 }
 
 
 /* 全員のファイルを作り直す（表示が崩れたときなど） */
 function publishAllPaymentFilesV18() {
 
-  pay18_fullSync_(true, true);
+  const result = pay18_fullSync_(true, true);
 
-  pay18_alert_('全員の推薦者ファイルを作り直しました。');
+  pay18_alert_('全員の推薦者ファイルを作り直しました。\n' + pay18_publishSummary_(result));
+}
+
+
+function pay18_publishSummary_(result) {
+
+  if (!result) {
+    return '（結果を取得できませんでした）';
+  }
+
+  return [
+    '更新したファイル：' + result.opened + '件',
+    '変更なし：' + result.skipped + '件',
+    '共有しない設定：' + result.disabled + '件',
+    'フォルダなし：' + result.noFolder + '件',
+    'エラー：' + result.errors + '件'
+  ].concat(result.messages.slice(0, 5)).join('\n');
 }
 
 
@@ -821,6 +837,7 @@ function pay18_fullSync_(forceAll, publish) {
     let disabled = 0;
     let noFolder = 0;
     let errors = 0;
+    const messages = [];
 
     /*************************************************
      * 各推薦者
@@ -906,6 +923,8 @@ function pay18_fullSync_(forceAll, publish) {
 
         errors++;
 
+        messages.push(id + '：' + error.message);
+
         console.error(id + ' : ' + error.message);
       }
     });
@@ -921,6 +940,8 @@ function pay18_fullSync_(forceAll, publish) {
 
       errors++;
 
+      messages.push('パクさんチーム：' + error.message);
+
       console.error('パクさんチーム : ' + error.message);
     }
 
@@ -934,6 +955,8 @@ function pay18_fullSync_(forceAll, publish) {
       ' / ERR=' + errors +
       ' / ' + ((Date.now() - startTime) / 1000).toFixed(1) + '秒'
     );
+
+    return { opened, skipped, disabled, noFolder, errors, messages };
 
   } finally {
 

@@ -216,8 +216,29 @@ function publishAllPaymentFilesV18() {
 }
 
 
-/* スプレッドシートを開くとメニュー「支払管理」が出る */
-function onOpen() {
+/*
+ * スプレッドシートを開くとメニュー「支払管理」が出る。
+ * 「契約時保存」メニューの onOpen とぶつからないよう、
+ * 名前を変えて「開いたとき」トリガーで呼ぶ（installPaymentMenuV18 で登録）。
+ */
+function installPaymentMenuV18() {
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  ScriptApp.getProjectTriggers()
+    .filter(trigger => trigger.getHandlerFunction() === 'showPaymentMenuV18')
+    .forEach(trigger => ScriptApp.deleteTrigger(trigger));
+
+  ScriptApp.newTrigger('showPaymentMenuV18')
+    .forSpreadsheet(ss)
+    .onOpen()
+    .create();
+
+  showPaymentMenuV18();
+}
+
+
+function showPaymentMenuV18() {
 
   SpreadsheetApp.getUi()
     .createMenu('支払管理')

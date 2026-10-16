@@ -1184,6 +1184,18 @@ function pay18_applyMinashiGuard_(rowsInfo) {
           : '（拠出金額・支払額も支払済の行と一致しない）');
 
       info.noteChanged = true;
+
+    } else {
+
+      /* 初めての支払い：備考①が空欄か定型文のときだけ理由を書く */
+      const currentNote = String(info.row[NOTE] || '').trim();
+
+      if (!currentNote || currentNote === '今回支払い対象（みなし年払い）') {
+
+        info.row[NOTE] = '今回支払い対象（みなし年払い）：過去12か月に同じプラン番号の支払いがないため、初めての支払い';
+
+        info.noteChanged = true;
+      }
     }
 
     history.push({

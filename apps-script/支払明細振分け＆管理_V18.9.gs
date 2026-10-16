@@ -1707,7 +1707,8 @@ function pay18_rebuildLedger_(context) {
 
   const output = [header];
 
-  [...autoRows, ...manualRows].forEach(row => {
+  /* ★V18.9：手動行も含めて支払月順に並べる（同じ月・同じ人ならAUTO行が先） */
+  [...autoRows, ...manualRows].sort(pay18_compare_).forEach(row => {
 
     output.push([
       row.month || '',

@@ -2611,6 +2611,31 @@ function pay18_readExistingLedger_(sheet, sourceAggregate) {
       }
     }
 
+    /*
+     * ★V18.9修正：誤った戻入のときに自動で作られた行・備考の掃除。
+     * 備考が自動の文（【戻入】【返金】・繰越のみ）だけで、支払済・支払日・B社の入力が無い
+     * MANUAL行は、手で作った行ではないので戻さない。残す行も自動の文は消す（毎回作り直す）。
+     */
+    if (/【(戻入|返金)】/.test(String(record.note || ''))) {
+
+      const userNote = pay18_stripAdjustNote_(record.note)
+        .replace('前月までの未払い繰越のみ（今月の新規発生なし）', '')
+        .replace(/^\s*\/\s*|\s*\/\s*$/g, '')
+        .trim();
+
+      if (
+        record.marker === PAYMENT_V18.MANUAL &&
+        !userNote &&
+        !pay18_isSettled_(record.status) &&
+        !record.date &&
+        (record.bAmount === '' || record.bAmount === null || Math.abs(pay18_num_(record.bAmount)) < 0.000001)
+      ) {
+        return;
+      }
+
+      record.note = pay18_stripAdjustNote_(record.note);
+    }
+
     if (isProtectedManual) {
 
       result.manual.push({

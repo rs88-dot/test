@@ -81,6 +81,7 @@ const PAYMENT_V18 = {
   SOURCE_AMOUNT_COL: 14,  // N
   SOURCE_MONTH_COL: 15,   // O
   SOURCE_SEQUENCE_COL: 21, // U シーケンス
+  SOURCE_JUDGE_COL: 27,    // AA 支払判定（自動）
 
   /*************************************************
    * 推薦者マスタ
@@ -926,25 +927,7 @@ function pay18_loadContext_() {
 
   pay18_applyMinashiGuard_(rowsInfo);
 
-  /*
-   * ★V18.9：判定の理由を元データのP列（備考①）にも書く。
-   * 最新月の行で、内容が変わった行だけ（過去月の備考は触らない）。
-   */
-  const latestSourceMonth = rowsInfo.reduce((latest, info) =>
-    pay18_monthIndex_(info.month) > pay18_monthIndex_(latest) ? info.month : latest, '');
-
-  rowsInfo.forEach(info => {
-
-    if (!info.noteChanged || info.month !== latestSourceMonth) {
-      return;
-    }
-
-    const note = String(info.row[15] || '');
-
-    if (note !== info.originalNote) {
-      source.getRange(info.rowNumber, 16).setValue(note);
-    }
-  });
+  pay18_writeJudgeColumn_(source, all, rowsInfo, lastRow);
 
   rowsInfo.forEach(info => {
 
@@ -1190,7 +1173,7 @@ function pay18_applyMinashiGuard_(rowsInfo) {
       /* 初めての支払い：備考①が空欄か定型文のときだけ理由を書く */
       const currentNote = String(info.row[NOTE] || '').trim();
 
-      if (!currentNote || currentNote === '今回支払い対象（みなし年払い）') {
+      if (!currentNote || currentNote.indexOf('今回支払い対象（みなし年払い）') === 0) {
 
         info.row[NOTE] = '今回支払い対象（みなし年払い）：過去12か月に同じプラン番号の支払いがないため、初めての支払い';
 
@@ -1207,6 +1190,85 @@ function pay18_applyMinashiGuard_(rowsInfo) {
       amount: amount
     });
   });
+}
+
+
+/*************************************************
+ * ★V18.9：みなしの支払判定の理由を AA列「支払判定（自動）」に書く
+ *
+ * P列（備考①）はP2のMAP式が自動で埋める列なので、スクリプトは書かない。
+ * 以前のV18.9がP列に書いてしまった文字（式の展開を止めて #REF! になる）は
+ * 見つけたら消して、式が元どおり展開されるようにする。
+ * AA列は最新月の行だけ理由を書き、それ以外は空欄。
+ *************************************************/
+function pay18_writeJudgeColumn_(source, all, rowsInfo, lastRow) {
+
+  /* ① 以前P列に書いた文字を消す（2行目のMAP式は残す） */
+  const isOwnNote = text =>
+    text.indexOf('今回支払い対象（みなし年払い）：') === 0 ||
+    text.indexOf('みなし年払いは12か月に1回のため今回は支払対象外') >= 0 ||
+    text.indexOf('2行目は支払対象外') >= 0 ||
+    text.indexOf('シーケンス付け間違いと判断') >= 0;
+
+  const blockers = [];
+
+  for (let r = 2; r < all.length; r++) {   // 3行目以降
+
+    const text = String(all[r][15] || '');
+
+    if (text && isOwnNote(text)) {
+      blockers.push('P' + (r + 1));
+    }
+  }
+
+  if (blockers.length > 0) {
+    source.getRangeList(blockers).clearContent();
+  }
+
+  /* ② AA列に最新月の判定理由 */
+  const latestSourceMonth = rowsInfo.reduce((latest, info) =>
+    pay18_monthIndex_(info.month) > pay18_monthIndex_(latest) ? info.month : latest, '');
+
+  const column = PAYMENT_V18.SOURCE_JUDGE_COL;
+
+  const output = [];
+
+  for (let r = 2; r <= lastRow; r++) {
+    output.push(['']);
+  }
+
+  rowsInfo.forEach(info => {
+
+    if (info.noteChanged && info.month === latestSourceMonth) {
+      output[info.rowNumber - 2][0] = String(info.row[15] || '');
+    }
+  });
+
+  if (source.getMaxColumns() < column) {
+    source.insertColumnsAfter(source.getMaxColumns(), column - source.getMaxColumns());
+  }
+
+  const header = source.getRange(1, column);
+
+  if (header.getValue() !== '支払判定（自動）') {
+    header.setValue('支払判定（自動）');
+  }
+
+  if (output.length === 0) {
+    return;
+  }
+
+  const range = source.getRange(2, column, output.length, 1);
+
+  const current = range.getValues();
+
+  const changed = current.some((row, index) =>
+    String(row[0] || '') !== output[index][0]
+  );
+
+  if (changed) {
+    range.setValues(output);
+  }
 }
 
 

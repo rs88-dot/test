@@ -918,11 +918,33 @@ function pay18_loadContext_() {
       row: row,
       id: id,
       month: month,
-      sequence: String(sequenceValues[index + 1][0] || '').trim()
+      sequence: String(sequenceValues[index + 1][0] || '').trim(),
+      rowNumber: index + 2,
+      originalNote: String(original[15] || '')
     });
   });
 
   pay18_applyMinashiGuard_(rowsInfo);
+
+  /*
+   * ★V18.9：判定の理由を元データのP列（備考①）にも書く。
+   * 最新月の行で、内容が変わった行だけ（過去月の備考は触らない）。
+   */
+  const latestSourceMonth = rowsInfo.reduce((latest, info) =>
+    pay18_monthIndex_(info.month) > pay18_monthIndex_(latest) ? info.month : latest, '');
+
+  rowsInfo.forEach(info => {
+
+    if (!info.noteChanged || info.month !== latestSourceMonth) {
+      return;
+    }
+
+    const note = String(info.row[15] || '');
+
+    if (note !== info.originalNote) {
+      source.getRange(info.rowNumber, 16).setValue(note);
+    }
+  });
 
   rowsInfo.forEach(info => {
 
@@ -1018,14 +1040,39 @@ function pay18_applyMinashiGuard_(rowsInfo) {
    * ★V18.9：プラン番号＋支払対象者が同じで、
    * シーケンス（U列）が両方入っていればシーケンスで、
    * どちらかが空欄なら商品コードで同じ契約かを判定する。
+   * 判定の理由は備考①に書く（元データのP列にも反映）。
    */
+
+  /* 月ごと・プランごとに、みなし行に出てくるシーケンス */
+  const sequencesByMonthPlan = {};
+
+  rowsInfo.forEach(info => {
+
+    if (!info.month || String(info.row[KUBUN] || '').trim() !== 'みなし') {
+      return;
+    }
+
+    const key = pay18_monthIndex_(info.month) + '||' +
+      String(info.row[0] || '').trim() + '||' + info.id;
+
+    (sequencesByMonthPlan[key] || (sequencesByMonthPlan[key] = new Set()))
+      .add(info.sequence || '');
+  });
+
+  const fmt = value => {
+    const num = Math.round(pay18_num_(value) * 100) / 100;
+    return String(num);
+  };
+
   const paidByPlan = {};
 
   targets.forEach(item => {
 
     const info = item.info;
 
-    const planKey = String(info.row[0] || '').trim() + '||' + info.id;
+    const plan = String(info.row[0] || '').trim();
+
+    const planKey = plan + '||' + info.id;
 
     const product = String(info.row[2] || '').trim();
 
@@ -1039,29 +1086,104 @@ function pay18_applyMinashiGuard_(rowsInfo) {
 
     const history = paidByPlan[planKey] || (paidByPlan[planKey] = []);
 
-    const paid = history.find(record =>
-      (index > record.index
-        ? index - record.index < 12 &&
-          (record.sequence && sequence
-            ? record.sequence === sequence
-            : record.product === product)
-        /* 同じ月に全く同じ行が2回貼られている場合も2行目は0 */
-        : index === record.index &&
-          record.sequence === sequence &&
-          record.product === product &&
-          record.contribution === contribution &&
-          record.amount === amount)
+    const recent = history.filter(record =>
+      index > record.index && index - record.index < 12
     );
 
-    if (paid) {
+    const sameNumbers = record =>
+      record.product === product &&
+      Math.abs(record.contribution - contribution) < 0.005 &&
+      Math.abs(record.amount - amount) < 0.005;
+
+    let reason = '';
+
+    /* ① プラン番号＋シーケンスが同じ（シーケンス空欄なら商品コード） */
+    const bySequence = recent.find(record =>
+      record.sequence && sequence
+        ? record.sequence === sequence
+        : record.product === product
+    );
+
+    if (bySequence) {
+
+      reason = bySequence.sequence && sequence
+        ? bySequence.month + 'に支払済（プラン番号＋シーケンス「' + sequence +
+          '」が同じ）→ みなし年払いは12か月に1回のため今回は支払対象外'
+        : bySequence.month + 'に支払済（シーケンスが空欄のため、プラン番号＋商品コード「' +
+          product + '」で照合）→ みなし年払いは12か月に1回のため今回は支払対象外';
+    }
+
+    /* ② 同じ月に全く同じ行が2回 */
+    if (!reason) {
+
+      const duplicate = history.find(record =>
+        record.index === index &&
+        record.sequence === sequence &&
+        sameNumbers(record)
+      );
+
+      if (duplicate) {
+        reason = '同じ月（' + info.month + '）に全く同じ行（プラン番号・シーケンス・商品・拠出金額・支払額）が' +
+          '2回あるため、2行目は支払対象外';
+      }
+    }
+
+    /*
+     * ③ シーケンスの付け間違い：
+     * 初めて出てきたシーケンス名だが、商品・拠出金額・支払額が
+     * 12か月以内に支払済の別シーケンスと全く同じで、
+     * しかも今月そのシーケンスの行が無い → 同じ契約と判断。
+     */
+    if (!reason && sequence) {
+
+      const monthSequences =
+        sequencesByMonthPlan[index + '||' + planKey] || new Set();
+
+      const mislabel = recent.find(record =>
+        record.sequence &&
+        record.sequence !== sequence &&
+        !monthSequences.has(record.sequence) &&
+        sameNumbers(record) &&
+        !history.some(other => other.sequence === sequence)
+      );
+
+      if (mislabel) {
+        reason = 'シーケンスは「' + sequence + '」だが、商品' + product +
+          '・拠出金額' + fmt(contribution) + '・支払額' + fmt(amount) +
+          'が' + mislabel.month + 'に支払済の「' + mislabel.sequence +
+          '」と全く同じで、今月「' + mislabel.sequence +
+          '」の行が無いため、同じ契約のシーケンス付け間違いと判断 → 今回は支払対象外';
+      }
+    }
+
+    if (reason) {
 
       info.row[RATE] = 0;
 
       info.row[AMOUNT] = 0;
 
-      info.row[NOTE] = paid.month + 'に支払済（すでに12か月分支払済)';
+      info.row[NOTE] = reason;
+
+      info.noteChanged = true;
 
       return;
+    }
+
+    /* 同じプラン番号は支払済だが、別のシーケンスとして新規に支払う場合 */
+    if (recent.length > 0) {
+
+      const paidSequences = [...new Set(recent.map(record =>
+        record.sequence || record.product
+      ))].join('・');
+
+      info.row[NOTE] = '今回支払い対象（みなし年払い）：プラン番号は' +
+        recent[0].month + 'に支払済（' + paidSequences + '）だが、シーケンス「' +
+        (sequence || product) + '」はこれまで支払っていないため、別の契約として新規に支払' +
+        (recent.some(sameNumbers)
+          ? '（拠出金額・支払額が同じ支払済の行は今月も別に出ているため、付け間違いではないと判断）'
+          : '（拠出金額・支払額も支払済の行と一致しない）');
+
+      info.noteChanged = true;
     }
 
     history.push({

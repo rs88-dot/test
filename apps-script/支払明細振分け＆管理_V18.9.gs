@@ -110,6 +110,7 @@ const PAYMENT_V18 = {
    *************************************************/
   AUTO: 'AUTO',
   MANUAL: 'MANUAL',
+  CARRY: 'CARRY',
 
   /* 旧版の保護値。V18.5では移行対象として扱う */
   LEGACY_KEEP: 'KEEP',
@@ -563,7 +564,9 @@ function pay18_fastLedgerEdit_(e) {
        * 空欄行・既存MANUAL行を触った場合は
        * MANUAL + USER_KEEP にする。
        */
-      if (String(row[18] || '').trim() !== PAYMENT_V18.AUTO) {
+      const marker = String(row[18] || '').trim();
+
+      if (marker !== PAYMENT_V18.AUTO && marker !== PAYMENT_V18.CARRY) {
 
         row[18] = PAYMENT_V18.MANUAL;
 
@@ -1279,6 +1282,7 @@ function pay18_readExistingLedger_(sheet, sourceAggregate) {
 
   const result = {
     autoByKey: {},
+    carryByKey: {},
     manual: [],
     contactById: {}
   };
@@ -1466,6 +1470,20 @@ function pay18_readExistingLedger_(sheet, sourceAggregate) {
 
       result.autoByKey[key] = pay18_mergeLedgerRecord_(
         result.autoByKey[key] || null,
+        record
+      );
+
+      return;
+    }
+
+    /*********************************************
+     * ★V18.9：繰越行（CARRY）は案内状況・備考などを
+     * 次の再構築に引き継ぐ（行そのものは毎回作り直す）。
+     *********************************************/
+    if (record.marker === PAYMENT_V18.CARRY) {
+
+      result.carryByKey[key] = pay18_mergeLedgerRecord_(
+        result.carryByKey[key] || null,
         record
       );
 
@@ -1680,6 +1698,8 @@ function pay18_rebuildLedger_(context) {
     };
   });
 
+  const carryRows = pay18_buildCarryRows_([...autoRows, ...manualRows], old, context);
+
   const header = [
     '支払月',
     '推薦者コード',
@@ -1708,7 +1728,7 @@ function pay18_rebuildLedger_(context) {
   const output = [header];
 
   /* ★V18.9：手動行も含めて支払月順に並べる（同じ月・同じ人ならAUTO行が先） */
-  [...autoRows, ...manualRows].sort(pay18_compare_).forEach(row => {
+  [...autoRows, ...manualRows, ...carryRows].sort(pay18_compare_).forEach(row => {
 
     output.push([
       row.month || '',
@@ -1756,6 +1776,124 @@ function pay18_rebuildLedger_(context) {
   pay18_ensureLedgerFormatting_(sheet);
 
   return pay18_buildLedgerState_(sheet);
+}
+
+
+/*************************************************
+ * ★V18.9：繰越だけの人の最新月の行
+ *
+ * 最新月に行がなく、それより前の月が未払いのまま
+ * （W社・B社のどちらかに金額あり）の人には、
+ * 最新月に「繰越のみ」の行（W社0）を作る。
+ * 前月未払い繰越・総支払額・対応は再計算で入る。
+ * 案内状況・請求書・支払状況・支払日・備考・B社は次回以降も引き継ぐ。
+ *************************************************/
+function pay18_buildCarryRows_(rows, old, context) {
+
+  let latestKey = 0;
+
+  let latestMonth = '';
+
+  rows.forEach(row => {
+
+    const key = pay18_monthKey_(row.month);
+
+    if (key > latestKey) {
+      latestKey = key;
+      latestMonth = row.month;
+    }
+  });
+
+  if (!latestMonth) {
+    return [];
+  }
+
+  const byId = {};
+
+  rows.forEach(row => {
+
+    if (!row.id || !row.month) {
+      return;
+    }
+
+    const key = pay18_monthKey_(row.month);
+
+    if (!byId[row.id]) {
+      byId[row.id] = {};
+    }
+
+    if (!byId[row.id][key]) {
+      byId[row.id][key] = [];
+    }
+
+    byId[row.id][key].push(row);
+  });
+
+  const carryRows = [];
+
+  Object.keys(byId).forEach(id => {
+
+    const monthMap = byId[id];
+
+    if (monthMap[latestKey]) {
+      return;
+    }
+
+    /* 直近から遡って、未払いの月にW社・B社の金額があるか */
+    const keys = Object.keys(monthMap).map(Number).sort((a, b) => b - a);
+
+    let hasUnpaid = false;
+
+    for (const key of keys) {
+
+      const entries = monthMap[key];
+
+      if (entries.some(entry => pay18_isSettled_(entry.status))) {
+        break;
+      }
+
+      if (entries.some(entry =>
+        Math.abs(pay18_num_(entry.wAmount)) > 0.000001 ||
+        Math.abs(pay18_num_(entry.bAmount)) > 0.000001
+      )) {
+        hasUnpaid = true;
+        break;
+      }
+    }
+
+    if (!hasUnpaid) {
+      return;
+    }
+
+    const last = monthMap[keys[0]][0];
+
+    const master = context.masterMap[id] || {};
+
+    const kept = old.carryByKey[latestMonth + '||' + id] || {};
+
+    const contact = old.contactById[id] || {};
+
+    carryRows.push({
+      month: latestMonth,
+      id: id,
+      name: master.name || last.name || '',
+      largeGroup: master.largeGroup || last.largeGroup || '',
+      smallGroup: master.smallGroup || last.smallGroup || '',
+      wAmount: 0,
+      bAmount: kept.bAmount !== undefined ? kept.bAmount : '',
+      contact: kept.contact || contact.contact || '',
+      person: kept.person || contact.person || '',
+      guide: kept.guide || '未案内',
+      invoice: kept.invoice || '未',
+      status: kept.status || '未払い',
+      date: kept.date || '',
+      note: kept.note || '前月までの未払い繰越のみ（今月の新規発生なし）',
+      marker: PAYMENT_V18.CARRY,
+      protect: ''
+    });
+  });
+
+  return carryRows;
 }
 
 

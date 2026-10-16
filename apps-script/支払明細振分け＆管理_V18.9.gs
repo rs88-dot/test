@@ -1554,13 +1554,13 @@ function pay18_applyAnnualCap_(rowsInfo, policyMap) {
     const policy = policyMap[String(row[0] || '').trim() + '||' + pay18_sequenceKey_(info.sequence)];
 
     /*
-     * 一括商品（確定利回り FIFR・プラチナ PLAT）は1回きりの紹介料。
+     * 一括商品（確定利回り FIFR・プラチナ PLAT・ACS）は1回きりの紹介料。
      * ×12にせず×1。プランポリシーで年間拠出金0・一括払いありの契約も同じ。
      */
     const product = String(row[2] || '').trim();
 
     const isLumpProduct =
-      /^(FIFR|PLAT)/i.test(product) ||
+      /^(FIFR|PLAT|ACS)/i.test(product) ||
       (policy && policy.annual <= 0 && policy.lump > 0);
 
     if (isLumpProduct) {

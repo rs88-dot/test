@@ -129,7 +129,7 @@ const PAYMENT_V18 = {
   AUTO_PUBLISH: false,
 
   /* 外部用明細の書き方を変えたら上げる（全員のファイルが次の反映で書き直される） */
-  PUBLIC_DETAIL_VERSION: 'V18.9-PUBLIC-4',
+  PUBLIC_DETAIL_VERSION: 'V18.9-PUBLIC-5',
 
   /* 旧版の保護値。V18.5では移行対象として扱う */
   LEGACY_KEEP: 'KEEP',
@@ -3809,6 +3809,15 @@ function pay18_writeDetailValues_(sheet, publicHeader, internalRows) {
 
     /* ★V18.9：外部用は備考①を短い文にする */
     out[15] = pay18_publicNote_(out[15]);
+
+    /* 実質紹介料率0%で今回0円の行は「支払対象」と紛らわしいので書き換え */
+    if (
+      pay18_num_(out[10]) === 0 &&
+      pay18_num_(out[13]) === 0 &&
+      String(out[15] || '').indexOf('今回支払い対象') === 0
+    ) {
+      out[15] = '支払なし（この契約のあなたの実質紹介料率は0%）';
+    }
 
     return out;
   });

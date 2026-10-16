@@ -1033,11 +1033,15 @@ function pay18_applyMinashiGuard_(rowsInfo) {
     const history = paidByPlan[planKey] || (paidByPlan[planKey] = []);
 
     const paid = history.find(record =>
-      index > record.index &&
-      index - record.index < 12 &&
-      (record.sequence && sequence
-        ? record.sequence === sequence
-        : record.product === product)
+      (index > record.index
+        ? index - record.index < 12 &&
+          (record.sequence && sequence
+            ? record.sequence === sequence
+            : record.product === product)
+        /* 同じ月に全く同じ行が2回貼られている場合も2行目は0 */
+        : index === record.index &&
+          record.sequence === sequence &&
+          record.product === product)
     );
 
     if (paid) {

@@ -83,6 +83,9 @@ const PAYMENT_V18 = {
   SOURCE_SEQUENCE_COL: 21, // U シーケンス
   SOURCE_JUDGE_COL: 27,    // AA 支払判定（自動）
 
+  /* ★V18.9：途中減額の戻入の記録 */
+  CLAWBACK_SHEET: '【自動】減額戻入',
+
   /* ★V18.9：年間拠出金による上限をかける最初の支払月（これより前の月は支払済のため触らない） */
   POLICY_SHEET: 'プランポリシー',
   ANNUAL_CAP_FROM: '2026.10',
@@ -1052,12 +1055,17 @@ function pay18_loadContext_() {
     });
   });
 
+  const policyMap = pay18_loadPolicyMap_(ss);
+
   /* ★V18.9：年払い・前払いのみなし過払い防止（プランポリシーの年間拠出金で上限） */
-  pay18_applyAnnualCap_(rowsInfo, pay18_loadPolicyMap_(ss));
+  pay18_applyAnnualCap_(rowsInfo, policyMap);
 
   pay18_applyMinashiGuard_(rowsInfo);
 
   pay18_writeJudgeColumn_(source, all, rowsInfo, lastRow);
+
+  /* ★V18.9：途中減額の戻入（記録シートに残し、検出した月にマイナス行として計上） */
+  pay18_applyReductionClawback_(ss, rowsInfo, policyMap);
 
   rowsInfo.forEach(info => {
 
@@ -1421,6 +1429,10 @@ function pay18_publicNote_(value) {
 
   const text = String(value || '');
 
+  if (text.indexOf('減額戻入：') === 0) {
+    return '途中減額のため戻入';
+  }
+
   if (text.indexOf('今回支払い対象（一括商品）') === 0) {
     return '今回支払い対象（一括商品・1回のみ）';
   }
@@ -1481,6 +1493,7 @@ function pay18_loadPolicyMap_(ss) {
     frequency: col('支払頻度'),
     annual: col('年間拠出金'),
     lump: col('一括払い'),
+    productName: col('商品名'),
     group: col('商品グループ')
   };
 
@@ -1500,6 +1513,7 @@ function pay18_loadPolicyMap_(ss) {
       frequency: c.frequency >= 0 ? String(row[c.frequency] || '').trim() : '',
       annual: pay18_num_(String(row[c.annual] || '').replace(/[^0-9.\-]/g, '')),
       lump: c.lump >= 0 ? pay18_num_(String(row[c.lump] || '').replace(/[^0-9.\-]/g, '')) : 0,
+      product: c.productName >= 0 ? String(row[c.productName] || '').split(' - ')[0].trim() : '',
       group: c.group >= 0 ? String(row[c.group] || '').trim() : ''
     };
   });
@@ -1510,6 +1524,175 @@ function pay18_loadPolicyMap_(ss) {
 
 function pay18_sequenceKey_(value) {
   return String(value || '').replace(/[\s　]/g, '');
+}
+
+
+/*************************************************
+ * ★V18.9：途中減額の戻入
+ *
+ * みなし年払いは「支払時の年間拠出額 × 実質紹介料率」を前払いしている。
+ *   支払時の年間拠出額 ＝ 今回支払額 ÷ 実質紹介料率
+ * 支払から12か月以内に、プランポリシーの年間拠出金がそれより下がっていたら、
+ *   戻入額 ＝（支払時の年間拠出額 − 今の年間拠出金）× 実質紹介料率 × 残り月数 ÷ 12
+ *   残り月数 ＝ 12 −（見つけた月 − みなし支払月）
+ * を、見つけた月（元データの最新月）にマイナスの行として計上する。
+ *
+ * 一度計上した戻入は【自動】減額戻入シートに残し、毎回同じ月に同じ額で計上する
+ * （二重に引かない）。さらに減額されたときは、差の分だけ追加で戻入。
+ * 一括商品・プランポリシーに無い契約・年間拠出金が0の契約は対象外。
+ *************************************************/
+function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
+
+  const AMOUNT = PAYMENT_V18.SOURCE_AMOUNT_COL - 1;   // N
+
+  const header = [
+    '検出月', '推薦者コード', 'プラン番号', 'シーケンス', '商品コード',
+    'みなし支払月', 'みなし支払額', '実質紹介料率', '支払時の年間拠出額',
+    '減額後の年間拠出金', '残り月数', '戻入額', '理由'
+  ];
+
+  let sheet = ss.getSheetByName(PAYMENT_V18.CLAWBACK_SHEET);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(PAYMENT_V18.CLAWBACK_SHEET);
+    sheet.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+
+  const records = sheet.getLastRow() >= 2
+    ? sheet.getRange(2, 1, sheet.getLastRow() - 1, header.length).getDisplayValues()
+    : [];
+
+  const latestMonth = rowsInfo.reduce((latest, info) =>
+    pay18_monthIndex_(info.month) > pay18_monthIndex_(latest) ? info.month : latest, '');
+
+  if (!latestMonth) {
+    return;
+  }
+
+  const latestIndex = pay18_monthIndex_(latestMonth);
+
+  const recordKey = (id, plan, sequence, payMonth) =>
+    [id, plan, pay18_sequenceKey_(sequence), pay18_month_(payMonth)].join('||');
+
+  /* これまでに戻入した最低の年間拠出金（追加減額の判定用） */
+  const lowest = {};
+
+  records.forEach(record => {
+
+    const key = recordKey(record[1], record[2], record[3], record[5]);
+
+    const after = pay18_num_(String(record[9]).replace(/[^0-9.\-]/g, ''));
+
+    if (lowest[key] === undefined || after < lowest[key]) {
+      lowest[key] = after;
+    }
+  });
+
+  const additions = [];
+
+  rowsInfo.forEach(info => {
+
+    const row = info.row;
+
+    if (!info.month || String(row[11] || '').trim() !== 'みなし') {
+      return;
+    }
+
+    const paid = pay18_num_(row[AMOUNT]);
+
+    const rate = pay18_num_(String(row[9] || '').replace(/[^0-9.\-]/g, '')) / 100;   // J 実質紹介料率
+
+    const product = String(row[2] || '').trim();
+
+    if (paid <= 0 || rate <= 0 || /^(FIFR|PLAT|ACS)/i.test(product)) {
+      return;
+    }
+
+    const elapsed = latestIndex - pay18_monthIndex_(info.month);
+
+    if (elapsed <= 0 || elapsed >= 12) {
+      return;   // 同じ月の支払、または12か月を過ぎたものは対象外
+    }
+
+    const plan = String(row[0] || '').trim();
+
+    let policy = policyMap[plan + '||' + pay18_sequenceKey_(info.sequence)];
+
+    if (!policy && !info.sequence) {
+
+      /* シーケンス空欄の古い行：同じプランの同じ商品が1つだけならそれを使う */
+      const candidates = Object.keys(policyMap)
+        .filter(key => key.indexOf(plan + '||') === 0)
+        .map(key => policyMap[key])
+        .filter(item => item.product === product);
+
+      policy = candidates.length === 1 ? candidates[0] : null;
+    }
+
+    if (!policy || policy.annual <= 0 || policy.lump > 0) {
+      return;
+    }
+
+    const key = recordKey(info.id, plan, info.sequence, info.month);
+
+    const basisOriginal = paid / rate;
+
+    const basis = lowest[key] !== undefined ? Math.min(basisOriginal, lowest[key]) : basisOriginal;
+
+    const remaining = 12 - elapsed;
+
+    const clawback = Math.round((basis - policy.annual) * rate * remaining / 12 * 100) / 100;
+
+    if (policy.annual >= basis * 0.99 || clawback < 1) {
+      return;   // 減額なし（端数の誤差は無視）
+    }
+
+    additions.push([
+      latestMonth, info.id, plan, info.sequence || '', product,
+      info.month, paid, Math.round(rate * 10000) / 100 + '%',
+      Math.round(basis * 100) / 100, policy.annual, remaining, -clawback,
+      '年間拠出額が' + Math.round(basis * 100) / 100 + '→' + policy.annual +
+      'に減額。みなし年払い（' + info.month + '支払）の残り' + remaining +
+      'か月分を戻入'
+    ]);
+
+    lowest[key] = policy.annual;
+  });
+
+  if (additions.length > 0) {
+    sheet
+      .getRange(sheet.getLastRow() + 1, 1, additions.length, header.length)
+      .setValues(additions);
+  }
+
+  /* 記録をすべてマイナス行として計上（検出月に入る） */
+  records.concat(additions.map(row => row.map(String))).forEach(record => {
+
+    const month = pay18_month_(record[0]);
+
+    const id = pay18_id_(record[1]);
+
+    const amount = pay18_num_(String(record[11]).replace(/[^0-9.\-]/g, ''));
+
+    if (!month || !id || !amount) {
+      return;
+    }
+
+    const row = Array(20).fill('');
+
+    row[0] = record[2];                 // A プラン番号
+    row[1] = '減額戻入';                 // B 説明
+    row[2] = record[4];                 // C 商品コード
+    row[5] = id;                        // F 支払対象者ID
+    row[9] = record[7];                 // J 実質紹介料率
+    row[11] = '戻入';                    // L 支払区分
+    row[13] = amount;                   // N 今回支払額（マイナス）
+    row[14] = month;                    // O 支払月
+    row[15] = '減額戻入：' + record[12];  // P 備考①
+
+    rowsInfo.push({ row: row, id: id, month: month, sequence: record[3] });
+  });
 }
 
 

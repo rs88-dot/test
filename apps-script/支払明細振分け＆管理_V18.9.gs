@@ -85,6 +85,7 @@ const PAYMENT_V18 = {
 
   /* ★V18.9：途中減額の戻入の記録 */
   CLAWBACK_SHEET: '【自動】減額戻入',
+  TRANSFER_SHEET: '【手入力】担当者変更',
 
   /* ★V18.9：年間拠出金による上限をかける最初の支払月（これより前の月は支払済のため触らない） */
   POLICY_SHEET: 'プランポリシー',
@@ -1058,7 +1059,7 @@ function pay18_loadContext_() {
   const policyMap = pay18_loadPolicyMap_(ss);
 
   /* ★V18.9：年払い・前払いのみなし過払い防止（プランポリシーの年間拠出金で上限） */
-  pay18_applyAnnualCap_(rowsInfo, policyMap);
+  pay18_applyAnnualCap_(rowsInfo, policyMap, pay18_loadTransferMap_(ss));
 
   pay18_applyMinashiGuard_(rowsInfo);
 
@@ -1149,6 +1150,7 @@ function pay18_applyMinashiGuard_(rowsInfo) {
     .filter(info =>
       info.month &&
       String(info.row[KUBUN] || '').trim() === 'みなし' &&
+      !info.levelPay &&
       pay18_num_(info.row[AMOUNT]) > 0
     )
     .map((info, order) => ({ info: info, order: order }))
@@ -1429,6 +1431,14 @@ function pay18_publicNote_(value) {
 
   const text = String(value || '');
 
+  if (text.indexOf('今回支払い対象（平準）') === 0) {
+    return '今回支払い対象（平準・毎月）';
+  }
+
+  if (text.indexOf('担当者変更の契約') >= 0 && text.indexOf('×12ではなく') >= 0) {
+    return '今回支払い対象（みなし年払い・担当者変更のため1年目の残り月数分）';
+  }
+
   if (text.indexOf('減額戻入：') === 0) {
     return '途中減額のため戻入';
   }
@@ -1636,13 +1646,24 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
 
     const key = recordKey(info.id, plan, info.sequence, info.month);
 
-    const basisOriginal = paid / rate;
+    if (info.levelPay || pay18_num_(row[3]) >= 2) {
+      return;   // 平準（2年目以降・毎月払い）は前払いしていないので戻入なし
+    }
+
+    const coverMonths = info.coverMonths || 12;
+
+    const basisOriginal = paid / rate * 12 / coverMonths;
 
     const basis = lowest[key] !== undefined ? Math.min(basisOriginal, lowest[key]) : basisOriginal;
 
-    const remaining = 12 - elapsed;
+    const remaining = coverMonths - elapsed;
+
+    if (remaining <= 0) {
+      return;
+    }
 
     const clawback = Math.round((basis - policy.annual) * rate * remaining / 12 * 100) / 100;
+
 
     if (policy.annual >= basis * 0.99 || clawback < 1) {
       return;   // 減額なし（端数の誤差は無視）
@@ -1706,7 +1727,7 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
  *       12か月前払い：拠出1,200／年間1,200 → 倍率1
  *       毎月：拠出100／年間1,200 → 倍率12（今までどおり）
  *************************************************/
-function pay18_applyAnnualCap_(rowsInfo, policyMap) {
+function pay18_applyAnnualCap_(rowsInfo, policyMap, transferMap) {
 
   const AMOUNT = PAYMENT_V18.SOURCE_AMOUNT_COL - 1;   // N
   const RATE = AMOUNT - 1;                            // M
@@ -1760,17 +1781,79 @@ function pay18_applyAnnualCap_(rowsInfo, policyMap) {
       return;
     }
 
-    if (!policy || policy.annual <= 0) {
+    /*
+     * ★V18.9：2年目以降（D列「期間」が2以上）はみなしではなく平準（毎月×1）。
+     */
+    const policyYear = pay18_num_(row[3]);
+
+    if (policyYear >= 2) {
+
+      row[RATE] = 1;
+
+      row[AMOUNT] = commission;
+
+      info.levelPay = true;
+
+      info.capNote =
+        '今回支払い対象（平準）：契約' + policyYear + '年目のため、' +
+        'みなし年払い（1年目のみ）ではなく平準（毎月×1：' + money(commission) + '）で支払';
+
+      row[15] = info.capNote;   // 平準はみなしの判定を通らないのでここで備考を書く
+
+      info.noteChanged = true;
+
       return;
     }
 
-    const months = policy.annual / contribution;
+    /*
+     * ★V18.9：担当者変更で移ってきた契約。
+     * 他社で支払済の月数（1年目のうち）を除いた残りの月数だけ支払う。
+     * 12か月以上なら1年目は終わっているので平準。
+     */
+    const plan = String(row[0] || '').trim();
 
-    if (months >= 12 - 0.0001) {
-      return;   // 毎月払い：今までどおり×12
+    const transfer =
+      transferMap[plan + '||' + pay18_sequenceKey_(info.sequence)] ||
+      transferMap[plan + '||'];
+
+    let coverMonths = 12;
+
+    if (transfer) {
+
+      if (transfer.paidMonths >= 12) {
+
+        row[RATE] = 1;
+
+        row[AMOUNT] = commission;
+
+        info.levelPay = true;
+
+        info.capNote =
+          '今回支払い対象（平準）：担当者変更の契約で、1年目の12か月分は他社で支払済のため、' +
+          '平準（毎月×1：' + money(commission) + '）で支払';
+
+        row[15] = info.capNote;
+
+        info.noteChanged = true;
+
+        return;
+      }
+
+      coverMonths = Math.max(0, 12 - transfer.paidMonths);
+
+      info.coverMonths = coverMonths;
     }
 
-    const multiplier = Math.round(Math.max(0, months) * 10000) / 10000;
+    /* 年払い・前払い：今回の拠出金額が何か月分か（最大12） */
+    const yearMonths = policy && policy.annual > 0
+      ? Math.min(12, policy.annual / contribution)
+      : 12;
+
+    const multiplier = Math.round(yearMonths * coverMonths / 12 * 10000) / 10000;
+
+    if (multiplier >= 12 - 0.0001) {
+      return;   // 毎月払い・通常の契約：今までどおり×12
+    }
 
     const capped = Math.round(commission * multiplier * 100) / 100;
 
@@ -1778,13 +1861,74 @@ function pay18_applyAnnualCap_(rowsInfo, policyMap) {
 
     row[AMOUNT] = capped;
 
+    const notes = [];
+
+    if (transfer) {
+      notes.push(
+        '担当者変更の契約（1年目のうち' + transfer.paidMonths +
+        'か月分は他社で支払済）で、残りは' + coverMonths + 'か月分'
+      );
+    }
+
+    if (yearMonths < 12 - 0.0001) {
+      notes.push(
+        '拠出金額' + money(contribution) + 'がすでに年間拠出金' + money(policy.annual) +
+        (policy.frequency ? '（' + policy.frequency + '払い）' : '') +
+        'の' + (Math.round(contribution / policy.annual * 100) / 100) + '年分'
+      );
+    }
+
     info.capNote =
-      '今回支払い対象（みなし年払い）：拠出金額' + money(contribution) +
-      'がすでに年間拠出金' + money(policy.annual) +
-      (policy.frequency ? '（' + policy.frequency + '払い）' : '') +
-      'の' + (Math.round(contribution / policy.annual * 100) / 100) +
-      '年分のため、×12ではなく×' + multiplier + 'で1年分（' + money(capped) + '）を支払';
+      '今回支払い対象（みなし年払い）：' + notes.join('、') +
+      'のため、×12ではなく×' + multiplier + '（' + money(capped) + '）を支払';
   });
+}
+
+
+/*************************************************
+ * ★V18.9：担当者変更（他社から移ってきた契約）
+ *
+ * 【手入力】担当者変更 シート
+ *   A プラン番号
+ *   B シーケンス（空欄＝そのプランの全シーケンス）
+ *   C 他社で支払済の月数（1年目のうち。例：6）
+ *   D メモ
+ *************************************************/
+function pay18_loadTransferMap_(ss) {
+
+  const header = ['プラン番号', 'シーケンス（空欄＝全部）', '他社で支払済の月数（1年目のうち）', 'メモ'];
+
+  let sheet = ss.getSheetByName(PAYMENT_V18.TRANSFER_SHEET);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(PAYMENT_V18.TRANSFER_SHEET);
+    sheet.getRange(1, 1, 1, header.length).setValues([header]).setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+
+  const map = {};
+
+  if (sheet.getLastRow() < 2) {
+    return map;
+  }
+
+  sheet
+    .getRange(2, 1, sheet.getLastRow() - 1, 3)
+    .getDisplayValues()
+    .forEach(row => {
+
+      const plan = String(row[0] || '').trim();
+
+      const months = pay18_num_(row[2]);
+
+      if (!plan || !(months > 0)) {
+        return;
+      }
+
+      map[plan + '||' + pay18_sequenceKey_(row[1])] = { paidMonths: Math.floor(months) };
+    });
+
+  return map;
 }
 
 

@@ -113,6 +113,9 @@ const PAYMENT_V18 = {
   MANUAL: 'MANUAL',
   CARRY: 'CARRY',
 
+  /* ★V18.9：false＝推薦者ファイルはボタンを押したときだけ更新 */
+  AUTO_PUBLISH: false,
+
   /* 旧版の保護値。V18.5では移行対象として扱う */
   LEGACY_KEEP: 'KEEP',
 
@@ -183,6 +186,53 @@ function syncPaymentSheetsV18() {
  *************************************************/
 function forceSyncPaymentSheetsV18() {
   pay18_fullSync_(true);
+}
+
+
+/*************************************************
+ * ★V18.9：推薦者ファイルに反映（共有）ボタン
+ *
+ * 台帳・支払いまとめを最新にしてから、
+ * 各推薦者の【自動更新】支払明細と朴さんチームのファイルを更新する。
+ * 前回の反映から変わった人のファイルだけ開く。
+ *************************************************/
+function publishPaymentFilesV18() {
+
+  pay18_fullSync_(false, true);
+
+  pay18_alert_('推薦者ファイルへの反映が終わりました。');
+}
+
+
+/* 全員のファイルを作り直す（表示が崩れたときなど） */
+function publishAllPaymentFilesV18() {
+
+  pay18_fullSync_(true, true);
+
+  pay18_alert_('全員の推薦者ファイルを作り直しました。');
+}
+
+
+/* スプレッドシートを開くとメニュー「支払管理」が出る */
+function onOpen() {
+
+  SpreadsheetApp.getUi()
+    .createMenu('支払管理')
+    .addItem('① 計算を更新（社内のみ）', 'forceSyncPaymentSheetsV18')
+    .addItem('② 推薦者ファイルに反映（共有）', 'publishPaymentFilesV18')
+    .addSeparator()
+    .addItem('全員のファイルを作り直す', 'publishAllPaymentFilesV18')
+    .addToUi();
+}
+
+
+function pay18_alert_(message) {
+
+  try {
+    SpreadsheetApp.getUi().alert(message);
+  } catch (error) {
+    console.log(message);
+  }
 }
 
 
@@ -597,6 +647,11 @@ function pay18_fastLedgerEdit_(e) {
 
     affectedIds.forEach(id => {
 
+      /* ★V18.9：推薦者ファイルはボタンを押したときだけ更新 */
+      if (!PAYMENT_V18.AUTO_PUBLISH) {
+        return;
+      }
+
       if (disabled.has(id)) {
         return;
       }
@@ -643,11 +698,17 @@ function pay18_fastLedgerEdit_(e) {
 /*************************************************
  * 全体同期
  *************************************************/
-function pay18_fullSync_(forceAll) {
+function pay18_fullSync_(forceAll, publish) {
 
   const lock = LockService.getScriptLock();
 
-  if (!lock.tryLock(1000)) {
+  /* ★V18.9：共有ボタンのときは他の同期が終わるまで最大60秒待つ */
+  if (!lock.tryLock(publish ? 60000 : 1000)) {
+
+    if (publish) {
+      throw new Error('別の同期が実行中です。1〜2分待ってからもう一度押してください。');
+    }
+
     return;
   }
 
@@ -708,6 +769,21 @@ function pay18_fullSync_(forceAll) {
     }
 
     pay18_updateMainSummary_(context.ss, ledgerState, forceAll);
+
+    /*
+     * ★V18.9：推薦者ごとのファイル（外部共有）は
+     * 「推薦者ファイルに反映」ボタンを押したときだけ更新する。
+     * 5分ごとの同期では社内のシート（台帳・支払いまとめ）だけ更新。
+     */
+    if (!publish && !PAYMENT_V18.AUTO_PUBLISH) {
+
+      console.log(
+        'V18.9 社内のみ更新完了（推薦者ファイルは未反映） / ' +
+        ((Date.now() - startTime) / 1000).toFixed(1) + '秒'
+      );
+
+      return;
+    }
 
     const ids = [
       ...new Set([
@@ -1275,6 +1351,36 @@ function pay18_writeJudgeColumn_(source, all, rowsInfo, lastRow) {
   if (changed) {
     range.setValues(output);
   }
+}
+
+
+/*************************************************
+ * ★V18.9：外部共有ファイル用の短い備考
+ *************************************************/
+function pay18_publicNote_(value) {
+
+  const text = String(value || '');
+
+  if (text.indexOf('今回支払い対象（みなし年払い）') === 0) {
+    return '今回支払い対象（みなし年払い）';
+  }
+
+  if (text.indexOf('2行目は支払対象外') >= 0) {
+    return '重複のため対象外';
+  }
+
+  const paid = text.match(/(\d{4}\.\d{1,2})に支払済/);
+
+  if (paid && text.indexOf('支払対象外') >= 0) {
+    return paid[1] + 'に支払済のため対象外';
+  }
+
+  if (text.indexOf('シーケンス付け間違いと判断') >= 0) {
+    const month = text.match(/が(\d{4}\.\d{1,2})に支払済/);
+    return (month ? month[1] + 'に' : '') + '支払済のため対象外';
+  }
+
+  return text;
 }
 
 
@@ -2693,9 +2799,19 @@ function pay18_writeDetailValues_(sheet, publicHeader, internalRows) {
 
   const safeHeader = publicHeader.slice(0, 18);
 
-  const safeRows = internalRows.map(row =>
-    Array.isArray(row) ? row.slice(0, 18) : Array(18).fill('')
-  );
+  const safeRows = internalRows.map(row => {
+
+    if (!Array.isArray(row)) {
+      return Array(18).fill('');
+    }
+
+    const out = row.slice(0, 18);
+
+    /* ★V18.9：外部用は備考①を短い文にする */
+    out[15] = pay18_publicNote_(out[15]);
+
+    return out;
+  });
 
   const output = [safeHeader, ...safeRows];
 

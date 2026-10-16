@@ -1028,6 +1028,10 @@ function pay18_applyMinashiGuard_(rowsInfo) {
 
     const sequence = info.sequence || '';
 
+    const contribution = pay18_num_(info.row[4]);   // E 拠出金額
+
+    const amount = pay18_num_(info.row[AMOUNT]);
+
     const index = pay18_monthIndex_(info.month);
 
     const history = paidByPlan[planKey] || (paidByPlan[planKey] = []);
@@ -1041,7 +1045,9 @@ function pay18_applyMinashiGuard_(rowsInfo) {
         /* 同じ月に全く同じ行が2回貼られている場合も2行目は0 */
         : index === record.index &&
           record.sequence === sequence &&
-          record.product === product)
+          record.product === product &&
+          record.contribution === contribution &&
+          record.amount === amount)
     );
 
     if (paid) {
@@ -1059,7 +1065,9 @@ function pay18_applyMinashiGuard_(rowsInfo) {
       index: index,
       month: info.month,
       product: product,
-      sequence: sequence
+      sequence: sequence,
+      contribution: contribution,
+      amount: amount
     });
   });
 }

@@ -80,6 +80,7 @@ const PAYMENT_V18 = {
   SOURCE_ID_COL: 6,       // F
   SOURCE_AMOUNT_COL: 14,  // N
   SOURCE_MONTH_COL: 15,   // O
+  SOURCE_SEQUENCE_COL: 21, // U シーケンス
 
   /*************************************************
    * 推薦者マスタ
@@ -886,6 +887,11 @@ function pay18_loadContext_() {
     .getRange(1, PAYMENT_V18.SOURCE_MONTH_COL, lastRow, 1)
     .getDisplayValues();
 
+  /* ★V18.9：U列「シーケンス」（みなし二重計上の判定に使う） */
+  const sequenceValues = source
+    .getRange(1, PAYMENT_V18.SOURCE_SEQUENCE_COL, lastRow, 1)
+    .getDisplayValues();
+
   const groups = {};
   const aggregate = {};
 
@@ -905,7 +911,12 @@ function pay18_loadContext_() {
 
     row[PAYMENT_V18.SOURCE_MONTH_COL - 1] = month;
 
-    rowsInfo.push({ row: row, id: id, month: month });
+    rowsInfo.push({
+      row: row,
+      id: id,
+      month: month,
+      sequence: String(sequenceValues[index + 1][0] || '').trim()
+    });
   });
 
   pay18_applyMinashiGuard_(rowsInfo);
@@ -976,7 +987,7 @@ function pay18_loadContext_() {
 /*************************************************
  * ★V18.8：みなし二重計上ガード
  *
- * 同じ「プラン番号＋商品コード＋支払対象者」で、
+ * 同じ「プラン番号＋シーケンス（空欄なら商品コード）＋支払対象者」で、
  * すでに過去の月（12か月以内）にみなし年払い（今回支払額>0）が
  * 計上されている場合、後の月のみなし行は支払対象外（0）にする。
  * 備考①に「YYYY.Mに支払済（すでに12か月分支払済)」を表示。
@@ -1000,23 +1011,36 @@ function pay18_applyMinashiGuard_(rowsInfo) {
       return diff !== 0 ? diff : a.order - b.order;
     });
 
-  const first = {};
+  /*
+   * ★V18.9：プラン番号＋支払対象者が同じで、
+   * シーケンス（U列）が両方入っていればシーケンスで、
+   * どちらかが空欄なら商品コードで同じ契約かを判定する。
+   */
+  const paidByPlan = {};
 
   targets.forEach(item => {
 
     const info = item.info;
 
-    const key = [
-      String(info.row[0] || '').trim(),
-      String(info.row[2] || '').trim(),
-      info.id
-    ].join('||');
+    const planKey = String(info.row[0] || '').trim() + '||' + info.id;
+
+    const product = String(info.row[2] || '').trim();
+
+    const sequence = info.sequence || '';
 
     const index = pay18_monthIndex_(info.month);
 
-    const paid = first[key];
+    const history = paidByPlan[planKey] || (paidByPlan[planKey] = []);
 
-    if (paid && index > paid.index && index - paid.index < 12) {
+    const paid = history.find(record =>
+      index > record.index &&
+      index - record.index < 12 &&
+      (record.sequence && sequence
+        ? record.sequence === sequence
+        : record.product === product)
+    );
+
+    if (paid) {
 
       info.row[RATE] = 0;
 
@@ -1027,9 +1051,12 @@ function pay18_applyMinashiGuard_(rowsInfo) {
       return;
     }
 
-    if (!paid || index - paid.index >= 12) {
-      first[key] = { index: index, month: info.month };
-    }
+    history.push({
+      index: index,
+      month: info.month,
+      product: product,
+      sequence: sequence
+    });
   });
 }
 

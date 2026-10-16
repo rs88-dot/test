@@ -1440,7 +1440,7 @@ function pay18_publicNote_(value) {
   }
 
   if (text.indexOf('減額戻入：') === 0) {
-    return '途中減額のため戻入';
+    return text.indexOf('契約が「') >= 0 ? '解約・払込停止のため戻入' : '途中減額のため戻入';
   }
 
   if (text.indexOf('今回支払い対象（一括商品）') === 0) {
@@ -1504,6 +1504,7 @@ function pay18_loadPolicyMap_(ss) {
     annual: col('年間拠出金'),
     lump: col('一括払い'),
     productName: col('商品名'),
+    status: col('状態'),
     group: col('商品グループ')
   };
 
@@ -1524,6 +1525,7 @@ function pay18_loadPolicyMap_(ss) {
       annual: pay18_num_(String(row[c.annual] || '').replace(/[^0-9.\-]/g, '')),
       lump: c.lump >= 0 ? pay18_num_(String(row[c.lump] || '').replace(/[^0-9.\-]/g, '')) : 0,
       product: c.productName >= 0 ? String(row[c.productName] || '').split(' - ')[0].trim() : '',
+      status: c.status >= 0 ? String(row[c.status] || '').trim() : '',
       group: c.group >= 0 ? String(row[c.group] || '').trim() : ''
     };
   });
@@ -1640,7 +1642,16 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
       policy = candidates.length === 1 ? candidates[0] : null;
     }
 
-    if (!policy || policy.annual <= 0 || policy.lump > 0) {
+    if (!policy) {
+      return;
+    }
+
+    /* 解約・失効・払込停止（払込済み）は今の年間拠出を0として戻入 */
+    const stopped = /解約|失効|払込済/.test(policy.status || '');
+
+    const currentAnnual = stopped ? 0 : policy.annual;
+
+    if (!stopped && policy.annual <= 0) {
       return;
     }
 
@@ -1662,23 +1673,24 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
       return;
     }
 
-    const clawback = Math.round((basis - policy.annual) * rate * remaining / 12 * 100) / 100;
+    const clawback = Math.round((basis - currentAnnual) * rate * remaining / 12 * 100) / 100;
 
 
-    if (policy.annual >= basis * 0.99 || clawback < 1) {
+    if (currentAnnual >= basis * 0.99 || clawback < 1) {
       return;   // 減額なし（端数の誤差は無視）
     }
 
     additions.push([
       latestMonth, info.id, plan, info.sequence || '', product,
       info.month, paid, Math.round(rate * 10000) / 100 + '%',
-      Math.round(basis * 100) / 100, policy.annual, remaining, -clawback,
-      '年間拠出額が' + Math.round(basis * 100) / 100 + '→' + policy.annual +
-      'に減額。みなし年払い（' + info.month + '支払）の残り' + remaining +
-      'か月分を戻入'
+      Math.round(basis * 100) / 100, currentAnnual, remaining, -clawback,
+      (stopped
+        ? '契約が「' + policy.status + '」になったため（年間拠出0）'
+        : '年間拠出額が' + Math.round(basis * 100) / 100 + '→' + currentAnnual + 'に減額。') +
+      'みなし年払い（' + info.month + '支払）の残り' + remaining + 'か月分を戻入'
     ]);
 
-    lowest[key] = policy.annual;
+    lowest[key] = currentAnnual;
   });
 
   if (additions.length > 0) {
@@ -1703,7 +1715,7 @@ function pay18_applyReductionClawback_(ss, rowsInfo, policyMap) {
     const row = Array(20).fill('');
 
     row[0] = record[2];                 // A プラン番号
-    row[1] = '減額戻入';                 // B 説明
+    row[1] = String(record[12]).indexOf('契約が「') === 0 ? '解約・停止戻入' : '減額戻入';   // B 説明
     row[2] = record[4];                 // C 商品コード
     row[5] = id;                        // F 支払対象者ID
     row[9] = record[7];                 // J 実質紹介料率
@@ -1792,6 +1804,8 @@ function pay18_applyAnnualCap_(rowsInfo, policyMap, transferMap) {
 
       row[AMOUNT] = commission;
 
+      row[11] = '平準（2年目〜）';   // 支払区分：みなし→平準に切り替わった印
+
       info.levelPay = true;
 
       info.capNote =
@@ -1825,6 +1839,8 @@ function pay18_applyAnnualCap_(rowsInfo, policyMap, transferMap) {
         row[RATE] = 1;
 
         row[AMOUNT] = commission;
+
+        row[11] = '平準（担当者変更）';
 
         info.levelPay = true;
 

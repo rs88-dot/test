@@ -83,6 +83,10 @@ const PAYMENT_V18 = {
   SOURCE_SEQUENCE_COL: 21, // U シーケンス
   SOURCE_JUDGE_COL: 27,    // AA 支払判定（自動）
 
+  /* ★V18.9：年間拠出金による上限をかける最初の支払月（これより前の月は支払済のため触らない） */
+  POLICY_SHEET: 'プランポリシー',
+  ANNUAL_CAP_FROM: '2026.10',
+
   /*************************************************
    * 推薦者マスタ
    *************************************************/
@@ -1048,6 +1052,9 @@ function pay18_loadContext_() {
     });
   });
 
+  /* ★V18.9：年払い・前払いのみなし過払い防止（プランポリシーの年間拠出金で上限） */
+  pay18_applyAnnualCap_(rowsInfo, pay18_loadPolicyMap_(ss));
+
   pay18_applyMinashiGuard_(rowsInfo);
 
   pay18_writeJudgeColumn_(source, all, rowsInfo, lastRow);
@@ -1296,7 +1303,13 @@ function pay18_applyMinashiGuard_(rowsInfo) {
       /* 初めての支払い：備考①が空欄か定型文のときだけ理由を書く */
       const currentNote = String(info.row[NOTE] || '').trim();
 
-      if (!currentNote || currentNote.indexOf('今回支払い対象（みなし年払い）') === 0) {
+      if (info.capNote) {
+
+        info.row[NOTE] = info.capNote;
+
+        info.noteChanged = true;
+
+      } else if (!currentNote || currentNote.indexOf('今回支払い対象（みなし年払い）') === 0) {
 
         info.row[NOTE] = '今回支払い対象（みなし年払い）：過去12か月に同じプラン番号の支払いがないため、初めての支払い';
 
@@ -1408,6 +1421,10 @@ function pay18_publicNote_(value) {
 
   const text = String(value || '');
 
+  if (text.indexOf('×12ではなく') >= 0) {
+    return '今回支払い対象（みなし年払い・拠出金額が1年分以上のため1年分）';
+  }
+
   if (text.indexOf('今回支払い対象（みなし年払い）') === 0) {
     return '今回支払い対象（みなし年払い）';
   }
@@ -1428,6 +1445,131 @@ function pay18_publicNote_(value) {
   }
 
   return text;
+}
+
+
+/*************************************************
+ * ★V18.9：プランポリシー（年間拠出金）
+ *
+ * 4行目が見出し。プラン番号＋シーケンス → 支払頻度・年間拠出金。
+ *************************************************/
+function pay18_loadPolicyMap_(ss) {
+
+  const map = {};
+
+  const sheet = ss.getSheetByName(PAYMENT_V18.POLICY_SHEET);
+
+  if (!sheet || sheet.getLastRow() < 5) {
+    return map;
+  }
+
+  const values = sheet
+    .getRange(4, 1, sheet.getLastRow() - 3, sheet.getLastColumn())
+    .getDisplayValues();
+
+  const header = values[0].map(value => String(value || '').trim());
+
+  const col = name => header.indexOf(name);
+
+  const c = {
+    plan: col('プラン番号'),
+    sequence: col('シーケンス'),
+    frequency: col('支払頻度'),
+    annual: col('年間拠出金')
+  };
+
+  if (c.plan < 0 || c.sequence < 0 || c.annual < 0) {
+    return map;
+  }
+
+  values.slice(1).forEach(row => {
+
+    const plan = String(row[c.plan] || '').trim();
+
+    if (!plan) {
+      return;
+    }
+
+    map[plan + '||' + pay18_sequenceKey_(row[c.sequence])] = {
+      frequency: c.frequency >= 0 ? String(row[c.frequency] || '').trim() : '',
+      annual: pay18_num_(String(row[c.annual] || '').replace(/[^0-9.\-]/g, ''))
+    };
+  });
+
+  return map;
+}
+
+
+function pay18_sequenceKey_(value) {
+  return String(value || '').replace(/[\s　]/g, '');
+}
+
+
+/*************************************************
+ * ★V18.9：みなし年払いの上限
+ *
+ * みなし（支払倍率12）は「月々の紹介料×12か月」の考え方。
+ * 今回の拠出金額がすでに複数か月分（年払い・前払い）のときに×12すると過払いになる。
+ * そこで「年間拠出金 ÷ 今回の拠出金額」を倍率の上限にする（最大12）。
+ *   例）年払い：拠出1,800／年間1,800 → 倍率1
+ *       12か月前払い：拠出1,200／年間1,200 → 倍率1
+ *       毎月：拠出100／年間1,200 → 倍率12（今までどおり）
+ *************************************************/
+function pay18_applyAnnualCap_(rowsInfo, policyMap) {
+
+  const AMOUNT = PAYMENT_V18.SOURCE_AMOUNT_COL - 1;   // N
+  const RATE = AMOUNT - 1;                            // M
+  const fromIndex = pay18_monthIndex_(PAYMENT_V18.ANNUAL_CAP_FROM);
+
+  const money = value => '$' + (Math.round(value * 100) / 100).toLocaleString('en-US');
+
+  rowsInfo.forEach(info => {
+
+    const row = info.row;
+
+    if (!info.month || pay18_monthIndex_(info.month) < fromIndex) {
+      return;
+    }
+
+    if (String(row[11] || '').trim() !== 'みなし' || pay18_num_(row[RATE]) !== 12) {
+      return;
+    }
+
+    const contribution = pay18_num_(row[4]);   // E 拠出金額
+
+    const commission = pay18_num_(row[10]);    // K 支払額（1回分の紹介料）
+
+    if (contribution <= 0 || commission <= 0) {
+      return;
+    }
+
+    const policy = policyMap[String(row[0] || '').trim() + '||' + pay18_sequenceKey_(info.sequence)];
+
+    if (!policy || policy.annual <= 0) {
+      return;
+    }
+
+    const months = policy.annual / contribution;
+
+    if (months >= 12 - 0.0001) {
+      return;   // 毎月払い：今までどおり×12
+    }
+
+    const multiplier = Math.round(Math.max(0, months) * 10000) / 10000;
+
+    const capped = Math.round(commission * multiplier * 100) / 100;
+
+    row[RATE] = multiplier;
+
+    row[AMOUNT] = capped;
+
+    info.capNote =
+      '今回支払い対象（みなし年払い）：拠出金額' + money(contribution) +
+      'がすでに年間拠出金' + money(policy.annual) +
+      (policy.frequency ? '（' + policy.frequency + '払い）' : '') +
+      'の' + (Math.round(contribution / policy.annual * 100) / 100) +
+      '年分のため、×12ではなく×' + multiplier + 'で1年分（' + money(capped) + '）を支払';
+  });
 }
 
 

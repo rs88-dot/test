@@ -297,8 +297,9 @@ function showPaymentMenuV18() {
  *           ② 申込フォーム「★」（BK プラン番号・BL シーケンス・BM 推薦者コード）
  *   書く列：A プラン番号 / B 氏名 / C 商品コード / D シーケンス / E L1_ID
  * 貼付用のシーケンスがプランポリシーと違うものは入れずに「直す場所」を表示する。
- * イントロデューサー（プランポリシー A・B列）が Wawasan・Izaaz 以外で推薦者が見つからないものは
- * マネージャーフィー（誰にも払わない）として顧客マスタには入れない。
+ *           ③ プランポリシーのイントロデューサー（A・B列）が Wawasan・Izaaz 以外（例：Minato）なら
+ *              推薦者コード管理でそのイントロの推薦者コード（Minato＝1687）に支払う（マネージャーフィー分）
+ * イントロが Wawasan・Izaaz で推薦者が見つからないものは「弊社分の可能性」として顧客マスタには入れない。
  * 結果は【確認】迷子契約の G列「備考」にも書く。
  * すでに顧客マスタにあるもの・見つからないものは入れない。
  * 追加後はいつもどおり「契約時保存」で契約時データへ保存してください。
@@ -513,7 +514,7 @@ function fillLostContractsV18() {
 
   const notFound = [];
 
-  const managerFee = [];
+  const ownShare = [];
 
   const notes = {};
 
@@ -535,8 +536,11 @@ function fillLostContractsV18() {
 
     const key = item.plan + '||' + item.sequence;
 
-    const hit = item.sequence ? finder[key] : null;
+    let hit = item.sequence ? finder[key] : null;
 
+    /* 見つからないときはプランポリシーのイントロデューサーで判断
+     *   Wawasan・Izaaz 以外（例：Minato）→ そのイントロの推薦者コードへ支払う（マネージャーフィー分）
+     *   Wawasan・Izaaz → 弊社分。推薦者がいるはずなら手で確認 */
     if (!hit) {
 
       const others = Object.keys(knownPlan[item.plan] || {});
@@ -544,22 +548,37 @@ function fillLostContractsV18() {
       const text = label + '（紹介料率' + (item.rate || '空欄') + '・' + (item.period || '?') + '年目）' +
         (others.length ? '（同じプラン番号の別契約は推薦者 ' + others.join('・') + '）' : '');
 
-      /* プランポリシーのイントロデューサーが Wawasan・Izaaz 以外 ＝ マネージャーフィー（誰にも払わない） */
       const intro = policyIntro[item.plan + '||' + item.sequence] || policyIntro[item.plan];
 
-      if (intro && PAYMENT_V18.OWN_INTRO_CODES.indexOf(clean(intro.introCode)) < 0) {
+      const introCode = intro ? clean(intro.introCode) : '';
 
-        const introLabel = intro.introCode + ' ' + intro.introName +
-          (introToCode[clean(intro.introCode)] ? '（推薦者コード ' + introToCode[clean(intro.introCode)] + '）' : '');
+      const introLabel = intro ? intro.introCode + ' ' + intro.introName : '';
 
-        managerFee.push(text + ' イントロ：' + introLabel);
-        notes[item.key] = 'マネージャーフィーの可能性あり（誰にも払わない）／イントロ：' + introLabel +
-          (others.length ? '／※同じプラン番号の別契約は推薦者 ' + others.join('・') + ' に支払中' : '');
+      if (intro && PAYMENT_V18.OWN_INTRO_CODES.indexOf(introCode) < 0) {
+
+        if (introToCode[introCode] && item.sequence) {
+          hit = {
+            code: introToCode[introCode],
+            payee: intro.introName,
+            name: '',
+            source: 'イントロ ' + introLabel + '・マネージャーフィー分'
+          };
+        } else {
+          notFound.push(text + ' イントロ：' + introLabel);
+          notes[item.key] = 'イントロ ' + introLabel + ' の推薦者コードが推薦者コード管理にありません。手で確認してください';
+          return;
+        }
+
+      } else if (intro) {
+        ownShare.push(text + ' イントロ：' + introLabel);
+        notes[item.key] = '弊社分の可能性（イントロ ' + introLabel + '）。担当者変更後・申込フォームに推薦者なし。推薦者がいるはずなら手で確認してください';
+        return;
+
       } else {
         notFound.push(text);
-        notes[item.key] = '推薦者が見つかりません（担当者変更後・申込フォームにない）。手で確認してください';
+        notes[item.key] = '推薦者が見つかりません（担当者変更後・申込フォーム・プランポリシーにない）。手で確認してください';
+        return;
       }
-      return;
     }
 
     if (inMaster[key]) {
@@ -598,7 +617,7 @@ function fillLostContractsV18() {
     section('シーケンス違い（貼付用を直せば迷子ではなくなります）', wrongSeq) +
     section('すでに顧客マスタにある', already) +
     section('推薦者が見つからない（手で確認してください）', notFound) +
-    section('マネージャーフィーの可能性あり（誰にも払わない・顧客マスタに入れない）', managerFee) +
+    section('弊社分の可能性（イントロが Wawasan・Izaaz で推薦者なし・顧客マスタに入れない）', ownShare) +
     section('読めなかった照合元', errors) +
     '\n\n' + noteResult +
     (added.length ? '\n\n追加した行を確認して、いつもどおり「契約時保存」をしてください。' : '')

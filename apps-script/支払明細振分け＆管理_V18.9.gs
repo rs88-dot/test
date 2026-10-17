@@ -1780,6 +1780,9 @@ function pay18_loadContext_() {
 
   const policyMap = pay18_loadPolicyMap_(ss);
 
+  /* ★V18.9：L列・M列が空欄、N列が「支払額×支払倍率」と合わない行は支払保留（貼り付けずれの過払い防止） */
+  pay18_holdBrokenRows_(rowsInfo);
+
   /* ★V18.9：年払い・前払いのみなし過払い防止（プランポリシーの年間拠出金で上限） */
   pay18_applyAnnualCap_(rowsInfo, policyMap, pay18_loadTransferMap_(ss));
 
@@ -2873,7 +2876,7 @@ function pay18_applyAnnualCap_(rowsInfo, policyMap, transferMap) {
 
     const row = info.row;
 
-    if (!info.month) {
+    if (!info.month || info.hold) {
       return;
     }
 
@@ -3126,6 +3129,64 @@ function pay18_loadTransferMap_(ss) {
  * 書き換える前の値は AB列に残し、次回からは AB列の値で計算し直す（何度動かしても同じ結果）。
  * 過去の月は触らない。
  *************************************************/
+/*
+ * 支払保留：2026.10以降の月で
+ *   ・L列（支払区分）か M列（支払倍率）が空欄
+ *   ・N列（今回支払額）が K列（支払額）× M列（支払倍率）と$1以上ずれている
+ * 行は、N列の金額を払わず0にして理由を備考に書く（例：N列に支払月「2026.10」が入っている）。
+ */
+function pay18_holdBrokenRows_(rowsInfo) {
+
+  const from = pay18_monthIndex_(PAYMENT_V18.ANNUAL_CAP_FROM);
+
+  rowsInfo.forEach(info => {
+
+    if (!info.rowNumber || pay18_monthIndex_(info.month) < from) {
+      return;
+    }
+
+    const row = info.row;
+
+    const kubun = String(row[11] || '').trim();
+
+    const rate = row[12];
+
+    const amount = row[13];
+
+    const base = pay18_num_(row[10]);
+
+    const blank = value => value === '' || value === null || value === undefined;
+
+    let reason = '';
+
+    if (blank(amount) || pay18_num_(amount) === 0) {
+      return;
+    }
+
+    if (!kubun || blank(rate)) {
+      reason = '支払保留：' + (!kubun ? 'L列（支払区分）' : '') + (!kubun && blank(rate) ? '・' : '') +
+        (blank(rate) ? 'M列（支払倍率）' : '') + 'が空欄のため、N列の' + amount +
+        'は支払額として使えません。推薦者コード管理の「1年みなし2年目平準」を確認し、L列・M列を入れて①を押し直してください';
+    } else if (Math.abs(pay18_num_(amount) - base * pay18_num_(rate)) >= 1) {
+      reason = '支払保留：N列（今回支払額）' + amount + 'が K列（支払額）' + base + '×M列（支払倍率）' + rate +
+        '＝' + (Math.round(base * pay18_num_(rate) * 100) / 100) + 'と合わないため、貼り付けずれの可能性。行を確認して①を押し直してください';
+    }
+
+    if (!reason) {
+      return;
+    }
+
+    row[13] = 0;
+
+    row[15] = reason;
+
+    info.hold = true;
+
+    info.noteChanged = true;
+  });
+}
+
+
 function pay18_writeFinalRates_(source, rowsInfo) {
 
   const latest = rowsInfo.reduce((value, info) =>
@@ -3154,7 +3215,7 @@ function pay18_writeFinalRates_(source, rowsInfo) {
 
   rowsInfo.forEach(info => {
 
-    if (info.month !== latest || !info.rowNumber) {
+    if (info.month !== latest || !info.rowNumber || info.hold) {
       return;
     }
 

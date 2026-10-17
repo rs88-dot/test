@@ -369,7 +369,9 @@ function fillLostContractsV18() {
         sequence: sequence,
         name: String(row[4] || '').trim(),
         row: index + 3,
-        manual: String(row[14] || '').trim()
+        manual: String(row[14] || '').trim(),
+        rate: String(row[9] || '').trim(),
+        period: pay18_num_(row[6])
       });
     });
 
@@ -481,6 +483,8 @@ function fillLostContractsV18() {
 
   const notFound = [];
 
+  const managerFee = [];
+
   lost.forEach(item => {
 
     const label = item.plan + '（' + item.product + '・' + (item.sequence || 'シーケンス空欄') + '）' + item.name;
@@ -500,8 +504,20 @@ function fillLostContractsV18() {
     const hit = item.sequence ? finder[key] : null;
 
     if (!hit) {
+
       const others = Object.keys(knownPlan[item.plan] || {});
-      notFound.push(label + (others.length ? '（同じプラン番号の別契約は推薦者 ' + others.join('・') + '）' : ''));
+
+      const text = label + '（紹介料率' + (item.rate || '空欄') + '・' + (item.period || '?') + '年目）' +
+        (others.length ? '（同じプラン番号の別契約は推薦者 ' + others.join('・') + '）' : '');
+
+      const rate = pay18_rate_(item.rate);
+
+      /* 推薦者経由の1年目は37〜85%。35%以下で一括商品でもないものはマネージャーフィーの可能性 */
+      if (rate > 0 && rate <= 0.35 && !/^(FIFR|PLAT|ACS)/i.test(item.product)) {
+        managerFee.push(text);
+      } else {
+        notFound.push(text);
+      }
       return;
     }
 
@@ -536,6 +552,7 @@ function fillLostContractsV18() {
     section('シーケンス違い（貼付用を直せば迷子ではなくなります）', wrongSeq) +
     section('すでに顧客マスタにある', already) +
     section('推薦者が見つからない（手で確認してください）', notFound) +
+    section('推薦者なし・紹介料率35%以下（Wawasan・Izaazがマネージャーのマネージャーフィーの可能性）', managerFee) +
     section('読めなかった照合元', errors) +
     (added.length ? '\n\n追加した行を確認して、いつもどおり「契約時保存」をしてください。' : '')
   );

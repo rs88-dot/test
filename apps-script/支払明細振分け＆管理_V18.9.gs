@@ -3142,6 +3142,8 @@ function pay18_holdBrokenRows_(rowsInfo) {
 
   const from = pay18_monthIndex_(PAYMENT_V18.ANNUAL_CAP_FROM);
 
+  let blankKubun = 0;
+
   rowsInfo.forEach(info => {
 
     if (!info.rowNumber || pay18_monthIndex_(info.month) < from) {
@@ -3166,6 +3168,10 @@ function pay18_holdBrokenRows_(rowsInfo) {
       return;
     }
 
+    if (!kubun) {
+      blankKubun++;
+    }
+
     if (!kubun || blank(rate)) {
       reason = '支払保留：' + (!kubun ? 'L列（支払区分）' : '') + (!kubun && blank(rate) ? '・' : '') +
         (blank(rate) ? 'M列（支払倍率）' : '') + 'が空欄のため、N列の' + amount +
@@ -3187,6 +3193,15 @@ function pay18_holdBrokenRows_(rowsInfo) {
 
     info.noteChanged = true;
   });
+
+  /* L列がまとめて空欄＝L2の数式が壊れている（L列に手で値を入れると #REF! になる）可能性が高い */
+  if (blankKubun >= 10) {
+    pay18_alert_(
+      '⚠ L列（支払区分）が空欄の行が' + blankKubun + '件あり、その行は支払保留にしました。\n\n' +
+      'L2の数式が #REF! になっていないか確認してください（L列の途中に手で値を入れると数式が止まります）。' +
+      '直したら①を押し直してください。'
+    );
+  }
 }
 
 

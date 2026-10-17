@@ -1783,7 +1783,7 @@ function pay18_loadContext_() {
   /* ★V18.9：年払い・前払いのみなし過払い防止（プランポリシーの年間拠出金で上限） */
   pay18_applyAnnualCap_(rowsInfo, policyMap, pay18_loadTransferMap_(ss));
 
-  pay18_applyMinashiGuard_(rowsInfo);
+  pay18_applyMinashiGuard_(rowsInfo, policyMap);
 
   pay18_writeJudgeColumn_(source, all, rowsInfo, lastRow);
 
@@ -1864,7 +1864,7 @@ function pay18_loadContext_() {
  * 計上されている場合、後の月のみなし行は支払対象外（0）にする。
  * 備考①に「YYYY.Mに支払済（すでに12か月分支払済)」を表示。
  *************************************************/
-function pay18_applyMinashiGuard_(rowsInfo) {
+function pay18_applyMinashiGuard_(rowsInfo, policyMap) {
 
   const AMOUNT = PAYMENT_V18.SOURCE_AMOUNT_COL - 1;   // N
   const RATE = AMOUNT - 1;                            // M 支払倍率
@@ -1946,8 +1946,42 @@ function pay18_applyMinashiGuard_(rowsInfo) {
 
     let reason = '';
 
+    /*
+     * ⓪ シーケンスの付け間違い（発効日で判定）：
+     * 1年目の行なのに、そのシーケンスはプランポリシーの発効日では2年目以降の契約
+     * （例：ライダー1は2024年発効・ライダー2が2026年発効なのに、1年目の行がライダー1）。
+     * 違うシーケンスで払うと過払いになるため支払を保留する（2026.10以降の月だけ）。
+     */
+    if (sequence && policyMap && index >= pay18_monthIndex_(PAYMENT_V18.ANNUAL_CAP_FROM)) {
+
+      const policy = policyMap[plan + '||' + pay18_sequenceKey_(sequence)];
+
+      const issue = policy && policy.issue;
+
+      if (issue) {
+
+        const elapsed = index - (issue.getFullYear() * 12 + issue.getMonth() + 1);
+
+        if (elapsed >= 12) {
+
+          const year = Math.floor(elapsed / 12) + 1;
+
+          const others = Object.keys(policyMap)
+            .filter(key => key.indexOf(plan + '||') === 0 && policyMap[key].product === product && policyMap[key].issue &&
+              index - (policyMap[key].issue.getFullYear() * 12 + policyMap[key].issue.getMonth() + 1) < 12)
+            .map(key => key.split('||')[1]);
+
+          reason = 'シーケンス要確認：この行は契約1年目（期間1）だが、シーケンス「' + sequence +
+            '」はプランポリシーでは発効日' + Utilities.formatDate(issue, Session.getScriptTimeZone(), 'yyyy/M/d') +
+            '（' + year + '年目）の契約のため、シーケンスの付け間違いの可能性' +
+            (others.length ? '（1年目の' + product + 'は「' + others.join('・') + '」）' : '') +
+            ' → 過払いを防ぐため今回は支払保留。U列のシーケンスを直して①を押し直してください';
+        }
+      }
+    }
+
     /* ① プラン番号＋シーケンスが同じ（シーケンス空欄なら商品コード） */
-    const bySequence = recent.find(record =>
+    const bySequence = reason ? null : recent.find(record =>
       record.sequence && sequence
         ? record.sequence === sequence
         : record.product === product
@@ -2234,6 +2268,7 @@ function pay18_loadPolicyMap_(ss) {
     status: col('状態'),
     lastPaid: col('最終の支払済日'),
     group: col('商品グループ'),
+    issue: col('発効日'),
     introCode: col('イントロデューサーコード'),
     introName: col('イントロデューサー名')
   };
@@ -2258,6 +2293,7 @@ function pay18_loadPolicyMap_(ss) {
       status: c.status >= 0 ? String(row[c.status] || '').trim() : '',
       lastPaid: c.lastPaid >= 0 ? pay18_parseDate_(row[c.lastPaid]) : null,
       group: c.group >= 0 ? String(row[c.group] || '').trim() : '',
+      issue: c.issue >= 0 ? pay18_parseDate_(row[c.issue]) : null,
       introCode: c.introCode >= 0 ? String(row[c.introCode] || '').trim() : '',
       introName: c.introName >= 0 ? String(row[c.introName] || '').trim() : ''
     };

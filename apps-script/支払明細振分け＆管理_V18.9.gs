@@ -127,6 +127,9 @@ const PAYMENT_V18 = {
    *************************************************/
   ADMIN_FEE: 5,
 
+  /* 弊社コード：計算はするが支払いはしない（支払いまとめの今回払出額は0） */
+  NO_PAYOUT_IDS: ['1820'],
+
   /*************************************************
    * 内部管理
    *************************************************/
@@ -4027,7 +4030,7 @@ function pay18_buildCarryRows_(rows, old, context) {
 
     const monthMap = byId[id];
 
-    if (monthMap[latestKey]) {
+    if (monthMap[latestKey] || PAYMENT_V18.NO_PAYOUT_IDS.indexOf(String(id)) >= 0) {
       return;
     }
 
@@ -4231,13 +4234,16 @@ function pay18_recalculateLedger_(sheet, targetIds) {
 
         const noPayment = pay18_isNoPayment_(row[14]);
 
-        const settled = paid || noPayment;
+        /* 弊社コード（1820 Wawasan など）：金額は計算して載せるが、払わず繰越もしない */
+        const internal = PAYMENT_V18.NO_PAYOUT_IDS.indexOf(String(id)) >= 0;
+
+        const settled = paid || noPayment || internal;
 
         if (settled) {
           hasPaidRow = true;
         }
 
-        const rowCarry = noPayment ? 0 : (index === 0 ? carry : 0);
+        const rowCarry = noPayment || internal ? 0 : (index === 0 ? carry : 0);
 
         const gross = noPayment ? 0 : base + rowCarry;
 
@@ -4251,6 +4257,10 @@ function pay18_recalculateLedger_(sheet, targetIds) {
         } else if (noPayment) {
 
           action = '支払なし';
+
+        } else if (internal) {
+
+          action = '弊社分（計算のみ・支払なし）';
 
         /*
          * ★マイナス金額も通常処理
@@ -4577,7 +4587,9 @@ function pay18_updateMainSummary_(ss, ledgerState, forceWrite) {
       result.push(map[month] !== undefined ? map[month] : '');
     });
 
-    result.push(latest.month, notice.payout, latest.action);
+    const internal = PAYMENT_V18.NO_PAYOUT_IDS.indexOf(String(id)) >= 0;
+
+    result.push(latest.month, internal ? 0 : notice.payout, latest.action);
 
     output.push(result);
   });

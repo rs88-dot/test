@@ -97,6 +97,7 @@ const PAYMENT_V18 = {
   APPLY_SOURCE_ID: '1ophzS1nD2KE8WanjAySl3Lj5RDHioDxegTjKw5mRd1A',
   APPLY_SOURCE_SHEET: '★',
   LOST_SHEET: '【確認】迷子契約',
+  LOST_CHECK_SHEET: '【確認】迷子契約_転記チェック',
   OWN_INTRO_CODES: ['583102', '582755'],
 
   /* ★V18.9：年間拠出金による上限をかける最初の支払月（これより前の月は支払済のため触らない） */
@@ -283,7 +284,8 @@ function showPaymentMenuV18() {
     .addSeparator()
     .addItem('全員のファイルを作り直す', 'publishAllPaymentFilesV18')
     .addSeparator()
-    .addItem('迷子契約の推薦者を顧客マスタへ追加', 'fillLostContractsV18')
+    .addItem('迷子契約を照合（転記候補を作る）', 'fillLostContractsV18')
+    .addItem('✔した迷子契約を顧客マスタへ転記', 'transferCheckedLostContractsV18')
     .addToUi();
 }
 
@@ -292,7 +294,8 @@ function showPaymentMenuV18() {
  * ★迷子契約 → 【手入力】顧客マスタ
  *
  * 貼付用(支払詳細）にあって契約時データにない契約（＝迷子契約）の推薦者を
- * プラン番号＋シーケンス で探し、顧客マスタの空き行に追加する。
+ * プラン番号＋シーケンス で探し、「【確認】迷子契約_転記チェック」に候補を並べる。
+ * 顧客マスタへは、1件ずつ確認して✔したものだけを transferCheckedLostContractsV18 で転記する。
  *   探す順：① 担当者変更一覧「担当者変更後」（変更後の担当を優先）
  *           ② 申込フォーム「★」（BK プラン番号・BL シーケンス・BM 推薦者コード）
  *   書く列：A プラン番号 / B 氏名 / C 商品コード / D シーケンス / E L1_ID
@@ -414,13 +417,54 @@ function fillLostContractsV18() {
 
   const codeSheet = ss.getSheetByName(PAYMENT_V18.MASTER_SHEET);
 
+  const parentOf = {};
+
   if (codeSheet && codeSheet.getLastRow() >= 5) {
     codeSheet
-      .getRange(5, 1, codeSheet.getLastRow() - 4, 3)
+      .getRange(5, 1, codeSheet.getLastRow() - 4, 28)
       .getDisplayValues()
       .forEach(row => {
+
         if (clean(row[0]) && clean(row[2])) {
           introToCode[clean(row[0])] = clean(row[2]);
+        }
+
+        /* Z 親：推薦者コード・AB 親：氏名 */
+        if (clean(row[2]) && clean(row[25])) {
+          parentOf[clean(row[2])] = clean(row[25]) + ' ' + String(row[27] || '').trim();
+        }
+      });
+  }
+
+  /* 計算用まとめ：プラン番号|商品コード → 過去の支払先（F列）と最後の支払月（O列） */
+  const pastPaid = {};
+
+  const source = ss.getSheetByName(PAYMENT_V18.SOURCE_SHEET);
+
+  if (source && source.getLastRow() >= 2) {
+    source
+      .getRange(2, 1, source.getLastRow() - 1, PAYMENT_V18.SOURCE_MONTH_COL)
+      .getDisplayValues()
+      .forEach(row => {
+
+        const id = clean(row[PAYMENT_V18.SOURCE_ID_COL - 1]);
+
+        if (!clean(row[0]) || !id) {
+          return;
+        }
+
+        const k = clean(row[0]) + '|' + clean(row[2]);
+
+        const month = String(row[PAYMENT_V18.SOURCE_MONTH_COL - 1] || '').trim();
+
+        const entry = pastPaid[k] = pastPaid[k] || { ids: [], last: '' };
+
+        if (entry.ids.indexOf(id) < 0) {
+          entry.ids.push(id);
+        }
+
+        if (month > entry.last) {
+          entry.last = month;
         }
       });
   }
@@ -482,31 +526,10 @@ function fillLostContractsV18() {
     payee: String(row[65] || '').trim()
   }));
 
-  /* 顧客マスタ：既存キーと空き行 */
-  const master = ss.getSheetByName(PAYMENT_V18.CUSTOMER_SHEET);
+  /* 顧客マスタにすでにあるもの（プラン||シーケンス） */
+  const inMaster = pay18_customerMasterKeys_(ss);
 
-  if (!master) {
-    pay18_alert_('「' + PAYMENT_V18.CUSTOMER_SHEET + '」がありません。');
-    return;
-  }
-
-  const lastRow = Math.max(master.getLastRow(), 3);
-
-  const current = master.getRange(3, 1, lastRow - 2, 4).getDisplayValues();
-
-  const inMaster = {};
-
-  let nextRow = 3;
-
-  current.forEach((row, index) => {
-
-    if (clean(row[0])) {
-      inMaster[clean(row[0]) + '||' + pay18_sequenceKey_(row[3])] = true;
-      nextRow = index + 4;
-    }
-  });
-
-  const added = [];
+  const candidates = [];
 
   const wrongSeq = [];
 
@@ -521,6 +544,20 @@ function fillLostContractsV18() {
   lost.forEach(item => {
 
     const label = item.plan + '（' + item.product + '・' + (item.sequence || 'シーケンス空欄') + '）' + item.name;
+
+    const past = pastPaid[item.plan + '|' + item.product];
+
+    const pastText = past ? past.ids.join('・') + '（最後 ' + past.last + '）' : 'なし';
+
+    const base = {
+      key: item.key,
+      plan: item.plan,
+      product: item.product,
+      sequence: item.sequence,
+      period: item.period,
+      rate: item.rate,
+      past: pastText
+    };
 
     const right = policySeq[item.plan + '|' + item.product] || [];
 
@@ -581,46 +618,294 @@ function fillLostContractsV18() {
       }
     }
 
+    const parent = parentOf[hit.code] ? '／親 ' + parentOf[hit.code] : '';
+
     if (inMaster[key]) {
       already.push(label);
       notes[item.key] = '顧客マスタに入力済み：推薦者 ' + hit.code + '（契約時保存をすると消えます）';
+      candidates.push(Object.assign({}, base, {
+        name: hit.name || item.name, code: hit.code, payee: hit.payee, reason: hit.source + parent, status: '顧客マスタ入力済み'
+      }));
       return;
     }
 
-    inMaster[key] = true;
+    notes[item.key] = '推薦者候補：' + hit.code + ' ' + hit.payee + '（' + hit.source + '）→「' +
+      PAYMENT_V18.LOST_CHECK_SHEET + '」で確認して✔';
 
-    notes[item.key] = '顧客マスタに追加：推薦者 ' + hit.code + ' ' + hit.payee + '（' + hit.source + '）。契約時保存をすると消えます';
+    candidates.push(Object.assign({}, base, {
+      name: hit.name || item.name, code: hit.code, payee: hit.payee, reason: hit.source + parent, status: '未転記'
+    }));
+  });
 
-    added.push({
-      row: [item.plan, hit.name || item.name, item.product, item.sequence, hit.code],
-      label: label + ' → ' + hit.code + ' ' + hit.payee + '（' + hit.source + '）'
+  /* 候補が出なかった迷子契約も、理由つきでチェック表に載せる（✔はできない） */
+  const listed = {};
+
+  candidates.forEach(row => { listed[row.key] = true; });
+
+  lost.forEach(item => {
+
+    if (listed[item.key]) {
+      return;
+    }
+
+    const past = pastPaid[item.plan + '|' + item.product];
+
+    candidates.push({
+      key: item.key,
+      plan: item.plan,
+      product: item.product,
+      sequence: item.sequence,
+      period: item.period,
+      rate: item.rate,
+      past: past ? past.ids.join('・') + '（最後 ' + past.last + '）' : 'なし',
+      name: item.name,
+      code: '',
+      payee: '',
+      reason: notes[item.key] || '',
+      status: '対象外'
     });
   });
 
-  if (added.length) {
-
-    const range = master.getRange(nextRow, 1, added.length, 5);
-
-    range.offset(0, 4, added.length, 1).setNumberFormat('@');
-
-    range.setValues(added.map(item => item.row));
-  }
+  const checkResult = pay18_writeLostCheckSheet_(ss, candidates);
 
   const noteResult = pay18_writeLostNotes_(ss, lost, notes);
+
+  const proposed = candidates.filter(row => row.status === '未転記');
 
   const section = (title, items) =>
     items.length ? '\n\n■ ' + title + '（' + items.length + '件）\n' + items.join('\n') : '';
 
   pay18_alert_(
-    '迷子契約 ' + lost.length + '件を照合しました。' +
-    section('顧客マスタに追加', added.map(item => item.label)) +
+    '迷子契約 ' + lost.length + '件を照合しました。顧客マスタにはまだ何も入れていません。' +
+    section('推薦者の候補あり（転記チェックで確認して✔）', proposed.map(row =>
+      row.plan + '（' + row.product + '・' + row.sequence + '）' + row.name + ' → ' + row.code + ' ' + row.payee + '（' + row.reason + '）')) +
     section('シーケンス違い（貼付用を直せば迷子ではなくなります）', wrongSeq) +
     section('すでに顧客マスタにある', already) +
     section('推薦者が見つからない（手で確認してください）', notFound) +
-    section('弊社分の可能性（イントロが Wawasan・Izaaz で推薦者なし・顧客マスタに入れない）', ownShare) +
+    section('弊社分の可能性（イントロが Wawasan・Izaaz で推薦者なし）', ownShare) +
     section('読めなかった照合元', errors) +
-    '\n\n' + noteResult +
-    (added.length ? '\n\n追加した行を確認して、いつもどおり「契約時保存」をしてください。' : '')
+    '\n\n' + noteResult + '\n' + checkResult +
+    (proposed.length ? '\n\n「' + PAYMENT_V18.LOST_CHECK_SHEET + '」で1件ずつ確認し、転記するものに✔を入れて、' +
+      '「支払管理」→「✔した迷子契約を顧客マスタへ転記」を押してください。' : '')
+  );
+}
+
+
+/* 【手入力】顧客マスタにあるキー（プラン||シーケンス）と、次に書く行 */
+function pay18_customerMasterKeys_(ss) {
+
+  const keys = {};
+
+  let nextRow = 3;
+
+  const master = ss.getSheetByName(PAYMENT_V18.CUSTOMER_SHEET);
+
+  if (master && master.getLastRow() >= 3) {
+    master
+      .getRange(3, 1, master.getLastRow() - 2, 4)
+      .getDisplayValues()
+      .forEach((row, index) => {
+        const plan = String(row[0] || '').replace(/[\s　]/g, '');
+        if (plan) {
+          keys[plan + '||' + pay18_sequenceKey_(row[3])] = true;
+          nextRow = index + 4;
+        }
+      });
+  }
+
+  Object.defineProperty(keys, '__nextRow', { value: nextRow, enumerable: false });
+
+  return keys;
+}
+
+
+/* 【確認】迷子契約_転記チェック：1件ずつ見て✔するための表。
+ * 前回の✔・直した推薦者コード・転記済みは照合キー（M列）で引き継ぐ。 */
+const PAY18_LOST_CHECK_HEADER = [
+  '✔転記', '状態', 'プラン番号', '氏名（顧客マスタに入る）', '商品コード', 'シーケンス', '期間', '紹介料率',
+  '推薦者コード（直してOK）', '推薦者名', '根拠・理由', '過去の支払先（計算用まとめ）', '照合キー'
+];
+
+function pay18_writeLostCheckSheet_(ss, candidates) {
+
+  const name = PAYMENT_V18.LOST_CHECK_SHEET;
+
+  const width = PAY18_LOST_CHECK_HEADER.length;
+
+  let sheet = ss.getSheetByName(name);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+  }
+
+  /* 前回の状態 */
+  const previous = {};
+
+  if (sheet.getLastRow() >= 3) {
+    sheet
+      .getRange(3, 1, sheet.getLastRow() - 2, width)
+      .getValues()
+      .forEach(row => {
+        const key = String(row[width - 1] || '');
+        if (key) {
+          previous[key] = { checked: row[0] === true, status: String(row[1] || ''), code: String(row[8] || '').trim() };
+        }
+      });
+  }
+
+  const order = { '未転記': 0, '顧客マスタ入力済み': 1, '対象外': 2 };
+
+  candidates.sort((a, b) => (order[a.status] - order[b.status]) || (a.plan < b.plan ? -1 : a.plan > b.plan ? 1 : 0));
+
+  const rows = candidates.map(row => {
+
+    const before = previous[row.key];
+
+    const status = before && /^転記済み/.test(before.status) && row.status !== '対象外' ? before.status : row.status;
+
+    const code = before && before.code && row.status === '未転記' ? before.code : row.code;
+
+    return [
+      status === '未転記' && before ? before.checked : false,
+      status,
+      row.plan,
+      row.name,
+      row.product,
+      row.sequence,
+      row.period || '',
+      row.rate,
+      code,
+      row.payee,
+      row.reason,
+      row.past,
+      row.key
+    ];
+  });
+
+  sheet.clear();
+
+  sheet.getRange(1, 1).setValue(
+    '迷子契約の推薦者候補です。1件ずつ確認し、顧客マスタに入れるものだけ A列に✔ →「支払管理」→「✔した迷子契約を顧客マスタへ転記」。' +
+    '推薦者コードは I列で直せます。「対象外」は理由（K列）を見て手で対応してください。'
+  ).setFontWeight('bold').setWrap(false);
+
+  sheet.getRange(2, 1, 1, width).setValues([PAY18_LOST_CHECK_HEADER]).setFontWeight('bold').setBackground('#cfe2f3');
+
+  sheet.setFrozenRows(2);
+
+  if (rows.length) {
+
+    sheet.getRange(3, 1, rows.length, width).setNumberFormat('@');
+
+    sheet.getRange(3, 1, rows.length, width).setValues(rows);
+
+    rows.forEach((row, index) => {
+
+      const r = index + 3;
+
+      if (row[1] === '未転記') {
+        sheet.getRange(r, 1).setNumberFormat('General').insertCheckboxes().setValue(row[0] === true);
+      } else {
+        sheet.getRange(r, 1).setValue('');
+        sheet.getRange(r, 1, 1, width).setBackground('#efefef');
+      }
+    });
+  }
+
+  sheet.hideColumns(width);
+
+  sheet.autoResizeColumns(2, width - 2);
+
+  return '「' + name + '」に' + rows.length + '件を書きました（✔できるのは「未転記」の' +
+    rows.filter(row => row[1] === '未転記').length + '件）。';
+}
+
+
+/* ✔した迷子契約だけを【手入力】顧客マスタへ転記 */
+function transferCheckedLostContractsV18() {
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const sheet = ss.getSheetByName(PAYMENT_V18.LOST_CHECK_SHEET);
+
+  const width = PAY18_LOST_CHECK_HEADER.length;
+
+  if (!sheet || sheet.getLastRow() < 3) {
+    pay18_alert_('先に「迷子契約を照合（転記候補を作る）」を押してください。');
+    return;
+  }
+
+  const master = ss.getSheetByName(PAYMENT_V18.CUSTOMER_SHEET);
+
+  if (!master) {
+    pay18_alert_('「' + PAYMENT_V18.CUSTOMER_SHEET + '」がありません。');
+    return;
+  }
+
+  const inMaster = pay18_customerMasterKeys_(ss);
+
+  const values = sheet.getRange(3, 1, sheet.getLastRow() - 2, width).getValues();
+
+  const toWrite = [];
+
+  const done = [];
+
+  const skipped = [];
+
+  const stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy/MM/dd HH:mm');
+
+  values.forEach((row, index) => {
+
+    if (row[0] !== true || String(row[1]) !== '未転記') {
+      return;
+    }
+
+    const plan = String(row[2] || '').trim();
+
+    const sequence = pay18_sequenceKey_(row[5]);
+
+    const code = String(row[8] || '').trim();
+
+    const label = plan + '（' + row[4] + '・' + sequence + '）' + row[3];
+
+    if (!plan || !sequence || !code) {
+      skipped.push(label + '：プラン番号・シーケンス・推薦者コードのどれかが空です');
+      return;
+    }
+
+    if (inMaster[plan + '||' + sequence]) {
+      skipped.push(label + '：すでに顧客マスタにあります');
+      return;
+    }
+
+    inMaster[plan + '||' + sequence] = true;
+
+    toWrite.push([plan, String(row[3] || '').trim(), String(row[4] || '').trim(), sequence, code]);
+
+    done.push({ row: index + 3, label: label + ' → ' + code });
+  });
+
+  if (!toWrite.length) {
+    pay18_alert_('転記するものがありません。' + (skipped.length ? '\n\n' + skipped.join('\n') : '\n\n「未転記」の行の A列に✔を入れてください。'));
+    return;
+  }
+
+  const range = master.getRange(inMaster.__nextRow, 1, toWrite.length, 5);
+
+  range.offset(0, 4, toWrite.length, 1).setNumberFormat('@');
+
+  range.setValues(toWrite);
+
+  done.forEach(item => {
+    sheet.getRange(item.row, 1).removeCheckboxes().setValue('');
+    sheet.getRange(item.row, 2).setValue('転記済み ' + stamp);
+    sheet.getRange(item.row, 1, 1, width).setBackground('#d9ead3');
+  });
+
+  pay18_alert_(
+    '顧客マスタに' + done.length + '件を転記しました。\n' + done.map(item => item.label).join('\n') +
+    (skipped.length ? '\n\n■ 転記しなかったもの\n' + skipped.join('\n') : '') +
+    '\n\n顧客マスタの行を確認して、いつもどおり「契約時保存」をしてください。'
   );
 }
 

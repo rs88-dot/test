@@ -96,6 +96,8 @@ const PAYMENT_V18 = {
   CUSTOMER_SHEET: '【手入力】顧客マスタ',
   APPLY_SOURCE_ID: '1ophzS1nD2KE8WanjAySl3Lj5RDHioDxegTjKw5mRd1A',
   APPLY_SOURCE_SHEET: '★',
+  LOST_SHEET: '【確認】迷子契約',
+  OWN_INTRO_CODES: ['583102', '582755'],
 
   /* ★V18.9：年間拠出金による上限をかける最初の支払月（これより前の月は支払済のため触らない） */
   POLICY_SHEET: 'プランポリシー',
@@ -295,6 +297,9 @@ function showPaymentMenuV18() {
  *           ② 申込フォーム「★」（BK プラン番号・BL シーケンス・BM 推薦者コード）
  *   書く列：A プラン番号 / B 氏名 / C 商品コード / D シーケンス / E L1_ID
  * 貼付用のシーケンスがプランポリシーと違うものは入れずに「直す場所」を表示する。
+ * イントロデューサー（プランポリシー A・B列）が Wawasan・Izaaz 以外で推薦者が見つからないものは
+ * マネージャーフィー（誰にも払わない）として顧客マスタには入れない。
+ * 結果は【確認】迷子契約の G列「備考」にも書く。
  * すでに顧客マスタにあるもの・見つからないものは入れない。
  * 追加後はいつもどおり「契約時保存」で契約時データへ保存してください。
  *************************************************/
@@ -340,6 +345,7 @@ function fillLostContractsV18() {
 
   const seen = {};
 
+
   paste
     .getRange(3, 1, paste.getLastRow() - 2, 16)
     .getDisplayValues()
@@ -364,6 +370,7 @@ function fillLostContractsV18() {
       seen[key] = true;
 
       lost.push({
+        key: key,
         plan: plan,
         product: product,
         sequence: sequence,
@@ -383,6 +390,8 @@ function fillLostContractsV18() {
   /* プランポリシー：プラン＋商品 → 正しいシーケンス */
   const policySeq = {};
 
+  const policyIntro = {};
+
   const policyMap = pay18_loadPolicyMap_(ss);
 
   Object.keys(policyMap).forEach(key => {
@@ -392,6 +401,11 @@ function fillLostContractsV18() {
     const id = parts[0] + '|' + clean(policyMap[key].product);
 
     (policySeq[id] = policySeq[id] || []).push(parts[1]);
+
+    if (policyMap[key].introCode) {
+      policyIntro[key] = policyMap[key];
+      policyIntro[parts[0]] = policyIntro[parts[0]] || policyMap[key];
+    }
   });
 
   /* 推薦者の照合元（プラン||シーケンス → {code, payee, name, source}） */
@@ -485,6 +499,8 @@ function fillLostContractsV18() {
 
   const managerFee = [];
 
+  const notes = {};
+
   lost.forEach(item => {
 
     const label = item.plan + '（' + item.product + '・' + (item.sequence || 'シーケンス空欄') + '）' + item.name;
@@ -496,6 +512,8 @@ function fillLostContractsV18() {
         label + ' → 貼付用' + item.row + '行目：プランポリシーでは「' + right.join('・') + '」' +
         (item.manual ? '（O列の手動シーケンス「' + item.manual + '」を直すか消してください）' : '')
       );
+      notes[item.key] = 'シーケンス違い：プランポリシーでは「' + right.join('・') + '」。貼付用' + item.row +
+        '行目' + (item.manual ? 'のO列（手動シーケンス）' : '') + 'を直してください';
       return;
     }
 
@@ -510,23 +528,30 @@ function fillLostContractsV18() {
       const text = label + '（紹介料率' + (item.rate || '空欄') + '・' + (item.period || '?') + '年目）' +
         (others.length ? '（同じプラン番号の別契約は推薦者 ' + others.join('・') + '）' : '');
 
-      const rate = pay18_rate_(item.rate);
+      /* プランポリシーのイントロデューサーが Wawasan・Izaaz 以外 ＝ マネージャーフィー（誰にも払わない） */
+      const intro = policyIntro[item.plan + '||' + item.sequence] || policyIntro[item.plan];
 
-      /* 推薦者経由の1年目は37〜85%。35%以下で一括商品でもないものはマネージャーフィーの可能性 */
-      if (rate > 0 && rate <= 0.35 && !/^(FIFR|PLAT|ACS)/i.test(item.product)) {
-        managerFee.push(text);
+      if (intro && PAYMENT_V18.OWN_INTRO_CODES.indexOf(clean(intro.introCode)) < 0) {
+        managerFee.push(text + ' イントロ：' + intro.introCode + ' ' + intro.introName);
+        notes[item.key] = 'マネージャーフィーの可能性あり（誰にも払わない）／イントロ：' +
+          intro.introCode + ' ' + intro.introName +
+          (others.length ? '／※同じプラン番号の別契約は推薦者 ' + others.join('・') + ' に支払中' : '');
       } else {
         notFound.push(text);
+        notes[item.key] = '推薦者が見つかりません（担当者変更後・申込フォームにない）。手で確認してください';
       }
       return;
     }
 
     if (inMaster[key]) {
       already.push(label);
+      notes[item.key] = '顧客マスタに入力済み：推薦者 ' + hit.code + '（契約時保存をすると消えます）';
       return;
     }
 
     inMaster[key] = true;
+
+    notes[item.key] = '顧客マスタに追加：推薦者 ' + hit.code + ' ' + hit.payee + '（' + hit.source + '）。契約時保存をすると消えます';
 
     added.push({
       row: [item.plan, hit.name || item.name, item.product, item.sequence, hit.code],
@@ -543,6 +568,8 @@ function fillLostContractsV18() {
     range.setValues(added.map(item => item.row));
   }
 
+  const noteResult = pay18_writeLostNotes_(ss, lost, notes);
+
   const section = (title, items) =>
     items.length ? '\n\n■ ' + title + '（' + items.length + '件）\n' + items.join('\n') : '';
 
@@ -552,10 +579,79 @@ function fillLostContractsV18() {
     section('シーケンス違い（貼付用を直せば迷子ではなくなります）', wrongSeq) +
     section('すでに顧客マスタにある', already) +
     section('推薦者が見つからない（手で確認してください）', notFound) +
-    section('推薦者なし・紹介料率35%以下（Wawasan・Izaazがマネージャーのマネージャーフィーの可能性）', managerFee) +
+    section('マネージャーフィーの可能性あり（誰にも払わない・顧客マスタに入れない）', managerFee) +
     section('読めなかった照合元', errors) +
+    '\n\n' + noteResult +
     (added.length ? '\n\n追加した行を確認して、いつもどおり「契約時保存」をしてください。' : '')
   );
+}
+
+
+/* 【確認】迷子契約 G列「備考」
+ * 結果は隠し列 Y（プラン番号|商品コード）・Z（備考）に置き、G3 の数式で引く。
+ * A3 の FILTER の行が増減しても備考がずれない。 */
+function pay18_writeLostNotes_(ss, lost, notes) {
+
+  const sheet = ss.getSheetByName(PAYMENT_V18.LOST_SHEET);
+
+  if (!sheet) {
+    return '「' + PAYMENT_V18.LOST_SHEET + '」が見つからないため、備考は書いていません。';
+  }
+
+  const merged = {};
+
+  const order = [];
+
+  lost.forEach(item => {
+
+    const key = item.plan + '|' + item.product;
+
+    const note = notes[item.key] || '';
+
+    if (!(key in merged)) {
+      merged[key] = [];
+      order.push(key);
+    }
+
+    if (note) {
+      merged[key].push({ sequence: item.sequence, note: note });
+    }
+  });
+
+  /* 同じプラン番号＋商品でシーケンス違いが複数あるときだけ、シーケンス名を付けて並べる */
+  const text = key => merged[key].length > 1
+    ? merged[key].map(entry => (entry.sequence || 'シーケンス空欄') + '：' + entry.note).join(' ／ ')
+    : (merged[key][0] ? merged[key][0].note : '');
+
+  if (sheet.getMaxColumns() < 26) {
+    sheet.insertColumnsAfter(sheet.getMaxColumns(), 26 - sheet.getMaxColumns());
+  }
+
+  sheet.getRange(1, 25, sheet.getMaxRows(), 2).clearContent();
+
+  sheet.getRange(2, 25, 1, 2).setValues([['照合キー（自動）', '備考（自動）']]);
+
+  if (order.length) {
+    sheet
+      .getRange(3, 25, order.length, 2)
+      .setNumberFormat('@')
+      .setValues(order.map(key => [key, text(key)]));
+  }
+
+  sheet.hideColumns(25, 2);
+
+  if (sheet.getMaxRows() > 2) {
+    sheet.getRange(3, 7, sheet.getMaxRows() - 2, 1).clearContent();
+  }
+
+  sheet.getRange(2, 7).setValue('備考（ボタンで自動）').setFontWeight('bold');
+
+  sheet.getRange(3, 7).setFormula(
+    '=MAP(A3:A,C3:C,LAMBDA(p,c,IF(OR(p="",p="該当なし"),"",' +
+    'IFERROR(VLOOKUP(SUBSTITUTE(TRIM(p)," ","")&"|"&SUBSTITUTE(TRIM(c)," ",""),$Y$3:$Z,2,FALSE),""))))'
+  );
+
+  return '【確認】迷子契約のG列「備考」に結果を表示しました。';
 }
 
 
@@ -1813,7 +1909,9 @@ function pay18_loadPolicyMap_(ss) {
     productName: col('商品名'),
     status: col('状態'),
     lastPaid: col('最終の支払済日'),
-    group: col('商品グループ')
+    group: col('商品グループ'),
+    introCode: col('イントロデューサーコード'),
+    introName: col('イントロデューサー名')
   };
 
   if (c.plan < 0 || c.sequence < 0 || c.annual < 0) {
@@ -1835,7 +1933,9 @@ function pay18_loadPolicyMap_(ss) {
       product: c.productName >= 0 ? String(row[c.productName] || '').split(' - ')[0].trim() : '',
       status: c.status >= 0 ? String(row[c.status] || '').trim() : '',
       lastPaid: c.lastPaid >= 0 ? pay18_parseDate_(row[c.lastPaid]) : null,
-      group: c.group >= 0 ? String(row[c.group] || '').trim() : ''
+      group: c.group >= 0 ? String(row[c.group] || '').trim() : '',
+      introCode: c.introCode >= 0 ? String(row[c.introCode] || '').trim() : '',
+      introName: c.introName >= 0 ? String(row[c.introName] || '').trim() : ''
     };
   });
 

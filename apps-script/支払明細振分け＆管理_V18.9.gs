@@ -91,6 +91,9 @@ const PAYMENT_V18 = {
   /* 担当者変更一覧（管理シート（マスター）※コミッション含 の「担当者変更後」） */
   TRANSFER_SOURCE_ID: '1-Z8RxBMwXVVvOKcJ6C9UrLdeSmNxwRDZw466SAfxlRE',
   TRANSFER_SOURCE_SHEET: '担当者変更後',
+  PASTE_SHEET: '貼付用(支払詳細）',
+  CONTRACT_SHEET: '【自動固定】契約時データ（永久保存版）',
+  CUSTOMER_SHEET: '【手入力】顧客マスタ',
 
   /* ★V18.9：年間拠出金による上限をかける最初の支払月（これより前の月は支払済のため触らない） */
   POLICY_SHEET: 'プランポリシー',
@@ -275,7 +278,202 @@ function showPaymentMenuV18() {
     .addItem('② 推薦者ファイルに反映（共有）', 'publishPaymentFilesV18')
     .addSeparator()
     .addItem('全員のファイルを作り直す', 'publishAllPaymentFilesV18')
+    .addSeparator()
+    .addItem('迷子契約を担当者変更後から顧客マスタへ追加', 'fillLostContractsV18')
     .addToUi();
+}
+
+
+/*************************************************
+ * ★迷子契約 → 【手入力】顧客マスタ
+ *
+ * 貼付用(支払詳細）にあって契約時データにない契約（＝迷子契約）を、
+ * 担当者変更一覧の「担当者変更後」と プラン番号＋シーケンス で照合し、
+ * 見つかったものを顧客マスタの空き行に追加する。
+ *   A プラン番号 / B 氏名（担当者変更後 E）/ C 商品コード / D シーケンス / E L1_ID（担当者変更後 F）
+ * すでに顧客マスタにあるもの・見つからないもの・推薦者コードが空のものは入れない。
+ * 追加後はいつもどおり「契約時保存」で契約時データへ保存してください。
+ *************************************************/
+function fillLostContractsV18() {
+
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+  const clean = value => String(value || '').replace(/[\s　]/g, '');
+
+  /* 契約時データのキー（プラン|商品|シーケンス）。迷子契約シートと同じ判定 */
+  const contract = ss.getSheetByName(PAYMENT_V18.CONTRACT_SHEET);
+
+  const known = {};
+
+  if (contract && contract.getLastRow() >= 3) {
+    contract
+      .getRange(3, 1, contract.getLastRow() - 2, 4)
+      .getDisplayValues()
+      .forEach(row => {
+        known[clean(row[0]) + '|' + clean(row[2]) + '|' + pay18_sequenceKey_(row[3])] = true;
+      });
+  }
+
+  /* 迷子契約（貼付用 D プラン・F 商品・P 最終シーケンス） */
+  const paste = ss.getSheetByName(PAYMENT_V18.PASTE_SHEET);
+
+  if (!paste || paste.getLastRow() < 3) {
+    pay18_alert_('「' + PAYMENT_V18.PASTE_SHEET + '」にデータがありません。');
+    return;
+  }
+
+  const lost = [];
+
+  const seen = {};
+
+  paste
+    .getRange(3, 1, paste.getLastRow() - 2, 16)
+    .getDisplayValues()
+    .forEach(row => {
+
+      const plan = clean(row[3]);
+
+      if (!plan) {
+        return;
+      }
+
+      const product = clean(row[5]);
+
+      const sequence = pay18_sequenceKey_(row[15]);
+
+      const key = plan + '|' + product + '|' + sequence;
+
+      if (known[key] || seen[key]) {
+        return;
+      }
+
+      seen[key] = true;
+
+      lost.push({ plan: plan, product: product, sequence: sequence, name: String(row[4] || '').trim() });
+    });
+
+  if (!lost.length) {
+    pay18_alert_('迷子契約はありません。');
+    return;
+  }
+
+  /* 担当者変更後（B プラン・C シーケンス・E 氏名・F 推薦者コード・G 推薦者名） */
+  const transfer = {};
+
+  try {
+
+    const list = SpreadsheetApp
+      .openById(PAYMENT_V18.TRANSFER_SOURCE_ID)
+      .getSheetByName(PAYMENT_V18.TRANSFER_SOURCE_SHEET);
+
+    if (list && list.getLastRow() >= 3) {
+      list
+        .getRange(3, 1, list.getLastRow() - 2, 7)
+        .getDisplayValues()
+        .forEach(row => {
+
+          const plan = clean(row[1]);
+
+          if (!plan) {
+            return;
+          }
+
+          transfer[plan + '||' + pay18_sequenceKey_(row[2])] = {
+            name: String(row[4] || '').trim(),
+            code: String(row[5] || '').trim(),
+            payee: String(row[6] || '').trim()
+          };
+        });
+    }
+
+  } catch (error) {
+    pay18_alert_('担当者変更一覧を開けません：' + error.message);
+    return;
+  }
+
+  /* 顧客マスタ：既存キーと空き行 */
+  const master = ss.getSheetByName(PAYMENT_V18.CUSTOMER_SHEET);
+
+  if (!master) {
+    pay18_alert_('「' + PAYMENT_V18.CUSTOMER_SHEET + '」がありません。');
+    return;
+  }
+
+  const lastRow = Math.max(master.getLastRow(), 3);
+
+  const current = master.getRange(3, 1, lastRow - 2, 4).getDisplayValues();
+
+  const inMaster = {};
+
+  let nextRow = 3;
+
+  current.forEach((row, index) => {
+
+    if (clean(row[0])) {
+      inMaster[clean(row[0]) + '||' + pay18_sequenceKey_(row[3])] = true;
+      nextRow = index + 4;
+    }
+  });
+
+  const added = [];
+
+  const already = [];
+
+  const noCode = [];
+
+  const notFound = [];
+
+  lost.forEach(item => {
+
+    const label = item.plan + '（' + item.product + '・' + (item.sequence || 'シーケンス空欄') + '）' + item.name;
+
+    const key = item.plan + '||' + item.sequence;
+
+    const hit = item.sequence ? transfer[key] : null;
+
+    if (!hit) {
+      notFound.push(label);
+      return;
+    }
+
+    if (!hit.code) {
+      noCode.push(label);
+      return;
+    }
+
+    if (inMaster[key]) {
+      already.push(label);
+      return;
+    }
+
+    inMaster[key] = true;
+
+    added.push({
+      row: [item.plan, hit.name || item.name, item.product, item.sequence, hit.code],
+      label: label + ' → ' + hit.code + ' ' + hit.payee
+    });
+  });
+
+  if (added.length) {
+
+    const range = master.getRange(nextRow, 1, added.length, 5);
+
+    range.offset(0, 4, added.length, 1).setNumberFormat('@');
+
+    range.setValues(added.map(item => item.row));
+  }
+
+  const section = (title, items) =>
+    items.length ? '\n\n■ ' + title + '（' + items.length + '件）\n' + items.join('\n') : '';
+
+  pay18_alert_(
+    '迷子契約 ' + lost.length + '件を担当者変更後と照合しました。' +
+    section('顧客マスタに追加', added.map(item => item.label)) +
+    section('すでに顧客マスタにある', already) +
+    section('担当者変更後にあるが推薦者コードが空', noCode) +
+    section('担当者変更後に見つからない（手で確認してください）', notFound) +
+    (added.length ? '\n\n追加した行を確認して、いつもどおり「契約時保存」をしてください。' : '')
+  );
 }
 
 

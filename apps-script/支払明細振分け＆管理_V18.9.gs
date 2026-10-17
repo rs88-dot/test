@@ -94,6 +94,8 @@ const PAYMENT_V18 = {
   PASTE_SHEET: '貼付用(支払詳細）',
   CONTRACT_SHEET: '【自動固定】契約時データ（永久保存版）',
   CUSTOMER_SHEET: '【手入力】顧客マスタ',
+  APPLY_SOURCE_ID: '1ophzS1nD2KE8WanjAySl3Lj5RDHioDxegTjKw5mRd1A',
+  APPLY_SOURCE_SHEET: '★',
 
   /* ★V18.9：年間拠出金による上限をかける最初の支払月（これより前の月は支払済のため触らない） */
   POLICY_SHEET: 'プランポリシー',
@@ -279,7 +281,7 @@ function showPaymentMenuV18() {
     .addSeparator()
     .addItem('全員のファイルを作り直す', 'publishAllPaymentFilesV18')
     .addSeparator()
-    .addItem('迷子契約を担当者変更後から顧客マスタへ追加', 'fillLostContractsV18')
+    .addItem('迷子契約の推薦者を顧客マスタへ追加', 'fillLostContractsV18')
     .addToUi();
 }
 
@@ -287,11 +289,13 @@ function showPaymentMenuV18() {
 /*************************************************
  * ★迷子契約 → 【手入力】顧客マスタ
  *
- * 貼付用(支払詳細）にあって契約時データにない契約（＝迷子契約）を、
- * 担当者変更一覧の「担当者変更後」と プラン番号＋シーケンス で照合し、
- * 見つかったものを顧客マスタの空き行に追加する。
- *   A プラン番号 / B 氏名（担当者変更後 E）/ C 商品コード / D シーケンス / E L1_ID（担当者変更後 F）
- * すでに顧客マスタにあるもの・見つからないもの・推薦者コードが空のものは入れない。
+ * 貼付用(支払詳細）にあって契約時データにない契約（＝迷子契約）の推薦者を
+ * プラン番号＋シーケンス で探し、顧客マスタの空き行に追加する。
+ *   探す順：① 担当者変更一覧「担当者変更後」（変更後の担当を優先）
+ *           ② 申込フォーム「★」（BK プラン番号・BL シーケンス・BM 推薦者コード）
+ *   書く列：A プラン番号 / B 氏名 / C 商品コード / D シーケンス / E L1_ID
+ * 貼付用のシーケンスがプランポリシーと違うものは入れずに「直す場所」を表示する。
+ * すでに顧客マスタにあるもの・見つからないものは入れない。
  * 追加後はいつもどおり「契約時保存」で契約時データへ保存してください。
  *************************************************/
 function fillLostContractsV18() {
@@ -305,16 +309,26 @@ function fillLostContractsV18() {
 
   const known = {};
 
+  const knownPlan = {};
+
   if (contract && contract.getLastRow() >= 3) {
     contract
-      .getRange(3, 1, contract.getLastRow() - 2, 4)
+      .getRange(3, 1, contract.getLastRow() - 2, 5)
       .getDisplayValues()
       .forEach(row => {
-        known[clean(row[0]) + '|' + clean(row[2]) + '|' + pay18_sequenceKey_(row[3])] = true;
+
+        const plan = clean(row[0]);
+
+        known[plan + '|' + clean(row[2]) + '|' + pay18_sequenceKey_(row[3])] = true;
+
+        if (clean(row[4])) {
+          knownPlan[plan] = knownPlan[plan] || {};
+          knownPlan[plan][clean(row[4])] = true;
+        }
       });
   }
 
-  /* 迷子契約（貼付用 D プラン・F 商品・P 最終シーケンス） */
+  /* 迷子契約（貼付用 D プラン・E 氏名・F 商品・P 最終シーケンス） */
   const paste = ss.getSheetByName(PAYMENT_V18.PASTE_SHEET);
 
   if (!paste || paste.getLastRow() < 3) {
@@ -329,7 +343,7 @@ function fillLostContractsV18() {
   paste
     .getRange(3, 1, paste.getLastRow() - 2, 16)
     .getDisplayValues()
-    .forEach(row => {
+    .forEach((row, index) => {
 
       const plan = clean(row[3]);
 
@@ -349,7 +363,14 @@ function fillLostContractsV18() {
 
       seen[key] = true;
 
-      lost.push({ plan: plan, product: product, sequence: sequence, name: String(row[4] || '').trim() });
+      lost.push({
+        plan: plan,
+        product: product,
+        sequence: sequence,
+        name: String(row[4] || '').trim(),
+        row: index + 3,
+        manual: String(row[14] || '').trim()
+      });
     });
 
   if (!lost.length) {
@@ -357,39 +378,76 @@ function fillLostContractsV18() {
     return;
   }
 
-  /* 担当者変更後（B プラン・C シーケンス・E 氏名・F 推薦者コード・G 推薦者名） */
-  const transfer = {};
+  /* プランポリシー：プラン＋商品 → 正しいシーケンス */
+  const policySeq = {};
 
-  try {
+  const policyMap = pay18_loadPolicyMap_(ss);
 
-    const list = SpreadsheetApp
-      .openById(PAYMENT_V18.TRANSFER_SOURCE_ID)
-      .getSheetByName(PAYMENT_V18.TRANSFER_SOURCE_SHEET);
+  Object.keys(policyMap).forEach(key => {
 
-    if (list && list.getLastRow() >= 3) {
-      list
-        .getRange(3, 1, list.getLastRow() - 2, 7)
+    const parts = key.split('||');
+
+    const id = parts[0] + '|' + clean(policyMap[key].product);
+
+    (policySeq[id] = policySeq[id] || []).push(parts[1]);
+  });
+
+  /* 推薦者の照合元（プラン||シーケンス → {code, payee, name, source}） */
+  const finder = {};
+
+  const errors = [];
+
+  const readBook = (label, id, sheetName, startRow, read) => {
+
+    try {
+
+      const sheet = SpreadsheetApp.openById(id).getSheetByName(sheetName);
+
+      if (!sheet || sheet.getLastRow() < startRow) {
+        errors.push(label + '：シート「' + sheetName + '」が空か見つかりません');
+        return;
+      }
+
+      sheet
+        .getRange(startRow, 1, sheet.getLastRow() - startRow + 1, sheet.getLastColumn())
         .getDisplayValues()
         .forEach(row => {
 
-          const plan = clean(row[1]);
+          const hit = read(row);
 
-          if (!plan) {
+          if (!hit || !hit.plan || !hit.code || /#N\/A/.test(hit.code)) {
             return;
           }
 
-          transfer[plan + '||' + pay18_sequenceKey_(row[2])] = {
-            name: String(row[4] || '').trim(),
-            code: String(row[5] || '').trim(),
-            payee: String(row[6] || '').trim()
-          };
-        });
-    }
+          const key = hit.plan + '||' + pay18_sequenceKey_(hit.sequence);
 
-  } catch (error) {
-    pay18_alert_('担当者変更一覧を開けません：' + error.message);
-    return;
-  }
+          if (!finder[key]) {
+            finder[key] = { code: hit.code, payee: hit.payee, name: hit.name, source: label };
+          }
+        });
+
+    } catch (error) {
+      errors.push(label + 'を開けません：' + error.message);
+    }
+  };
+
+  /* ① 担当者変更後（B プラン・C シーケンス・E 氏名・F 推薦者コード・G 推薦者名） */
+  readBook('担当者変更後', PAYMENT_V18.TRANSFER_SOURCE_ID, PAYMENT_V18.TRANSFER_SOURCE_SHEET, 3, row => ({
+    plan: clean(row[1]),
+    sequence: row[2],
+    name: String(row[4] || '').trim(),
+    code: String(row[5] || '').trim(),
+    payee: String(row[6] || '').trim()
+  }));
+
+  /* ② 申込フォーム（B 姓・C 名・BK プラン・BL シーケンス・BM 推薦者コード・BN 推薦者名） */
+  readBook('申込フォーム', PAYMENT_V18.APPLY_SOURCE_ID, PAYMENT_V18.APPLY_SOURCE_SHEET, 2, row => ({
+    plan: clean(row[62]),
+    sequence: row[63],
+    name: [String(row[1] || '').trim(), String(row[2] || '').trim()].filter(String).join(', '),
+    code: String(row[64] || '').trim(),
+    payee: String(row[65] || '').trim()
+  }));
 
   /* 顧客マスタ：既存キーと空き行 */
   const master = ss.getSheetByName(PAYMENT_V18.CUSTOMER_SHEET);
@@ -417,9 +475,9 @@ function fillLostContractsV18() {
 
   const added = [];
 
-  const already = [];
+  const wrongSeq = [];
 
-  const noCode = [];
+  const already = [];
 
   const notFound = [];
 
@@ -427,17 +485,23 @@ function fillLostContractsV18() {
 
     const label = item.plan + '（' + item.product + '・' + (item.sequence || 'シーケンス空欄') + '）' + item.name;
 
-    const key = item.plan + '||' + item.sequence;
+    const right = policySeq[item.plan + '|' + item.product] || [];
 
-    const hit = item.sequence ? transfer[key] : null;
-
-    if (!hit) {
-      notFound.push(label);
+    if (right.length && right.indexOf(item.sequence) < 0) {
+      wrongSeq.push(
+        label + ' → 貼付用' + item.row + '行目：プランポリシーでは「' + right.join('・') + '」' +
+        (item.manual ? '（O列の手動シーケンス「' + item.manual + '」を直すか消してください）' : '')
+      );
       return;
     }
 
-    if (!hit.code) {
-      noCode.push(label);
+    const key = item.plan + '||' + item.sequence;
+
+    const hit = item.sequence ? finder[key] : null;
+
+    if (!hit) {
+      const others = Object.keys(knownPlan[item.plan] || {});
+      notFound.push(label + (others.length ? '（同じプラン番号の別契約は推薦者 ' + others.join('・') + '）' : ''));
       return;
     }
 
@@ -450,7 +514,7 @@ function fillLostContractsV18() {
 
     added.push({
       row: [item.plan, hit.name || item.name, item.product, item.sequence, hit.code],
-      label: label + ' → ' + hit.code + ' ' + hit.payee
+      label: label + ' → ' + hit.code + ' ' + hit.payee + '（' + hit.source + '）'
     });
   });
 
@@ -467,11 +531,12 @@ function fillLostContractsV18() {
     items.length ? '\n\n■ ' + title + '（' + items.length + '件）\n' + items.join('\n') : '';
 
   pay18_alert_(
-    '迷子契約 ' + lost.length + '件を担当者変更後と照合しました。' +
+    '迷子契約 ' + lost.length + '件を照合しました。' +
     section('顧客マスタに追加', added.map(item => item.label)) +
+    section('シーケンス違い（貼付用を直せば迷子ではなくなります）', wrongSeq) +
     section('すでに顧客マスタにある', already) +
-    section('担当者変更後にあるが推薦者コードが空', noCode) +
-    section('担当者変更後に見つからない（手で確認してください）', notFound) +
+    section('推薦者が見つからない（手で確認してください）', notFound) +
+    section('読めなかった照合元', errors) +
     (added.length ? '\n\n追加した行を確認して、いつもどおり「契約時保存」をしてください。' : '')
   );
 }
@@ -1794,6 +1859,7 @@ function pay18_parseDate_(value) {
 function pay18_sequenceKey_(value) {
   return String(value || '')
     .replace(/[\s　]/g, '')
+    .replace(/[０-９]/g, d => String.fromCharCode(d.charCodeAt(0) - 0xFEE0))
     .replace(/ライダ[-ー－‐]?/g, 'ライダー');
 }
 

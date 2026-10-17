@@ -566,8 +566,9 @@ function fillLostContractsV18() {
         label + ' → 貼付用' + item.row + '行目：プランポリシーでは「' + right.join('・') + '」' +
         (item.manual ? '（O列の手動シーケンス「' + item.manual + '」を直すか消してください）' : '')
       );
-      notes[item.key] = 'シーケンス違い：プランポリシーでは「' + right.join('・') + '」。貼付用' + item.row +
-        '行目' + (item.manual ? 'のO列（手動シーケンス）' : '') + 'を直してください';
+      notes[item.key] = 'シーケンス違い：プランポリシーでは「' + right.join('・') + '」。' + (item.manual
+        ? '貼付用' + item.row + '行目のO列（手動シーケンス）に「' + item.manual + '」と入っていて、M列（シーケンス候補）より優先されています。O列を消すか「' + right[0] + '」にしてください'
+        : '貼付用' + item.row + '行目のO列（手動シーケンス）に「' + right[0] + '」と入れてください');
       return;
     }
 

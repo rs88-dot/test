@@ -408,6 +408,22 @@ function fillLostContractsV18() {
     }
   });
 
+  /* イントロデューサーコード → 推薦者コード（【自動】推薦者コード管理_取込 A・B・C列） */
+  const introToCode = {};
+
+  const codeSheet = ss.getSheetByName(PAYMENT_V18.MASTER_SHEET);
+
+  if (codeSheet && codeSheet.getLastRow() >= 5) {
+    codeSheet
+      .getRange(5, 1, codeSheet.getLastRow() - 4, 3)
+      .getDisplayValues()
+      .forEach(row => {
+        if (clean(row[0]) && clean(row[2])) {
+          introToCode[clean(row[0])] = clean(row[2]);
+        }
+      });
+  }
+
   /* 推薦者の照合元（プラン||シーケンス → {code, payee, name, source}） */
   const finder = {};
 
@@ -532,9 +548,12 @@ function fillLostContractsV18() {
       const intro = policyIntro[item.plan + '||' + item.sequence] || policyIntro[item.plan];
 
       if (intro && PAYMENT_V18.OWN_INTRO_CODES.indexOf(clean(intro.introCode)) < 0) {
-        managerFee.push(text + ' イントロ：' + intro.introCode + ' ' + intro.introName);
-        notes[item.key] = 'マネージャーフィーの可能性あり（誰にも払わない）／イントロ：' +
-          intro.introCode + ' ' + intro.introName +
+
+        const introLabel = intro.introCode + ' ' + intro.introName +
+          (introToCode[clean(intro.introCode)] ? '（推薦者コード ' + introToCode[clean(intro.introCode)] + '）' : '');
+
+        managerFee.push(text + ' イントロ：' + introLabel);
+        notes[item.key] = 'マネージャーフィーの可能性あり（誰にも払わない）／イントロ：' + introLabel +
           (others.length ? '／※同じプラン番号の別契約は推薦者 ' + others.join('・') + ' に支払中' : '');
       } else {
         notFound.push(text);

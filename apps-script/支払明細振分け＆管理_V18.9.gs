@@ -82,6 +82,7 @@ const PAYMENT_V18 = {
   SOURCE_MONTH_COL: 15,   // O
   SOURCE_SEQUENCE_COL: 21, // U シーケンス
   SOURCE_JUDGE_COL: 27,    // AA 支払判定（自動）
+  SOURCE_ORIGINAL_RATE_COL: 28, // AB 元の支払倍率（自動・M列を書き換える前の値）
 
   /* ★V18.9：途中減額の戻入の記録 */
   CLAWBACK_SHEET: '【自動】減額戻入',
@@ -1031,6 +1032,11 @@ function pay18_loadContext_() {
     .getRange(1, PAYMENT_V18.SOURCE_SEQUENCE_COL, lastRow, 1)
     .getDisplayValues();
 
+  /* ★V18.9：AB列＝システムがM列を書き換える前の元の支払倍率 */
+  const originalRates = source.getMaxColumns() >= PAYMENT_V18.SOURCE_ORIGINAL_RATE_COL
+    ? source.getRange(1, PAYMENT_V18.SOURCE_ORIGINAL_RATE_COL, lastRow, 1).getValues()
+    : [];
+
   const groups = {};
   const aggregate = {};
 
@@ -1039,6 +1045,16 @@ function pay18_loadContext_() {
   all.slice(1).forEach((original, index) => {
 
     const row = original.slice(0, 20);
+
+    /* 元の支払倍率（M列を書き換え済みなら AB列）から計算し直す */
+    const sheetRate = row[12];
+
+    const savedRate = originalRates.length ? originalRates[index + 1][0] : '';
+
+    if (savedRate !== '' && savedRate !== null && !isNaN(Number(savedRate))) {
+      row[12] = Number(savedRate);
+      row[13] = Math.round(pay18_num_(row[10]) * Number(savedRate) * 100) / 100;
+    }
 
     const id = pay18_id_(row[PAYMENT_V18.SOURCE_ID_COL - 1]);
 
@@ -1055,6 +1071,8 @@ function pay18_loadContext_() {
       id: id,
       month: month,
       sequence: String(sequenceValues[index + 1][0] || '').trim(),
+      sheetRate: sheetRate,
+      savedRate: savedRate,
       rowNumber: index + 2,
       originalNote: String(original[15] || '')
     });
@@ -1068,6 +1086,8 @@ function pay18_loadContext_() {
   pay18_applyMinashiGuard_(rowsInfo);
 
   pay18_writeJudgeColumn_(source, all, rowsInfo, lastRow);
+
+  pay18_writeFinalRates_(source, rowsInfo);
 
   /* ★V18.9：途中減額の戻入（記録シートに残し、検出した月にマイナス行として計上） */
   pay18_applyReductionClawback_(ss, rowsInfo, policyMap);
@@ -1156,6 +1176,7 @@ function pay18_applyMinashiGuard_(rowsInfo) {
       info.month &&
       String(info.row[KUBUN] || '').trim() === 'みなし' &&
       !info.levelPay &&
+      pay18_num_(info.row[3]) < 2 &&
       pay18_num_(info.row[AMOUNT]) > 0
     )
     .map((info, order) => ({ info: info, order: order }))
@@ -2353,6 +2374,70 @@ function pay18_loadTransferMap_(ss) {
   }
 
   return map;
+}
+
+
+/*************************************************
+ * ★V18.9：最新月の M列（支払倍率）にシステムの判定結果を書く
+ *
+ * N列（今回支払額＝K×M の式）がシステムの支払額と一致するようにする。
+ *   年払いの重複 → 0、2年目以降・一括・年払い契約 → 1、担当者変更 → 残り月数 など
+ * 書き換える前の値は AB列に残し、次回からは AB列の値で計算し直す（何度動かしても同じ結果）。
+ * 過去の月は触らない。
+ *************************************************/
+function pay18_writeFinalRates_(source, rowsInfo) {
+
+  const latest = rowsInfo.reduce((value, info) =>
+    pay18_monthIndex_(info.month) > pay18_monthIndex_(value) ? info.month : value, '');
+
+  if (!latest) {
+    return;
+  }
+
+  const column = PAYMENT_V18.SOURCE_ORIGINAL_RATE_COL;
+
+  if (source.getMaxColumns() < column) {
+    source.insertColumnsAfter(source.getMaxColumns(), column - source.getMaxColumns());
+  }
+
+  const header = source.getRange(1, column);
+
+  if (header.getValue() !== '元の支払倍率（自動）') {
+
+    header.setValue('元の支払倍率（自動）');
+
+    try {
+      source.hideColumns(column);
+    } catch (error) {}
+  }
+
+  rowsInfo.forEach(info => {
+
+    if (info.month !== latest || !info.rowNumber) {
+      return;
+    }
+
+    const finalRate = info.row[12];
+
+    const current = info.sheetRate;
+
+    const same =
+      String(finalRate) === String(current) ||
+      (!isNaN(Number(finalRate)) && !isNaN(Number(current)) &&
+        String(current) !== '' && Math.abs(Number(finalRate) - Number(current)) < 0.00001);
+
+    if (same) {
+      return;
+    }
+
+    const hasSaved = info.savedRate !== '' && info.savedRate !== null && info.savedRate !== undefined;
+
+    if (!hasSaved) {
+      source.getRange(info.rowNumber, column).setValue(current);
+    }
+
+    source.getRange(info.rowNumber, 13).setValue(finalRate);   // M 支払倍率
+  });
 }
 
 

@@ -1826,10 +1826,25 @@ function pay18_loadContext_() {
 
     const row = original.slice(0, 20);
 
+    const sequence = String(sequenceValues[index + 1][0] || '').trim();
+
     /* 元の支払倍率（M列を書き換え済みなら AB列）から計算し直す */
     const sheetRate = row[12];
 
-    const savedRate = originalRates.length ? originalRates[index + 1][0] : '';
+    /*
+     * ★AB列は「倍率@@行の中身のキー」で保存する。
+     * 計算用まとめを貼り直して行がずれると、別の行の倍率を使ってしまう（平準が×12になった事故）ので、
+     * キーが今の行と一致するときだけ使う。キーなし（旧形式）・不一致は使わずに消す。
+     */
+    const rowKey = pay18_rateRowKey_(row, sequence);
+
+    const savedCell = originalRates.length ? String(originalRates[index + 1][0] || '') : '';
+
+    const savedMatch = savedCell.match(/^(.*?)@@(.*)$/);
+
+    const savedRate = savedMatch && savedMatch[2] === rowKey ? savedMatch[1] : '';
+
+    const staleSaved = savedCell !== '' && savedRate === '';
 
     if (savedRate !== '' && savedRate !== null && !isNaN(Number(savedRate))) {
       row[12] = Number(savedRate);
@@ -1850,7 +1865,9 @@ function pay18_loadContext_() {
       row: row,
       id: id,
       month: month,
-      sequence: String(sequenceValues[index + 1][0] || '').trim(),
+      sequence: sequence,
+      rowKey: rowKey,
+      staleSaved: staleSaved,
       sheetRate: sheetRate,
       savedRate: savedRate,
       rowNumber: index + 2,
@@ -3249,7 +3266,10 @@ function pay18_holdBrokenRows_(rowsInfo) {
       blankKubun++;
     }
 
-    if (!kubun || blank(rate)) {
+    if (kubun === '平準' && pay18_num_(rate) > 1) {
+      reason = '支払保留：平準なのにM列（支払倍率）が' + rate + 'になっています（平準は×1）。' +
+        '貼り付けずれの可能性があるので、M列を確認して①を押し直してください';
+    } else if (!kubun || blank(rate)) {
       reason = '支払保留：' + (!kubun ? 'L列（支払区分）' : '') + (!kubun && blank(rate) ? '・' : '') +
         (blank(rate) ? 'M列（支払倍率）' : '') + 'が空欄のため、N列の' + amount +
         'は支払額として使えません。推薦者コード管理の「1年みなし2年目平準」を確認し、L列・M列を入れて①を押し直してください';
@@ -3310,6 +3330,11 @@ function pay18_writeFinalRates_(source, rowsInfo) {
 
   rowsInfo.forEach(info => {
 
+    /* ずれて別の行のものになったAB列は消す（月に関係なく） */
+    if (info.staleSaved && info.rowNumber) {
+      source.getRange(info.rowNumber, column).setValue('');
+    }
+
     if (info.month !== latest || !info.rowNumber || info.hold) {
       return;
     }
@@ -3330,11 +3355,19 @@ function pay18_writeFinalRates_(source, rowsInfo) {
     const hasSaved = info.savedRate !== '' && info.savedRate !== null && info.savedRate !== undefined;
 
     if (!hasSaved) {
-      source.getRange(info.rowNumber, column).setValue(current);
+      source.getRange(info.rowNumber, column).setValue(String(current) + '@@' + info.rowKey);
     }
 
     source.getRange(info.rowNumber, 13).setValue(finalRate);   // M 支払倍率
   });
+}
+
+
+/* AB列の元の支払倍率がどの行のものかを確かめるキー（プラン・商品・支払対象者・シーケンス・区分・期間・支払額） */
+function pay18_rateRowKey_(row, sequence) {
+  return [row[0], row[2], row[5], sequence, row[11], row[3], pay18_num_(row[10])]
+    .map(value => String(value === null || value === undefined ? '' : value).replace(/[\s　]/g, ''))
+    .join('|');
 }
 
 
@@ -3787,7 +3820,8 @@ function pay18_readExistingLedger_(sheet, sourceAggregate) {
       !pay18_isSettled_(record.status) &&
       !record.date &&
       !pay18_stripAdjustNote_(record.note).trim() &&
-      Math.abs(pay18_num_(record.bAmount)) < 0.000001
+      Math.abs(pay18_num_(record.bAmount)) < 0.000001 &&
+      (!record.guide || record.guide === '未案内' || record.guide === '不要')
     ) {
       return;
     }
@@ -3910,6 +3944,58 @@ function pay18_mergeLedgerRecord_(base, incoming) {
 
 
 /*************************************************
+ * ★退避で増えた重複行を元のAUTO行へ戻す
+ *
+ * 計算用まとめを貼り直している最中に同期が走ると、その月の行が一時的に元データから消え、
+ * 案内状況・B社支払額などが入った行が MANUAL（手動保護）として退避される。
+ * 貼り直しが終わると同じ月・同じ推薦者のAUTO行がもう1つでき、二重払いの元になる。
+ * W社支払額が入っていて（＝自動で作られた行）、備考が自動の文だけの MANUAL 行は、
+ * 同じ月・推薦者のAUTO行に案内状況・請求書・支払状況・支払日・B社支払額を移して消す。
+ * 手で追加した行（W社が空欄、または手書きの備考がある行）はそのまま残す。
+ *************************************************/
+function pay18_absorbEvacuatedRows_(old, aggregate) {
+
+  const blank = value => value === '' || value === null || value === undefined;
+
+  const autoOnlyNote = note => !pay18_stripAdjustNote_(String(note || ''))
+    .replace('前月までの未払い繰越のみ（今月の新規発生なし）', '')
+    .replace(/^[\s\/]+|[\s\/]+$/g, '')
+    .trim();
+
+  const defaults = { guide: '未案内', invoice: '未', status: '未払い' };
+
+  old.manual = old.manual.filter(record => {
+
+    const key = record.month && record.id ? record.month + '||' + record.id : '';
+
+    if (!key || !aggregate || !aggregate[key] || blank(record.wAmount) || !autoOnlyNote(record.note)) {
+      return true;
+    }
+
+    const base = old.autoByKey[key] = old.autoByKey[key] || { month: record.month, id: record.id };
+
+    if (blank(base.bAmount) && !blank(record.bAmount)) {
+      base.bAmount = record.bAmount;
+    }
+
+    Object.keys(defaults).forEach(field => {
+      if ((blank(base[field]) || base[field] === defaults[field]) && !blank(record[field]) && record[field] !== defaults[field]) {
+        base[field] = record[field];
+      }
+    });
+
+    ['date', 'contact', 'person'].forEach(field => {
+      if (blank(base[field]) && !blank(record[field])) {
+        base[field] = record[field];
+      }
+    });
+
+    return false;
+  });
+}
+
+
+/*************************************************
  * 台帳再構築
  *************************************************/
 function pay18_rebuildLedger_(context) {
@@ -3924,6 +4010,8 @@ function pay18_rebuildLedger_(context) {
   pay18_backupLedgerOnce_(context.ss, sheet);
 
   const old = pay18_readExistingLedger_(sheet, context.aggregate);
+
+  pay18_absorbEvacuatedRows_(old, context.aggregate);
 
   const autoRows = Object
     .values(context.aggregate)

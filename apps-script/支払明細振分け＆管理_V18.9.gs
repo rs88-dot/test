@@ -100,6 +100,9 @@ const PAYMENT_V18 = {
   LOST_CHECK_SHEET: '【確認】迷子契約_転記チェック',
   OWN_INTRO_CODES: ['583102', '582755'],
 
+  /* 推薦者コード → この日までに発効したプランはB社（Bank社）から払い出し（弊社からは払わない＝顧客マスタに入れない） */
+  B_PAYOUT_UNTIL: { '1687': '2026/07/15' },
+
   /* ★V18.9：年間拠出金による上限をかける最初の支払月（これより前の月は支払済のため触らない） */
   POLICY_SHEET: 'プランポリシー',
   ANNUAL_CAP_FROM: '2026.10',
@@ -306,6 +309,7 @@ function showPaymentMenuV18() {
  *           ③ プランポリシーのイントロデューサー（A・B列）が Wawasan・Izaaz 以外（例：Minato）なら
  *              推薦者コード管理でそのイントロの推薦者コード（Minato＝1687）に支払う（マネージャーフィー分）
  * イントロが Wawasan・Izaaz で推薦者が見つからないものは「弊社分の可能性」として顧客マスタには入れない。
+ * B_PAYOUT_UNTIL の推薦者（Minato＝1687）は、プランポリシーの発効日がその日以前ならB社払い出しなので「対象外」。
  * 結果は【確認】迷子契約の G列「備考」にも書く。
  * すでに顧客マスタにあるもの・見つからないものは入れない。
  * 追加後はいつもどおり「契約時保存」で契約時データへ保存してください。
@@ -532,6 +536,25 @@ function fillLostContractsV18() {
   /* 顧客マスタにすでにあるもの（プラン||シーケンス） */
   const inMaster = pay18_customerMasterKeys_(ss);
 
+  const formatDay = date => Utilities.formatDate(date, Session.getScriptTimeZone(), 'yyyy/MM/dd');
+
+  /* プランポリシーの発効日（プラン＋シーケンス。なければ同じプラン＋商品） */
+  const issueOf = item => {
+
+    const exact = policyMap[item.plan + '||' + item.sequence];
+
+    if (exact && exact.issue) {
+      return exact.issue;
+    }
+
+    const same = Object.keys(policyMap).filter(key =>
+      key.indexOf(item.plan + '||') === 0 && clean(policyMap[key].product) === item.product && policyMap[key].issue);
+
+    return same.length ? policyMap[same[0]].issue : null;
+  };
+
+  const bPayout = [];
+
   const candidates = [];
 
   const wrongSeq = [];
@@ -552,6 +575,8 @@ function fillLostContractsV18() {
 
     const pastText = past ? past.ids.join('・') + '（最後 ' + past.last + '）' : 'なし';
 
+    const issue = issueOf(item);
+
     const base = {
       key: item.key,
       plan: item.plan,
@@ -559,6 +584,7 @@ function fillLostContractsV18() {
       sequence: item.sequence,
       period: item.period,
       rate: item.rate,
+      issue: issue ? formatDay(issue) : '',
       past: pastText
     };
 
@@ -624,11 +650,42 @@ function fillLostContractsV18() {
 
     const parent = parentOf[hit.code] ? '／親 ' + parentOf[hit.code] : '';
 
+    /* B社払い出しの推薦者（Minato）：発効日で判定 */
+    const bUntil = PAYMENT_V18.B_PAYOUT_UNTIL[clean(hit.code)];
+
+    let issueNote = '';
+
+    if (bUntil) {
+
+      const limit = pay18_parseDate_(bUntil);
+
+      if (!issue) {
+        issueNote = '【発効日不明】プランポリシーに発効日がありません。' + bUntil + '以前ならB社払い出しなので転記しないでください／';
+      } else if (issue.getTime() <= limit.getTime()) {
+
+        const why = '【B社払い出し・転記しない】発効日 ' + formatDay(issue) + '（' + bUntil + '以前）→ Bank社から払い出し';
+
+        bPayout.push(label + ' 発効日 ' + formatDay(issue));
+
+        notes[item.key] = why + (inMaster[key] ? '。顧客マスタに入っているので、二重払いにならないか確認してください' : '');
+
+        candidates.push(Object.assign({}, base, {
+          name: hit.name || item.name, code: hit.code, payee: hit.payee,
+          reason: why + (inMaster[key] ? '。※顧客マスタに入っています（二重払いに注意）' : '') + '／' + hit.source + parent,
+          status: '対象外'
+        }));
+        return;
+
+      } else {
+        issueNote = '【弊社払い出し】発効日 ' + formatDay(issue) + '（' + bUntil + 'より後）／';
+      }
+    }
+
     if (inMaster[key]) {
       already.push(label);
       notes[item.key] = '顧客マスタに入力済み：推薦者 ' + hit.code + '（契約時保存をすると消えます）';
       candidates.push(Object.assign({}, base, {
-        name: hit.name || item.name, code: hit.code, payee: hit.payee, reason: hit.source + parent, status: '顧客マスタ入力済み'
+        name: hit.name || item.name, code: hit.code, payee: hit.payee, reason: issueNote + hit.source + parent, status: '顧客マスタ入力済み'
       }));
       return;
     }
@@ -637,7 +694,7 @@ function fillLostContractsV18() {
       PAYMENT_V18.LOST_CHECK_SHEET + '」で確認して✔';
 
     candidates.push(Object.assign({}, base, {
-      name: hit.name || item.name, code: hit.code, payee: hit.payee, reason: hit.source + parent, status: '未転記'
+      name: hit.name || item.name, code: hit.code, payee: hit.payee, reason: issueNote + hit.source + parent, status: '未転記'
     }));
   });
 
@@ -654,6 +711,8 @@ function fillLostContractsV18() {
 
     const past = pastPaid[item.plan + '|' + item.product];
 
+    const issue = issueOf(item);
+
     candidates.push({
       key: item.key,
       plan: item.plan,
@@ -661,6 +720,7 @@ function fillLostContractsV18() {
       sequence: item.sequence,
       period: item.period,
       rate: item.rate,
+      issue: issue ? formatDay(issue) : '',
       past: past ? past.ids.join('・') + '（最後 ' + past.last + '）' : 'なし',
       name: item.name,
       code: '',
@@ -684,6 +744,7 @@ function fillLostContractsV18() {
     section('推薦者の候補あり（転記チェックで確認して✔）', proposed.map(row =>
       row.plan + '（' + row.product + '・' + row.sequence + '）' + row.name + ' → ' + row.code + ' ' + row.payee + '（' + row.reason + '）')) +
     section('シーケンス違い（貼付用を直せば迷子ではなくなります）', wrongSeq) +
+    section('B社払い出し（Minatoで発効日が' + PAYMENT_V18.B_PAYOUT_UNTIL['1687'] + '以前・転記しない）', bPayout) +
     section('すでに顧客マスタにある', already) +
     section('推薦者が見つからない（手で確認してください）', notFound) +
     section('弊社分の可能性（イントロが Wawasan・Izaaz で推薦者なし）', ownShare) +
@@ -724,10 +785,10 @@ function pay18_customerMasterKeys_(ss) {
 
 
 /* 【確認】迷子契約_転記チェック：1件ずつ見て✔するための表。
- * 前回の✔・直した推薦者コード・転記済みは照合キー（M列）で引き継ぐ。 */
+ * 前回の✔・直した推薦者コード・転記済みは照合キー（N列・非表示）で引き継ぐ。 */
 const PAY18_LOST_CHECK_HEADER = [
   '✔転記', '状態', 'プラン番号', '氏名（顧客マスタに入る）', '商品コード', 'シーケンス', '期間', '紹介料率',
-  '推薦者コード（直してOK）', '推薦者名', '根拠・理由', '過去の支払先（計算用まとめ）', '照合キー'
+  '推薦者コード（直してOK）', '推薦者名', '根拠・理由', '発効日', '過去の支払先（計算用まとめ）', '照合キー'
 ];
 
 function pay18_writeLostCheckSheet_(ss, candidates) {
@@ -746,11 +807,17 @@ function pay18_writeLostCheckSheet_(ss, candidates) {
   const previous = {};
 
   if (sheet.getLastRow() >= 3) {
+
+    /* 照合キーの列は見出しで探す（列を増やした前の版の表も引き継げるように） */
+    const oldWidth = Math.max(sheet.getLastColumn(), 1);
+
+    const keyCol = sheet.getRange(2, 1, 1, oldWidth).getDisplayValues()[0].indexOf('照合キー');
+
     sheet
-      .getRange(3, 1, sheet.getLastRow() - 2, width)
+      .getRange(3, 1, sheet.getLastRow() - 2, oldWidth)
       .getValues()
       .forEach(row => {
-        const key = String(row[width - 1] || '');
+        const key = keyCol >= 0 ? String(row[keyCol] || '') : '';
         if (key) {
           previous[key] = { checked: row[0] === true, status: String(row[1] || ''), code: String(row[8] || '').trim() };
         }
@@ -781,6 +848,7 @@ function pay18_writeLostCheckSheet_(ss, candidates) {
       code,
       row.payee,
       row.reason,
+      row.issue || '',
       row.past,
       row.key
     ];
@@ -815,6 +883,9 @@ function pay18_writeLostCheckSheet_(ss, candidates) {
       }
     });
   }
+
+  /* 前の版で隠していた列（旧 照合キー＝M列）を戻してから、照合キーだけ隠す */
+  sheet.showColumns(1, Math.max(sheet.getMaxColumns(), width));
 
   sheet.hideColumns(width);
 

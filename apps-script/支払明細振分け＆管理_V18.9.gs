@@ -865,20 +865,26 @@ function pay18_writeLostCheckSheet_(ss, candidates) {
 
   sheet.setFrozenRows(2);
 
+  /* clear() ではチェックボックスが残るので、A列の入力規則を全部消してから付け直す
+   * （残っていると「対象外」の行にボックスが出たり、文字のFALSEになったりする） */
+  if (sheet.getMaxRows() >= 3) {
+    sheet.getRange(3, 1, sheet.getMaxRows() - 2, 1).clearDataValidations().clearContent().setNumberFormat('General');
+  }
+
   if (rows.length) {
 
-    sheet.getRange(3, 1, rows.length, width).setNumberFormat('@');
+    /* A列（✔）は文字にしない。B列から右だけ文字で書く */
+    sheet.getRange(3, 2, rows.length, width - 1).setNumberFormat('@');
 
-    sheet.getRange(3, 1, rows.length, width).setValues(rows);
+    sheet.getRange(3, 2, rows.length, width - 1).setValues(rows.map(row => row.slice(1)));
 
     rows.forEach((row, index) => {
 
       const r = index + 3;
 
       if (row[1] === '未転記') {
-        sheet.getRange(r, 1).setNumberFormat('General').insertCheckboxes().setValue(row[0] === true);
+        sheet.getRange(r, 1).insertCheckboxes().setValue(row[0] === true);
       } else {
-        sheet.getRange(r, 1).setValue('');
         sheet.getRange(r, 1, 1, width).setBackground('#efefef');
       }
     });

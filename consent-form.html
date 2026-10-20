@@ -1233,10 +1233,10 @@ function submitForm() {
   document.getElementById('doneRef').textContent = refNum;
   document.getElementById('doneMsg1').textContent = T.doneMsg1[lang];
   document.getElementById('doneMsg2').textContent = T.doneMsg2[lang];
-  updateNextStepsCta();
 
   goToStep(4);
   applyLang();
+  updateNextStepsCta();
 
   // Capture audit trail at moment of submission
   const ts = new Date().toLocaleString('ja-JP', {timeZone:'Asia/Tokyo'});

@@ -357,6 +357,8 @@ function v19_readLedger_(sheet) {
   const c = {
     id: find('推薦者コード'),
     name: find('推薦者名'),
+    large: find('大グループ'),
+    small: find('小グループ'),
     w: find('W社支払額'),
     b: find('B社支払額', 'BANK社支払額'),
     carry: find('前月未払い繰越'),
@@ -388,6 +390,8 @@ function v19_readLedger_(sheet) {
       month: month,
       id: id,
       name: String(get(row, c.name) || ''),
+      largeGroup: v19_cleanGroup_(get(row, c.large)),
+      smallGroup: v19_cleanGroup_(get(row, c.small)),
       w: get(row, c.w),
       b: get(row, c.b),
       carry: get(row, c.carry),
@@ -560,8 +564,8 @@ function createInputSheetV19() {
   const master = "'" + V19.MASTER_SHEET + "'!";
 
   sheet.getRange(2, 3).setFormula(
-    '=ARRAYFORMULA(IF(B2:B="","",IFERROR(VLOOKUP(B2:B&"",{' +
-    master + 'C5:C&"",' + master + 'B5:B,' + master + 'K5:K,' + master + 'L5:L},{2,3,4},FALSE),{"コードが推薦者コード管理にありません","",""})))'
+    '=ARRAYFORMULA(IF(B2:B="","",LET(r,IFERROR(VLOOKUP(B2:B&"",{' +
+    master + 'C5:C&"",' + master + 'B5:B,' + master + 'K5:K,' + master + 'L5:L},{2,3,4},FALSE),{"コードが推薦者コード管理にありません","",""}),IF(r&""="0","",r))))'
   );
 
   sheet.getRange(2, 7, rows - 1, 1).setNumberFormat('#,##0.00');
@@ -760,8 +764,9 @@ function v19_buildLedger_(calc, inputs, oldLedger) {
       month: row.month,
       id: row.id,
       name: master.name || (olds[0] ? olds[0].name : ''),
-      largeGroup: master.largeGroup || '',
-      smallGroup: master.smallGroup || '',
+      /* 推薦者コード管理にグループが無いときは今の台帳のグループを使う */
+      largeGroup: master.largeGroup || (olds.find(record => record.largeGroup) || {}).largeGroup || '',
+      smallGroup: master.smallGroup || (olds.find(record => record.smallGroup) || {}).smallGroup || '',
       w: v19_cents_(row.w),
       b: v19_cents_(row.b),
       carry: row.carry,

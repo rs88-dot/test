@@ -17,7 +17,10 @@
  *      「支払管理台帳」「支払いまとめ」を V19 で作る。B社支払額は【手入力】B社・調整 から読む。
  *      切り替えの前に、メニュー「B社・調整の入力シートを作る」を1回だけ押す。
  *
- * ② 推薦者ファイルへの反映・迷子契約のボタンは、当面 V18 のメニューを使う。
+ * ② 推薦者ファイルへの反映は V19 のメニューから（LIVE のときだけ）。
+ *    ファイルの書き方は V18 の関数をそのまま使う（V18 のファイルは消さずに残す）。
+ *    計算用まとめ・台帳には書き込まず、①で作った支払管理台帳を読んで反映する。
+ * 迷子契約のボタンは、当面 V18 のメニューを使う。
  *************************************************/
 
 const V19 = {
@@ -74,6 +77,9 @@ function showPaymentMenuV19() {
   SpreadsheetApp.getUi()
     .createMenu('支払管理V19')
     .addItem('① 計算する（V19）', 'runPaymentV19')
+    .addItem('② 推薦者ファイルに反映（共有）', 'publishPaymentFilesV19')
+    .addSeparator()
+    .addItem('全員のファイルを作り直す', 'publishAllPaymentFilesV19')
     .addSeparator()
     .addItem('【切替時に1回】B社・調整の入力シートを作る', 'createInputSheetV19')
     .addToUi();
@@ -1110,6 +1116,153 @@ function v19_backupOnce_(ss, name) {
   }
 
   sheet.copyTo(ss).setName(backupName);
+}
+
+
+/*************************************************
+ * ② 推薦者ファイルに反映（共有）
+ *   ①で作った支払管理台帳と、計算用まとめ（V19の計算結果）を各推薦者のファイルに書く。
+ *   台帳・計算用まとめには書き込まない。変わった人のファイルだけ開く。
+ *************************************************/
+function publishPaymentFilesV19() {
+  v19_publish_(false);
+}
+
+
+function publishAllPaymentFilesV19() {
+  v19_publish_(true);
+}
+
+
+function v19_publish_(forceAll) {
+
+  if (V19.MODE !== 'LIVE') {
+    v19_alert_('いまはテストモード（MODE: \'TEST\'）なので、V19 からは推薦者ファイルに反映しません。\n' +
+      '本番（LIVE）に切り替えてから使ってください。');
+    return;
+  }
+
+  const lock = LockService.getScriptLock();
+
+  if (!lock.tryLock(60000)) {
+    throw new Error('別の処理が実行中です。1〜2分待ってからもう一度押してください。');
+  }
+
+  try {
+
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    V19.WRITE_CLAWBACK = false;
+
+    const calc = v19_calculate_(ss);
+
+    const source = ss.getSheetByName(V19.SOURCE_SHEET);
+
+    const masterMap = pay18_loadMaster_(ss.getSheetByName(V19.MASTER_SHEET));
+
+    const publicHeader = source.getRange(1, 1, 1, 18).getValues()[0];
+
+    const groups = {};
+
+    calc.rowsInfo.forEach(info => {
+
+      const master = masterMap[info.id];
+
+      info.row[18] = master ? master.smallGroup : '';
+
+      info.row[19] = master ? master.largeGroup : '';
+
+      (groups[info.id] || (groups[info.id] = [])).push(info.row);
+    });
+
+    const hiddenColumns = {};
+
+    for (let col = 14; col <= 18; col++) {
+      hiddenColumns[col] = source.isColumnHiddenByUser(col);
+    }
+
+    const context = { ss: ss, masterMap: masterMap, publicHeader: publicHeader, groups: groups, hiddenColumns: hiddenColumns };
+
+    const ledgerState = pay18_buildLedgerState_(ss.getSheetByName(V19.LEDGER_SHEET));
+
+    const props = PropertiesService.getScriptProperties();
+
+    const result = { opened: 0, skipped: 0, disabled: 0, noFolder: 0, errors: 0, messages: [] };
+
+    const ids = [...new Set(Object.keys(groups).concat(Object.keys(ledgerState.byCode)))];
+
+    ids.forEach(id => {
+
+      try {
+
+        const master = masterMap[id];
+
+        if (!master || !master.folderId) {
+          result.noFolder++;
+          return;
+        }
+
+        if (!master.autoShare) {
+          result.disabled++;
+          return;
+        }
+
+        const detailRows = groups[id] || [];
+
+        const ledgerRows = ledgerState.byCode[id] || [];
+
+        const detailHash = pay18_detailHash_(id, master, publicHeader, detailRows, hiddenColumns);
+
+        const noticeHash = pay18_noticeHash_(id, ledgerRows);
+
+        const detailChanged = forceAll || detailHash !== props.getProperty('PAY18_DETAIL_HASH_' + id);
+
+        const noticeChanged = forceAll || noticeHash !== props.getProperty('PAY18_NOTICE_HASH_' + id);
+
+        if (!detailChanged && !noticeChanged && props.getProperty('PAY18_TARGET_' + id)) {
+          result.skipped++;
+          return;
+        }
+
+        const target = pay18_getTargetSS_(id, master, props);
+
+        result.opened++;
+
+        if (detailChanged) {
+          pay18_writeDetail_(target, publicHeader, detailRows, hiddenColumns, props);
+          props.setProperty('PAY18_DETAIL_HASH_' + id, detailHash);
+        }
+
+        if (noticeChanged) {
+          pay18_writeNotice_(target, id, ledgerRows, props);
+          props.setProperty('PAY18_NOTICE_HASH_' + id, noticeHash);
+        }
+
+      } catch (error) {
+
+        result.errors++;
+
+        result.messages.push(id + '：' + error.message);
+      }
+    });
+
+    try {
+
+      pay18_updatePakTeamWorkbook_(context, ledgerState, props, forceAll);
+
+    } catch (error) {
+
+      result.errors++;
+
+      result.messages.push('パクさんチーム：' + error.message);
+    }
+
+    v19_alert_('推薦者ファイルへの反映が終わりました。\n' + pay18_publishSummary_(result));
+
+  } finally {
+
+    lock.releaseLock();
+  }
 }
 
 

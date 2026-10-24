@@ -1885,6 +1885,9 @@ function pay18_loadContext_() {
 
   pay18_applyMinashiGuard_(rowsInfo, policyMap);
 
+  /* ★平準の先払い：何か月分をまとめて払ったかを備考に残す（払い方はそのまま＝届いた月にまとめて払う） */
+  pay18_notePrepaidLevel_(rowsInfo, policyMap);
+
   pay18_writeJudgeColumn_(source, all, rowsInfo, lastRow);
 
   pay18_writeFinalRates_(source, rowsInfo);
@@ -3359,6 +3362,55 @@ function pay18_writeFinalRates_(source, rowsInfo) {
     }
 
     source.getRange(info.rowNumber, 13).setValue(finalRate);   // M 支払倍率
+  });
+}
+
+
+/*************************************************
+ * ★平準の先払い
+ *
+ * 平準のお客様が数か月分をまとめて拠出すると、その月のコミッション明細に
+ * 数か月分がまとめて載る。払い方は「届いた月にまとめて払う」（翌月以降はその分が明細に載らない）。
+ * 解約時の戻入に備えて、何か月分（いつからいつまで）かを備考に残す。
+ * 月額＝プランポリシーの年間拠出金÷12。一括払いの商品・年間拠出金が無いものは対象外。
+ *************************************************/
+function pay18_notePrepaidLevel_(rowsInfo, policyMap) {
+
+  const latest = rowsInfo.reduce((value, info) =>
+    pay18_monthIndex_(info.month) > pay18_monthIndex_(value) ? info.month : value, '');
+
+  rowsInfo.forEach(info => {
+
+    const row = info.row;
+
+    if (info.month !== latest || info.hold || String(row[11] || '').trim() !== '平準' || String(row[15] || '').trim()) {
+      return;
+    }
+
+    const policy = policyMap[String(row[0] || '').trim() + '||' + pay18_sequenceKey_(info.sequence)];
+
+    if (!policy || policy.lump > 0 || !(policy.annual > 0)) {
+      return;
+    }
+
+    const monthly = policy.annual / 12;
+
+    const months = Math.round(pay18_num_(row[4]) / monthly);
+
+    if (months < 2 || pay18_num_(row[13]) <= 0) {
+      return;
+    }
+
+    const start = pay18_monthIndex_(info.month);
+
+    const label = index => Math.floor((index - 1) / 12) + '.' + ((index - 1) % 12 + 1);
+
+    row[15] = '先払い：お客様が' + months + 'か月分をまとめて拠出（$' + pay18_num_(row[4]) +
+      '＝月額$' + (Math.round(monthly * 100) / 100) + '×' + months + '）。コミッションも' + months +
+      'か月分（' + label(start) + '〜' + label(start + months - 1) + '分）を今回まとめてお支払い。' +
+      'この期間の翌月以降は明細に載りません。解約時は未経過分を戻入';
+
+    info.noteChanged = true;
   });
 }
 

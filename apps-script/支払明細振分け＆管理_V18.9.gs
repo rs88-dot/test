@@ -4214,10 +4214,21 @@ function pay18_buildCarryRows_(rows, old, context) {
       return;
     }
 
-    /* 直近から遡って、未払いの月にW社・B社の金額があるか */
+    /*
+     * 直近から遡って、未払いの月にW社の金額があるか。
+     * ★B社（Bank社）支払額は毎月「前月までの未払い分も含めた額」で届くので繰り越さない。
+     * 今月の新規W社がなくても、今月分のB社支払額が入力済みならこの行を残す。
+     */
     const keys = Object.keys(monthMap).map(Number).sort((a, b) => b - a);
 
-    let hasUnpaid = false;
+    const kept = old.carryByKey[latestMonth + '||' + id] || {};
+
+    const keptB = kept.bAmount !== undefined && kept.bAmount !== '' && kept.bAmount !== null &&
+      Math.abs(pay18_num_(kept.bAmount)) > 0.000001;
+
+    let hasUnpaid = keptB;
+
+    let hasUnpaidW = false;
 
     for (const key of keys) {
 
@@ -4227,11 +4238,9 @@ function pay18_buildCarryRows_(rows, old, context) {
         break;
       }
 
-      if (entries.some(entry =>
-        Math.abs(pay18_num_(entry.wAmount)) > 0.000001 ||
-        Math.abs(pay18_num_(entry.bAmount)) > 0.000001
-      )) {
+      if (entries.some(entry => Math.abs(pay18_num_(entry.wAmount)) > 0.000001)) {
         hasUnpaid = true;
+        hasUnpaidW = true;
         break;
       }
     }
@@ -4243,8 +4252,6 @@ function pay18_buildCarryRows_(rows, old, context) {
     const last = monthMap[keys[0]][0];
 
     const master = context.masterMap[id] || {};
-
-    const kept = old.carryByKey[latestMonth + '||' + id] || {};
 
     const contact = old.contactById[id] || {};
 
@@ -4262,7 +4269,10 @@ function pay18_buildCarryRows_(rows, old, context) {
       invoice: kept.invoice || '未',
       status: kept.status || '未払い',
       date: kept.date || '',
-      note: kept.note || '前月までの未払い繰越のみ（今月の新規発生なし）',
+      note: hasUnpaidW
+        ? (kept.note || '前月までの未払い繰越のみ（今月の新規発生なし）')
+        : String(kept.note || '').replace('前月までの未払い繰越のみ（今月の新規発生なし）', '今月はB社分のみ（W社の新規発生なし）') ||
+          '今月はB社分のみ（W社の新規発生なし）',
       marker: PAYMENT_V18.CARRY,
       protect: ''
     });
@@ -4451,9 +4461,14 @@ function pay18_recalculateLedger_(sheet, targetIds) {
 
           action = '⚠ 繰越あり';
 
-        } else if (isPast && Math.abs(base) > 0.000001) {
+        } else if (isPast && Math.abs(w) > 0.000001) {
 
           action = '⚠ 未払い・繰越';
+
+        /* B社分だけの過去月：翌月のBank社の額に含まれて届くので繰り越さない */
+        } else if (isPast && Math.abs(b) > 0.000001) {
+
+          action = 'B社分は翌月分に含む（繰越なし）';
 
         /*
          * ★最新月の総額がマイナスなら支払いは発生しない
@@ -4490,8 +4505,9 @@ function pay18_recalculateLedger_(sheet, targetIds) {
 
         output[entry.index][2] = action;
 
+        /* ★未払いを繰り越すのはW社分だけ（B社分は翌月のBank社の額に前月分が含まれて届く） */
         if (!settled) {
-          unpaidBase += base;
+          unpaidBase += w;
         }
       });
 

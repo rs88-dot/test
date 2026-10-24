@@ -449,6 +449,18 @@ function v19_inputsFromLedger_(oldLedger) {
 }
 
 
+/*
+ * 【手入力】B社・調整 の列
+ *   A 支払月 / B 推薦者コード / C 推薦者名 / D 大グループ / E 小グループ（C〜Eは式で自動表示）
+ *   F 区分（B社／W社調整） / G 金額 / H メモ
+ * 列は見出しの名前で探すので、列の並びが変わっても読める。
+ */
+const V19_INPUT_HEADER = [
+  '支払月', '推薦者コード', '推薦者名（自動）', '大グループ（自動）', '小グループ（自動）',
+  '区分（B社／W社調整）', '金額', 'メモ（台帳の備考に出ます）'
+];
+
+
 function v19_readInputSheet_(ss) {
 
   const sheet = ss.getSheetByName(V19.INPUT_SHEET);
@@ -461,30 +473,50 @@ function v19_readInputSheet_(ss) {
     return [];
   }
 
+  const lastRow = sheet.getLastRow();
+
+  const lastCol = sheet.getLastColumn();
+
+  const header = sheet.getRange(1, 1, 1, lastCol).getDisplayValues()[0].map(value => String(value || '').trim());
+
+  const find = prefix => header.findIndex(value => value.indexOf(prefix) === 0);
+
+  const c = {
+    month: find('支払月'),
+    id: find('推薦者コード'),
+    kind: find('区分'),
+    amount: find('金額'),
+    memo: find('メモ')
+  };
+
+  if (c.month < 0 || c.id < 0 || c.amount < 0) {
+    throw new Error(V19.INPUT_SHEET + ' の見出し（支払月・推薦者コード・金額）が見つかりません。1行目の見出しを確認してください。');
+  }
+
+  const values = sheet.getRange(2, 1, lastRow - 1, lastCol).getValues();
+
+  const display = sheet.getRange(2, 1, lastRow - 1, lastCol).getDisplayValues();
+
   const inputs = [];
-
-  const values = sheet.getRange(2, 1, sheet.getLastRow() - 1, 5).getValues();
-
-  const display = sheet.getRange(2, 1, sheet.getLastRow() - 1, 1).getDisplayValues();
 
   values.forEach((row, index) => {
 
-    const month = v19_month_(display[index][0]);
+    const month = v19_month_(display[index][c.month]);
 
-    const id = v19_id_(row[1]);
+    const id = v19_id_(row[c.id]);
 
     if (!month || !id) {
       return;
     }
 
-    const kind = String(row[2] || '').trim() === 'W社調整' ? 'W社調整' : 'B社';
+    const kind = c.kind >= 0 && String(row[c.kind] || '').trim() === 'W社調整' ? 'W社調整' : 'B社';
 
     inputs.push({
       month: month,
       id: id,
       kind: kind,
-      amount: v19_num_(row[3]),
-      memo: String(row[4] || '').trim()
+      amount: v19_num_(row[c.amount]),
+      memo: c.memo >= 0 ? String(row[c.memo] || '').trim() : ''
     });
   });
 
@@ -506,19 +538,46 @@ function createInputSheetV19() {
 
   const sheet = ss.insertSheet(V19.INPUT_SHEET);
 
-  const output = [['支払月', '推薦者コード', '区分（B社／W社調整）', '金額', 'メモ（台帳の備考に出ます）']]
-    .concat(inputs.map(input => [input.month, input.id, input.kind, input.amount, input.memo]));
+  const rows = Math.max(1000, inputs.length + 200);
 
-  sheet.getRange(1, 1, Math.max(1000, output.length + 100), 1).setNumberFormat('@');
+  if (sheet.getMaxRows() < rows) {
+    sheet.insertRowsAfter(sheet.getMaxRows(), rows - sheet.getMaxRows());
+  }
 
-  sheet.getRange(1, 1, output.length, 5).setValues(output);
+  /* 支払月・推薦者コードは文字扱い（2026.10 が 2026.1 にならないように） */
+  sheet.getRange(1, 1, rows, 2).setNumberFormat('@');
 
-  sheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#4472C4').setFontColor('#FFFFFF');
+  sheet.getRange(1, 1, 1, V19_INPUT_HEADER.length).setValues([V19_INPUT_HEADER]);
+
+  if (inputs.length > 0) {
+
+    sheet.getRange(2, 1, inputs.length, 2).setValues(inputs.map(input => [input.month, input.id]));
+
+    sheet.getRange(2, 6, inputs.length, 3).setValues(inputs.map(input => [input.kind, input.amount, input.memo]));
+  }
+
+  /* 推薦者名・大グループ・小グループは推薦者コード管理から自動表示（C2の式が下まで広がる。C〜E列には手で入力しない） */
+  const master = "'" + V19.MASTER_SHEET + "'!";
+
+  sheet.getRange(2, 3).setFormula(
+    '=ARRAYFORMULA(IF(B2:B="","",IFERROR(VLOOKUP(B2:B&"",{' +
+    master + 'C5:C&"",' + master + 'B5:B,' + master + 'K5:K,' + master + 'L5:L},{2,3,4},FALSE),{"コードが推薦者コード管理にありません","",""})))'
+  );
+
+  sheet.getRange(2, 7, rows - 1, 1).setNumberFormat('#,##0.00');
+
+  sheet.getRange(1, 1, 1, V19_INPUT_HEADER.length).setFontWeight('bold').setBackground('#4472C4').setFontColor('#FFFFFF');
+
+  sheet.getRange(1, 3, rows, 3).setBackground('#F2F2F2');
+
+  sheet.getRange(1, 3, 1, 3).setBackground('#7F7F7F');
 
   sheet.setFrozenRows(1);
 
   v19_alert_(V19.INPUT_SHEET + ' を作りました（' + inputs.length + '件）。\n' +
-    'これからは B社支払額・手入力の調整はこのシートに入れてください（台帳のG列には入れない）。');
+    'これからは B社支払額・手入力の調整はこのシートに入れてください（台帳のG列には入れない）。\n\n' +
+    '入れるのは A 支払月・B 推薦者コード・F 区分・G 金額・H メモ です。\n' +
+    'C〜E（推薦者名・グループ）は自動で出るので、手で入力しないでください。');
 }
 
 

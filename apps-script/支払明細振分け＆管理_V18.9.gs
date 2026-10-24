@@ -283,13 +283,12 @@ function installPaymentMenuV18() {
 
 function showPaymentMenuV18() {
 
+  /*
+   * ★V19に切り替え済み：計算（①）・推薦者ファイルへの反映（②）は「支払管理V19」メニューから。
+   * V18の①②は台帳を作り直してしまうので、ここには出さない（迷子契約のボタンだけ残す）。
+   */
   SpreadsheetApp.getUi()
     .createMenu('支払管理')
-    .addItem('① 計算を更新（社内のみ）', 'forceSyncPaymentSheetsV18')
-    .addItem('② 推薦者ファイルに反映（共有）', 'publishPaymentFilesV18')
-    .addSeparator()
-    .addItem('全員のファイルを作り直す', 'publishAllPaymentFilesV18')
-    .addSeparator()
     .addItem('迷子契約を照合（転記候補を作る）', 'fillLostContractsV18')
     .addItem('✔した迷子契約を顧客マスタへ転記', 'transferCheckedLostContractsV18')
     .addToUi();

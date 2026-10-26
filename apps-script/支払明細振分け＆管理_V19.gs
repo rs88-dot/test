@@ -9,11 +9,11 @@
  *  ・おかしい行は書き換えずに「V19_確認」に一覧で出し、その行は払わない（保留）
  *
  * 動かし方
- *  ・MODE: 'TEST'（いまはこれ）
+ *  ・MODE: 'TEST'（並行テスト用）
  *      V18 と並行で動かすためのモード。書き込むのは V19_ で始まるシートだけ。
  *      B社支払額は今の「支払管理台帳」G列から読む。
  *      結果は V19_台帳・V19_支払いまとめ・V19_確認・V19_比較（V18との差）に出る。
- *  ・MODE: 'LIVE'（切り替え後）
+ *  ・MODE: 'LIVE'（いまはこれ・2026/10/25に切り替え済み）
  *      「支払管理台帳」「支払いまとめ」を V19 で作る。B社支払額は【手入力】B社・調整 から読む。
  *      切り替えの前に、メニュー「B社・調整の入力シートを作る」を1回だけ押す。
  *
@@ -25,13 +25,14 @@
 
 const V19 = {
 
-  MODE: 'TEST',
+  MODE: 'LIVE',
 
   SOURCE_SHEET: '【手入力固定】計算用まとめ（永久保存版）',
   MASTER_SHEET: '【自動】推薦者コード管理_取込',
   LEDGER_SHEET: '支払管理台帳',
   SUMMARY_SHEET: '支払いまとめ',
   INPUT_SHEET: '【手入力】B社・調整',
+  HOLD_SHEET: '【手入力】支払保留',
 
   TEST_LEDGER_SHEET: 'V19_台帳',
   TEST_SUMMARY_SHEET: 'V19_支払いまとめ',
@@ -224,14 +225,12 @@ function v19_calculate_(ss) {
 
   const policyMap = v19_loadPolicyMap_(ss);
 
-  const transferMap = v19_loadTransferMap_(ss);
-
   v19_holdBrokenRows_(rowsInfo);
 
-  /* 担当者変更のあと、お客様の払込が1回もない契約は払わない（払込があった月に払う） */
-  v19_holdUnpaidTransfers_(rowsInfo, policyMap, transferMap);
+  /* 【手入力】支払保留 に入れた契約は今回払わない */
+  v19_holdManual_(ss, rowsInfo);
 
-  v19_applyAnnualCap_(rowsInfo, policyMap, transferMap);
+  v19_applyAnnualCap_(rowsInfo, policyMap, v19_loadTransferMap_(ss));
 
   v19_applyMinashiGuard_(rowsInfo, policyMap);
 
@@ -1272,56 +1271,57 @@ function v19_publish_(forceAll) {
 
 
 /*************************************************
- * 担当者変更のあと、お客様の払込が1回もない契約は支払保留
- *
- * プランポリシーの「最終の支払済日」（無ければ一覧の最終支払済日②）が、
- * 担当者変更一覧の「最終支払済日①」（変更のときの値）から進んでいない
- * （＝担当者変更のあと、お客様の払込が1回もない）契約は、今回は払わない（V19_確認に出す）。
- * 払込があって最終支払済日が進んだ月に、いつもどおり計算して払う。
- * 最新月（ANNUAL_CAP_FROM 以降）だけが対象。過去の月は触らない。
+ * 【手入力】支払保留
+ *   A プラン番号 / B シーケンス（空欄＝全部） / C 推薦者コード（空欄＝全員） / D 備考
+ *   ここに入れた契約は、最新月の今回支払額を0にして V19_確認 に出す（計算用まとめには書かない）。
+ *   払えるようになったら行を消して①を押す。
  *************************************************/
-function v19_holdUnpaidTransfers_(rowsInfo, policyMap, transferMap) {
+function v19_holdManual_(ss, rowsInfo) {
 
-  const from = v19_monthIndex_(V19.ANNUAL_CAP_FROM);
+  const sheet = ss.getSheetByName(V19.HOLD_SHEET);
+
+  if (!sheet || sheet.getLastRow() < 2) {
+    return;
+  }
+
+  const holds = sheet
+    .getRange(2, 1, sheet.getLastRow() - 1, 4)
+    .getDisplayValues()
+    .map(row => ({
+      plan: String(row[0] || '').trim(),
+      sequence: String(row[1] || '').trim() ? v19_sequenceKey_(row[1]) : '',
+      id: v19_id_(row[2]),
+      note: String(row[3] || '').trim()
+    }))
+    .filter(hold => hold.plan);
+
+  if (holds.length === 0) {
+    return;
+  }
 
   const latest = rowsInfo.reduce((value, info) =>
     v19_monthIndex_(info.month) > v19_monthIndex_(value) ? info.month : value, '');
-
-  const label = date => date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
 
   rowsInfo.forEach(info => {
 
     const row = info.row;
 
-    if (!info.rowNumber || info.hold || info.month !== latest || v19_monthIndex_(info.month) < from) {
+    if (!info.rowNumber || info.month !== latest || v19_num_(row[13]) === 0) {
       return;
     }
 
-    if (v19_num_(row[13]) <= 0) {
-      return;
-    }
+    const hold = holds.find(item =>
+      item.plan === String(row[0] || '').trim() &&
+      (!item.sequence || item.sequence === v19_sequenceKey_(info.sequence)) &&
+      (!item.id || item.id === info.id));
 
-    const plan = String(row[0] || '').trim();
-
-    const transfer = transferMap[plan + '||' + v19_sequenceKey_(info.sequence)] || transferMap[plan + '||'];
-
-    if (!transfer || !transfer.paidAtTransfer) {
-      return;
-    }
-
-    const policy = policyMap[plan + '||' + v19_sequenceKey_(info.sequence)];
-
-    const current = (policy && policy.lastPaid) || transfer.paidLatest;
-
-    if (!current || current.getTime() > transfer.paidAtTransfer.getTime()) {
+    if (!hold) {
       return;
     }
 
     row[13] = 0;
 
-    row[15] = '支払保留：担当者変更（' + transfer.transferDate + '）のあと、お客様の払込がまだありません' +
-      '（最終支払済日が' + label(current) + 'のまま' + (policy && policy.status ? '・状態：' + policy.status : '') + '）。' +
-      '払込があった月にお支払いします';
+    row[15] = '支払保留：' + (hold.note || '【手入力】支払保留に入っているため');
 
     info.hold = true;
 
@@ -1906,10 +1906,9 @@ function v19_applyReductionClawback_(ss, rowsInfo, policyMap) {
       ? Math.floor((asOf - policy.lastPaid) / 86400000)
       : 0;
 
-    /* 未納：最終の支払済日から90日以上たったら戻入（90日未満はまだ戻入にしない） */
     const stopped =
       /解約|失効|払込済/.test(status) ||
-      overdueDays >= GRACE_DAYS;
+      (/期間経過/.test(status) && overdueDays > GRACE_DAYS);
 
     const current = stopped ? 0 : policy.annual;
 
@@ -1942,8 +1941,8 @@ function v19_applyReductionClawback_(ss, rowsInfo, policyMap) {
     ];
 
     const reasonStop = stopped
-      ? (overdueDays >= GRACE_DAYS
-        ? '払込が' + overdueDays + '日止まっている（最終の支払済日から90日以上の未納）ため（年間拠出0）'
+      ? (/期間経過/.test(status)
+        ? '払込が' + overdueDays + '日止まっている（最終の支払済日から90日超・有効（期間経過））ため（年間拠出0）'
         : '契約が「' + status + '」になったため（年間拠出0）')
       : '';
 
@@ -2417,10 +2416,7 @@ function v19_loadTransferMap_(ss) {
 
           map[plan + '||' + v19_sequenceKey_(row[2])] = {
             cover: Math.max(0, Math.min(12, Math.floor(Number(remain)))),
-            source: '担当者変更一覧',
-            transferDate: String(row[0] || '').trim(),           // A 転記日
-            paidAtTransfer: v19_parseDate_(row[11]),             // L 最終支払済日①（担当者変更のとき）
-            paidLatest: v19_parseDate_(row[12])                  // M 最終支払済日②
+            source: '担当者変更一覧'
           };
         });
     }

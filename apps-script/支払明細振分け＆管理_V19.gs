@@ -1274,10 +1274,9 @@ function v19_publish_(forceAll) {
 /*************************************************
  * 担当者変更のあと、お客様の払込が1回もない契約は支払保留
  *
- * 次の2つがどちらも当てはまる契約は、今回は払わない（V19_確認に出す）。
- *   ・未納：プランポリシーの「最終の支払済日」（無ければ一覧の最終支払済日②）が、
- *           プランポリシーを貼った日（A1）より前（＝払込期日を過ぎている）
- *   ・担当者変更のあと進んでいない：その日が担当者変更一覧の「最終支払済日①」（変更のときの値）から進んでいない
+ * プランポリシーの「最終の支払済日」（無ければ一覧の最終支払済日②）が、
+ * 担当者変更一覧の「最終支払済日①」（変更のときの値）から進んでいない
+ * （＝担当者変更のあと、お客様の払込が1回もない）契約は、今回は払わない（V19_確認に出す）。
  * 払込があって最終支払済日が進んだ月に、いつもどおり計算して払う。
  * 最新月（ANNUAL_CAP_FROM 以降）だけが対象。過去の月は触らない。
  *************************************************/
@@ -1287,8 +1286,6 @@ function v19_holdUnpaidTransfers_(rowsInfo, policyMap, transferMap) {
 
   const latest = rowsInfo.reduce((value, info) =>
     v19_monthIndex_(info.month) > v19_monthIndex_(value) ? info.month : value, '');
-
-  const asOf = policyMap.__asOf || new Date();
 
   const label = date => date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
 
@@ -1316,14 +1313,14 @@ function v19_holdUnpaidTransfers_(rowsInfo, policyMap, transferMap) {
 
     const current = (policy && policy.lastPaid) || transfer.paidLatest;
 
-    if (!current || current.getTime() >= asOf.getTime() || current.getTime() > transfer.paidAtTransfer.getTime()) {
+    if (!current || current.getTime() > transfer.paidAtTransfer.getTime()) {
       return;
     }
 
     row[13] = 0;
 
     row[15] = '支払保留：担当者変更（' + transfer.transferDate + '）のあと、お客様の払込がまだありません' +
-      '（最終支払済日が' + label(current) + 'のまま・未納' + (policy && policy.status ? '・状態：' + policy.status : '') + '）。' +
+      '（最終支払済日が' + label(current) + 'のまま' + (policy && policy.status ? '・状態：' + policy.status : '') + '）。' +
       '払込があった月にお支払いします';
 
     info.hold = true;
@@ -1909,9 +1906,10 @@ function v19_applyReductionClawback_(ss, rowsInfo, policyMap) {
       ? Math.floor((asOf - policy.lastPaid) / 86400000)
       : 0;
 
+    /* 未納：最終の支払済日から90日以上たったら戻入（90日未満はまだ戻入にしない） */
     const stopped =
       /解約|失効|払込済/.test(status) ||
-      (/期間経過/.test(status) && overdueDays > GRACE_DAYS);
+      overdueDays >= GRACE_DAYS;
 
     const current = stopped ? 0 : policy.annual;
 
@@ -1944,8 +1942,8 @@ function v19_applyReductionClawback_(ss, rowsInfo, policyMap) {
     ];
 
     const reasonStop = stopped
-      ? (/期間経過/.test(status)
-        ? '払込が' + overdueDays + '日止まっている（最終の支払済日から90日超・有効（期間経過））ため（年間拠出0）'
+      ? (overdueDays >= GRACE_DAYS
+        ? '払込が' + overdueDays + '日止まっている（最終の支払済日から90日以上の未納）ため（年間拠出0）'
         : '契約が「' + status + '」になったため（年間拠出0）')
       : '';
 

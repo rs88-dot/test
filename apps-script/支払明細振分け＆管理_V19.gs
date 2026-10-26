@@ -224,9 +224,14 @@ function v19_calculate_(ss) {
 
   const policyMap = v19_loadPolicyMap_(ss);
 
+  const transferMap = v19_loadTransferMap_(ss);
+
   v19_holdBrokenRows_(rowsInfo);
 
-  v19_applyAnnualCap_(rowsInfo, policyMap, v19_loadTransferMap_(ss));
+  /* 担当者変更のあと、お客様の払込が1回もない契約は払わない（払込があった月に払う） */
+  v19_holdUnpaidTransfers_(rowsInfo, policyMap, transferMap);
+
+  v19_applyAnnualCap_(rowsInfo, policyMap, transferMap);
 
   v19_applyMinashiGuard_(rowsInfo, policyMap);
 
@@ -1263,6 +1268,68 @@ function v19_publish_(forceAll) {
 
     lock.releaseLock();
   }
+}
+
+
+/*************************************************
+ * 担当者変更のあと、お客様の払込が1回もない契約は支払保留
+ *
+ * 次の2つがどちらも当てはまる契約は、今回は払わない（V19_確認に出す）。
+ *   ・未納：プランポリシーの「最終の支払済日」（無ければ一覧の最終支払済日②）が、
+ *           プランポリシーを貼った日（A1）より前（＝払込期日を過ぎている）
+ *   ・担当者変更のあと進んでいない：その日が担当者変更一覧の「最終支払済日①」（変更のときの値）から進んでいない
+ * 払込があって最終支払済日が進んだ月に、いつもどおり計算して払う。
+ * 最新月（ANNUAL_CAP_FROM 以降）だけが対象。過去の月は触らない。
+ *************************************************/
+function v19_holdUnpaidTransfers_(rowsInfo, policyMap, transferMap) {
+
+  const from = v19_monthIndex_(V19.ANNUAL_CAP_FROM);
+
+  const latest = rowsInfo.reduce((value, info) =>
+    v19_monthIndex_(info.month) > v19_monthIndex_(value) ? info.month : value, '');
+
+  const asOf = policyMap.__asOf || new Date();
+
+  const label = date => date.getFullYear() + '/' + (date.getMonth() + 1) + '/' + date.getDate();
+
+  rowsInfo.forEach(info => {
+
+    const row = info.row;
+
+    if (!info.rowNumber || info.hold || info.month !== latest || v19_monthIndex_(info.month) < from) {
+      return;
+    }
+
+    if (v19_num_(row[13]) <= 0) {
+      return;
+    }
+
+    const plan = String(row[0] || '').trim();
+
+    const transfer = transferMap[plan + '||' + v19_sequenceKey_(info.sequence)] || transferMap[plan + '||'];
+
+    if (!transfer || !transfer.paidAtTransfer) {
+      return;
+    }
+
+    const policy = policyMap[plan + '||' + v19_sequenceKey_(info.sequence)];
+
+    const current = (policy && policy.lastPaid) || transfer.paidLatest;
+
+    if (!current || current.getTime() >= asOf.getTime() || current.getTime() > transfer.paidAtTransfer.getTime()) {
+      return;
+    }
+
+    row[13] = 0;
+
+    row[15] = '支払保留：担当者変更（' + transfer.transferDate + '）のあと、お客様の払込がまだありません' +
+      '（最終支払済日が' + label(current) + 'のまま・未納' + (policy && policy.status ? '・状態：' + policy.status : '') + '）。' +
+      '払込があった月にお支払いします';
+
+    info.hold = true;
+
+    info.noteChanged = true;
+  });
 }
 
 
@@ -2352,7 +2419,10 @@ function v19_loadTransferMap_(ss) {
 
           map[plan + '||' + v19_sequenceKey_(row[2])] = {
             cover: Math.max(0, Math.min(12, Math.floor(Number(remain)))),
-            source: '担当者変更一覧'
+            source: '担当者変更一覧',
+            transferDate: String(row[0] || '').trim(),           // A 転記日
+            paidAtTransfer: v19_parseDate_(row[11]),             // L 最終支払済日①（担当者変更のとき）
+            paidLatest: v19_parseDate_(row[12])                  // M 最終支払済日②
           };
         });
     }

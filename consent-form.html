@@ -1305,13 +1305,9 @@ function updateNextStepsCta() {
       : 'Please proceed to the rider contract application. If you have any questions, please contact your representative.';
     btnEl.href = 'https://wawasan-tsuika-form.studio.site/';
     btnEl.textContent = lang === 'ja' ? '📝 ライダー申し込みへ進む →' : '📝 Proceed to Rider Application →';
-  } else if (selectedProduct === 'sp500') {
-    textEl.textContent = T.nextStepsText[lang];
-    btnEl.href = 'https://wawasan-application-form.studio.site/';
-    btnEl.textContent = T.returnBtn[lang];
   } else {
     textEl.textContent = T.nextStepsText[lang];
-    btnEl.href = 'https://wawasan-tsuika-form.studio.site/';
+    btnEl.href = 'https://wawasan-application-form.studio.site/';
     btnEl.textContent = T.returnBtn[lang];
   }
 }
